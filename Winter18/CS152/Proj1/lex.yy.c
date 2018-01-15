@@ -478,8 +478,8 @@ const char *lexPattern[] = {"function","beginparams","endparams",
                             "read","write","and","or","not",
                             "true","false","return"};
 const char *token[] = {"FUNCTION","BEGIN_PARAMS","END_PARAMS",
-                       "BEGIN_LOCALS", "END_LOCALS", "BEGINBODY",
-                       "ENDBODY", "INTEGER","ARRAY","OF","IF",
+                       "BEGIN_LOCALS", "END_LOCALS", "BEGIN_BODY",
+                       "END_BODY", "INTEGER","ARRAY","OF","IF",
                        "THEN","ENDIF","ELSE","WHILE","DO",
                        "BEGINLOOP","ENDLOOP","CONTINUE","READ",
                        "WRITE","AND","OR","NOT","TRUE","FALSE",
@@ -774,7 +774,7 @@ YY_RULE_SETUP
 {int *result = findWord(yytext, lexPattern, numIdent);
                  if (result[0]) printf("%s\n",token[result[1]]);
                  else
-                   printf("IDENTIFIER %s\n",yytext);
+                   printf("IDENT %s\n",yytext);
                 currPos += yyleng;
                 free(result);
                }
@@ -794,7 +794,7 @@ case 4:
 YY_RULE_SETUP
 #line 68 "mini_l.lex"
 {int *result = findWord(yytext, cmpLexPattern, numCmp);
-                  if (result[0]) printf("%s\n",spclToken[result[1]]);
+                  if (result[0]) printf("%s\n",cmpToken[result[1]]);
                   else
                     printf("IDENTIFIER %s\n",yytext);
                  currPos += yyleng;
@@ -809,7 +809,7 @@ YY_RULE_SETUP
 case 6:
 YY_RULE_SETUP
 #line 76 "mini_l.lex"
-{printf("PLUS\n"); currPos += yyleng;}
+{printf("ADD\n"); currPos += yyleng;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP

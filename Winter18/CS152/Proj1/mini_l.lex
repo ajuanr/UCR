@@ -29,8 +29,8 @@ const char *lexPattern[] = {"function","beginparams","endparams",
                             "read","write","and","or","not",
                             "true","false","return"};
 const char *token[] = {"FUNCTION","BEGIN_PARAMS","END_PARAMS",
-                       "BEGIN_LOCALS", "END_LOCALS", "BEGINBODY",
-                       "ENDBODY", "INTEGER","ARRAY","OF","IF",
+                       "BEGIN_LOCALS", "END_LOCALS", "BEGIN_BODY",
+                       "END_BODY", "INTEGER","ARRAY","OF","IF",
                        "THEN","ENDIF","ELSE","WHILE","DO",
                        "BEGINLOOP","ENDLOOP","CONTINUE","READ",
                        "WRITE","AND","OR","NOT","TRUE","FALSE",
@@ -66,14 +66,14 @@ int* findWord(char*, const char*[],int);
                 free(result);
                }
 {COMPARE}      {int *result = findWord(yytext, cmpLexPattern, numCmp);
-                  if (result[0]) printf("%s\n",spclToken[result[1]]);
+                  if (result[0]) printf("%s\n",cmpToken[result[1]]);
                   else
                     printf("IDENTIFIER %s\n",yytext);
                  currPos += yyleng;
                  free(result);
                }
 {digit}+      {printf("NUMBER %s\n", yytext); currPos += yyleng;}
-{PLUS}        {printf("PLUS\n"); currPos += yyleng;}
+{PLUS}        {printf("ADD\n"); currPos += yyleng;}
 {MINUS}       {printf("MINUS\n"); currPos += yyleng;}
 {MULT}        {printf("MULT\n"); currPos += yyleng;}
 {DIV}         {printf("DIV\n"); currPos += yyleng;}
