@@ -4,14 +4,14 @@
 
 letter          [a-zA-Z]
 digit           [0-9]
-number          {digit}+
 COMMENT         "##".*
-IDENTIFIER      {letter}({letter}|{digit})*(_+({letter}|{digit})+)*
+IDENT           {letter}({letter}|{digit})*(_+({letter}|{digit})+)*
 
 PLUS            [\+]
 MINUS           [\-]
 MULT            [\*]
 DIV             [\/]
+MOD             [\%]
 WHITESPACE      [ \t]
 OTHERSPECIAL    []:;,\(\)[]|:=
 COMPARE         ==|<>|<|>|<=|>=
@@ -50,11 +50,11 @@ int* findWord(char*, const char*[],int);
 %}
 
 %%
-{COMMENT}      {printf("COMMENT\n");}
-{IDENTIFIER}  {int *result = findWord(yytext, lexPattern, numIdent);
+{COMMENT}      {;}
+{IDENT}        {int *result = findWord(yytext, lexPattern, numIdent);
                  if (result[0]) printf("%s\n",token[result[1]]);
                  else
-                   printf("IDENTIFIER %s\n",yytext);
+                   printf("IDENT %s\n",yytext);
                 currPos += yyleng;
                 free(result);
                }
@@ -72,11 +72,12 @@ int* findWord(char*, const char*[],int);
                  currPos += yyleng;
                  free(result);
                }
-{number}      {printf("NUMBER %s\n", yytext); currPos += yyleng;}
+{digit}+      {printf("NUMBER %s\n", yytext); currPos += yyleng;}
 {PLUS}        {printf("PLUS\n"); currPos += yyleng;}
 {MINUS}       {printf("MINUS\n"); currPos += yyleng;}
 {MULT}        {printf("MULT\n"); currPos += yyleng;}
 {DIV}         {printf("DIV\n"); currPos += yyleng;}
+{MOD}         {printf("MOD\n"); currPos += yyleng;}
 {WHITESPACE} {currPos += yyleng;}
 \n           {currLine++; currPos = 1;}
 .            {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(0);}
