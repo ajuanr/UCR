@@ -360,8 +360,8 @@ static void yy_fatal_error (yyconst char msg[]  );
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
 
-#define YY_NUM_RULES 14
-#define YY_END_OF_BUFFER 15
+#define YY_NUM_RULES 15
+#define YY_END_OF_BUFFER 16
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -369,11 +369,11 @@ struct yy_trans_info
 	flex_int32_t yy_verify;
 	flex_int32_t yy_nxt;
 	};
-static yyconst flex_int16_t yy_accept[29] =
+static yyconst flex_int16_t yy_accept[31] =
     {   0,
-        0,    0,   15,   13,   11,   12,   13,   10,    3,    8,
-        6,    7,    9,    5,    3,    4,   13,    4,    2,    1,
-        5,    3,    4,    2,    0,    1,    2,    0
+        0,    0,   16,   14,   11,   12,   14,   10,    3,    8,
+        6,    7,    9,    5,    3,    4,   14,    4,    2,    1,
+        5,   13,    3,    4,    2,    0,    1,    0,    2,    0
     } ;
 
 static yyconst flex_int32_t yy_ec[256] =
@@ -414,38 +414,40 @@ static yyconst flex_int32_t yy_meta[18] =
         1,    1,    1,    1,    1,    1,    1
     } ;
 
-static yyconst flex_int16_t yy_base[30] =
+static yyconst flex_int16_t yy_base[32] =
     {   0,
-        0,    0,   31,   34,   34,   34,   26,   34,   34,   34,
-       34,   34,   34,   18,   14,    4,   10,    9,    9,    0,
-       11,   34,   34,    0,   16,    0,    0,   34,   20
+        0,    0,   39,   40,   40,   40,   34,   40,   40,   40,
+       40,   40,   40,    7,   21,    5,   20,   18,   13,    0,
+       10,   11,   40,   40,    0,   20,    0,   17,    0,   40,
+       24
     } ;
 
-static yyconst flex_int16_t yy_def[30] =
+static yyconst flex_int16_t yy_def[32] =
     {   0,
-       28,    1,   28,   28,   28,   28,   28,   28,   28,   28,
-       28,   28,   28,   28,   28,   28,   28,   28,   28,   29,
-       28,   28,   28,   19,   28,   29,   25,    0,   28
+       30,    1,   30,   30,   30,   30,   30,   30,   30,   30,
+       30,   30,   30,   30,   30,   30,   30,   30,   30,   31,
+       30,   30,   30,   30,   19,   30,   31,   30,   26,    0,
+       30
     } ;
 
-static yyconst flex_int16_t yy_nxt[52] =
+static yyconst flex_int16_t yy_nxt[58] =
     {   0,
         4,    5,    6,    7,    8,    9,   10,   11,   12,   13,
-       14,   15,   16,   17,   18,   19,    4,   23,   23,   24,
-       26,   21,   23,   23,   24,   25,   27,   22,   21,   20,
-       28,   27,   25,    3,   28,   28,   28,   28,   28,   28,
-       28,   28,   28,   28,   28,   28,   28,   28,   28,   28,
-       28
+       14,   15,   16,   17,   18,   19,    4,   21,   24,   24,
+       21,   28,   22,   25,   27,   22,   22,   28,   25,   26,
+       29,   24,   22,   24,   23,   29,   26,   20,   30,    3,
+       30,   30,   30,   30,   30,   30,   30,   30,   30,   30,
+       30,   30,   30,   30,   30,   30,   30
     } ;
 
-static yyconst flex_int16_t yy_chk[52] =
+static yyconst flex_int16_t yy_chk[58] =
     {   0,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    1,    1,    1,   16,   16,   19,
-       29,   21,   18,   17,   19,   19,   25,   15,   14,    7,
-        3,   25,   25,   28,   28,   28,   28,   28,   28,   28,
-       28,   28,   28,   28,   28,   28,   28,   28,   28,   28,
-       28
+        1,    1,    1,    1,    1,    1,    1,   14,   16,   16,
+       21,   22,   14,   19,   31,   21,   22,   28,   19,   19,
+       26,   18,   28,   17,   15,   26,   26,    7,    3,   30,
+       30,   30,   30,   30,   30,   30,   30,   30,   30,   30,
+       30,   30,   30,   30,   30,   30,   30
     } ;
 
 static yy_state_type yy_last_accepting_state;
@@ -466,37 +468,32 @@ char *yytext;
 /* 
  *     Lexical Analysis
  */
-#line 21 "mini_l.lex"
+#line 20 "mini_l.lex"
 int currPos = 0; int currLine = 1;
 // identifiers and reserved words
 const int numIdent = 27;
-const char *lexPattern[] = {"function","beginparams","endparams",
-                            "beginlocals","endlocals","beginbody",
-                            "endbody","integer","array","of","if",
-                            "then","endif","else","while","do",
-                            "beginloop","endloop","continue",
-                            "read","write","and","or","not",
-                            "true","false","return"};
-const char *token[] = {"FUNCTION","BEGIN_PARAMS","END_PARAMS",
-                       "BEGIN_LOCALS", "END_LOCALS", "BEGIN_BODY",
-                       "END_BODY", "INTEGER","ARRAY","OF","IF",
-                       "THEN","ENDIF","ELSE","WHILE","DO",
-                       "BEGINLOOP","ENDLOOP","CONTINUE","READ",
-                       "WRITE","AND","OR","NOT","TRUE","FALSE",
-                       "RETURN"};
+const char *lexPattern[] = {"function","beginparams","endparams","beginlocals",
+                            "endlocals","beginbody", "endbody","integer",
+                            "array","of","if","then","endif","else","while",
+                            "do","beginloop","endloop","continue","read",
+                            "write","and","or","not","true","false","return"};
+const char *token[] = {"FUNCTION","BEGIN_PARAMS","END_PARAMS","BEGIN_LOCALS", 
+                       "END_LOCALS", "BEGIN_BODY","END_BODY", "INTEGER",
+                       "ARRAY","OF","IF","THEN","ENDIF","ELSE","WHILE","DO",
+                       "BEGINLOOP","ENDLOOP","CONTINUE","READ","WRITE","AND",
+                       "OR","NOT","TRUE","FALSE","RETURN"};
 // other special characters
 const int numSpecial = 8;
 const char *spclLexPattern[] = {";",":",",","(",")","[","]",":="};
-const char *spclToken[] = {"SEMICOLON","COLON","COMMA","L_PAREN",
-                           "R_PAREN","L_SQUARE_BRACKET",
-                           "R_SQUARE_BRACKET","ASSIGN"};
+const char *spclToken[] = {"SEMICOLON","COLON","COMMA","L_PAREN","R_PAREN",
+                           "L_SQUARE_BRACKET","R_SQUARE_BRACKET","ASSIGN"};
 // comparison operators
 const int numCmp = 6;
 const char *cmpLexPattern[] = {"==","<>","<",">","<=",">="};
 const char *cmpToken[] = {"EQ","NEQ","LT","GT","LTE","GTE"};
 
 int* findWord(char*, const char*[],int);
-#line 500 "lex.yy.c"
+#line 497 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -678,9 +675,9 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 52 "mini_l.lex"
+#line 46 "mini_l.lex"
 
-#line 684 "lex.yy.c"
+#line 681 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -733,13 +730,13 @@ yy_match:
 			while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 				{
 				yy_current_state = (int) yy_def[yy_current_state];
-				if ( yy_current_state >= 29 )
+				if ( yy_current_state >= 31 )
 					yy_c = yy_meta[(unsigned int) yy_c];
 				}
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
 			++yy_cp;
 			}
-		while ( yy_base[yy_current_state] != 34 );
+		while ( yy_base[yy_current_state] != 40 );
 
 yy_find_action:
 		yy_act = yy_accept[yy_current_state];
@@ -765,12 +762,12 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 53 "mini_l.lex"
+#line 47 "mini_l.lex"
 {;}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 54 "mini_l.lex"
+#line 48 "mini_l.lex"
 {int *result = findWord(yytext, lexPattern, numIdent);
                  if (result[0]) printf("%s\n",token[result[1]]);
                  else
@@ -781,7 +778,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 61 "mini_l.lex"
+#line 55 "mini_l.lex"
 {int *result = findWord(yytext, spclLexPattern, numSpecial);
                  if (result[0]) printf("%s\n",spclToken[result[1]]);
                  else
@@ -792,7 +789,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 68 "mini_l.lex"
+#line 62 "mini_l.lex"
 {int *result = findWord(yytext, cmpLexPattern, numCmp);
                   if (result[0]) printf("%s\n",cmpToken[result[1]]);
                   else
@@ -803,56 +800,61 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 75 "mini_l.lex"
+#line 70 "mini_l.lex"
 {printf("NUMBER %s\n", yytext); currPos += yyleng;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 76 "mini_l.lex"
+#line 71 "mini_l.lex"
 {printf("ADD\n"); currPos += yyleng;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 77 "mini_l.lex"
-{printf("MINUS\n"); currPos += yyleng;}
+#line 72 "mini_l.lex"
+{printf("SUB\n"); currPos += yyleng;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 78 "mini_l.lex"
+#line 73 "mini_l.lex"
 {printf("MULT\n"); currPos += yyleng;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 79 "mini_l.lex"
+#line 74 "mini_l.lex"
 {printf("DIV\n"); currPos += yyleng;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 80 "mini_l.lex"
+#line 75 "mini_l.lex"
 {printf("MOD\n"); currPos += yyleng;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 81 "mini_l.lex"
+#line 76 "mini_l.lex"
 {currPos += yyleng;}
 	YY_BREAK
 case 12:
 /* rule 12 can match eol */
 YY_RULE_SETUP
-#line 82 "mini_l.lex"
-{currLine++; currPos = 1;}
+#line 77 "mini_l.lex"
+{currLine++; currPos = 0;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 83 "mini_l.lex"
+#line 78 "mini_l.lex"
 {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(0);}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 84 "mini_l.lex"
+#line 79 "mini_l.lex"
+{printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(0);}
+	YY_BREAK
+case 15:
+YY_RULE_SETUP
+#line 80 "mini_l.lex"
 ECHO;
 	YY_BREAK
-#line 856 "lex.yy.c"
+#line 858 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1144,7 +1146,7 @@ static int yy_get_next_buffer (void)
 		while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 			{
 			yy_current_state = (int) yy_def[yy_current_state];
-			if ( yy_current_state >= 29 )
+			if ( yy_current_state >= 31 )
 				yy_c = yy_meta[(unsigned int) yy_c];
 			}
 		yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
@@ -1172,11 +1174,11 @@ static int yy_get_next_buffer (void)
 	while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 		{
 		yy_current_state = (int) yy_def[yy_current_state];
-		if ( yy_current_state >= 29 )
+		if ( yy_current_state >= 31 )
 			yy_c = yy_meta[(unsigned int) yy_c];
 		}
 	yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
-	yy_is_jam = (yy_current_state == 28);
+	yy_is_jam = (yy_current_state == 30);
 
 		return yy_is_jam ? 0 : yy_current_state;
 }
@@ -1846,7 +1848,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 84 "mini_l.lex"
+#line 80 "mini_l.lex"
 
 
 

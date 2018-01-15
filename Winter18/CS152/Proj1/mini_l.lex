@@ -6,7 +6,7 @@ letter          [a-zA-Z]
 digit           [0-9]
 COMMENT         "##".*
 IDENT           {letter}({letter}|{digit})*(_+({letter}|{digit})+)*
-
+BADIDENT        ({digit}+{letter}+)+
 PLUS            [\+]
 MINUS           [\-]
 MULT            [\*]
@@ -16,31 +16,25 @@ WHITESPACE      [ \t]
 OTHERSPECIAL    []:;,\(\)[]|:=
 COMPARE         ==|<>|<|>|<=|>=
 
-
 %{
 int currPos = 0; int currLine = 1;
 // identifiers and reserved words
 const int numIdent = 27;
-const char *lexPattern[] = {"function","beginparams","endparams",
-                            "beginlocals","endlocals","beginbody",
-                            "endbody","integer","array","of","if",
-                            "then","endif","else","while","do",
-                            "beginloop","endloop","continue",
-                            "read","write","and","or","not",
-                            "true","false","return"};
-const char *token[] = {"FUNCTION","BEGIN_PARAMS","END_PARAMS",
-                       "BEGIN_LOCALS", "END_LOCALS", "BEGIN_BODY",
-                       "END_BODY", "INTEGER","ARRAY","OF","IF",
-                       "THEN","ENDIF","ELSE","WHILE","DO",
-                       "BEGINLOOP","ENDLOOP","CONTINUE","READ",
-                       "WRITE","AND","OR","NOT","TRUE","FALSE",
-                       "RETURN"};
+const char *lexPattern[] = {"function","beginparams","endparams","beginlocals",
+                            "endlocals","beginbody", "endbody","integer",
+                            "array","of","if","then","endif","else","while",
+                            "do","beginloop","endloop","continue","read",
+                            "write","and","or","not","true","false","return"};
+const char *token[] = {"FUNCTION","BEGIN_PARAMS","END_PARAMS","BEGIN_LOCALS", 
+                       "END_LOCALS", "BEGIN_BODY","END_BODY", "INTEGER",
+                       "ARRAY","OF","IF","THEN","ENDIF","ELSE","WHILE","DO",
+                       "BEGINLOOP","ENDLOOP","CONTINUE","READ","WRITE","AND",
+                       "OR","NOT","TRUE","FALSE","RETURN"};
 // other special characters
 const int numSpecial = 8;
 const char *spclLexPattern[] = {";",":",",","(",")","[","]",":="};
-const char *spclToken[] = {"SEMICOLON","COLON","COMMA","L_PAREN",
-                           "R_PAREN","L_SQUARE_BRACKET",
-                           "R_SQUARE_BRACKET","ASSIGN"};
+const char *spclToken[] = {"SEMICOLON","COLON","COMMA","L_PAREN","R_PAREN",
+                           "L_SQUARE_BRACKET","R_SQUARE_BRACKET","ASSIGN"};
 // comparison operators
 const int numCmp = 6;
 const char *cmpLexPattern[] = {"==","<>","<",">","<=",">="};
@@ -72,15 +66,17 @@ int* findWord(char*, const char*[],int);
                  currPos += yyleng;
                  free(result);
                }
+
 {digit}+      {printf("NUMBER %s\n", yytext); currPos += yyleng;}
 {PLUS}        {printf("ADD\n"); currPos += yyleng;}
-{MINUS}       {printf("MINUS\n"); currPos += yyleng;}
+{MINUS}       {printf("SUB\n"); currPos += yyleng;}
 {MULT}        {printf("MULT\n"); currPos += yyleng;}
 {DIV}         {printf("DIV\n"); currPos += yyleng;}
 {MOD}         {printf("MOD\n"); currPos += yyleng;}
 {WHITESPACE} {currPos += yyleng;}
-\n           {currLine++; currPos = 1;}
-.            {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(0);}
+\n           {currLine++; currPos = 0;}
+{BADIDENT}     {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(0);}
+.             {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(0);}
 %%
 
 #include <stdlib.h>
