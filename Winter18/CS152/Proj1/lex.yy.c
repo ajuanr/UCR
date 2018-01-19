@@ -369,12 +369,12 @@ struct yy_trans_info
 	flex_int32_t yy_verify;
 	flex_int32_t yy_nxt;
 	};
-static yyconst flex_int16_t yy_accept[33] =
+static yyconst flex_int16_t yy_accept[36] =
     {   0,
         0,    0,   16,   14,   11,   12,   14,   10,    3,    8,
-        6,    7,    9,    5,    3,    4,   14,    4,    2,    1,
-        5,   13,   13,    3,    4,    2,   13,    1,    0,    0,
-        2,    0
+        6,    7,    9,    5,    3,    4,   14,    4,    2,   14,
+        1,    5,   13,   13,    3,    4,    2,   13,   13,   13,
+        0,    1,   13,    2,    0
     } ;
 
 static yyconst flex_int32_t yy_ec[256] =
@@ -415,42 +415,42 @@ static yyconst flex_int32_t yy_meta[18] =
         1,    1,    1,    1,    1,    1,    1
     } ;
 
-static yyconst flex_int16_t yy_base[34] =
+static yyconst flex_int16_t yy_base[37] =
     {   0,
         0,    0,   33,   46,   46,   46,   25,   46,   46,   46,
-       46,   46,   46,    7,   14,    5,   13,   12,   14,    0,
-        0,   11,   21,   46,   46,    0,   28,    0,    0,    0,
-        0,   46,   20
+       46,   46,   46,    7,   14,    5,   13,   12,   14,   21,
+        0,    0,   11,    0,   46,   46,    0,   28,    0,    0,
+        0,    0,    0,    0,   46,   20
     } ;
 
-static yyconst flex_int16_t yy_def[34] =
+static yyconst flex_int16_t yy_def[37] =
     {   0,
-       32,    1,   32,   32,   32,   32,   32,   32,   32,   32,
-       32,   32,   32,   32,   32,   32,   32,   32,   32,   33,
-       14,   14,   32,   32,   32,   19,   32,   33,   22,   23,
-       27,    0,   32
+       35,    1,   35,   35,   35,   35,   35,   35,   35,   35,
+       35,   35,   35,   35,   35,   35,   35,   35,   35,   35,
+       36,   14,   14,   23,   35,   35,   19,   35,   20,   20,
+       20,   36,   23,   28,    0,   35
     } ;
 
 static yyconst flex_int16_t yy_nxt[64] =
     {   0,
         4,    5,    6,    7,    8,    9,   10,   11,   12,   13,
-       14,   15,   16,   17,   18,   19,    4,   21,   25,   25,
-       28,   29,   22,   23,   26,   25,   25,   24,   20,   26,
-       27,   30,   32,   32,   32,   32,   30,   23,   31,   32,
-       32,   32,   32,   31,   27,    3,   32,   32,   32,   32,
-       32,   32,   32,   32,   32,   32,   32,   32,   32,   32,
-       32,   32,   32
+       14,   15,   16,   17,   18,   19,   20,   22,   26,   26,
+       32,   33,   23,   24,   27,   26,   26,   25,   21,   27,
+       28,   29,   35,   35,   35,   35,   30,   31,   34,   35,
+       35,   35,   35,   34,   28,    3,   35,   35,   35,   35,
+       35,   35,   35,   35,   35,   35,   35,   35,   35,   35,
+       35,   35,   35
     } ;
 
 static yyconst flex_int16_t yy_chk[64] =
     {   0,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,   14,   16,   16,
-       33,   22,   14,   14,   19,   18,   17,   15,    7,   19,
-       19,   23,    3,    0,    0,    0,   23,   23,   27,    0,
-        0,    0,    0,   27,   27,   32,   32,   32,   32,   32,
-       32,   32,   32,   32,   32,   32,   32,   32,   32,   32,
-       32,   32,   32
+       36,   23,   14,   14,   19,   18,   17,   15,    7,   19,
+       19,   20,    3,    0,    0,    0,   20,   20,   28,    0,
+        0,    0,    0,   28,   28,   35,   35,   35,   35,   35,
+       35,   35,   35,   35,   35,   35,   35,   35,   35,   35,
+       35,   35,   35
     } ;
 
 static yy_state_type yy_last_accepting_state;
@@ -733,7 +733,7 @@ yy_match:
 			while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 				{
 				yy_current_state = (int) yy_def[yy_current_state];
-				if ( yy_current_state >= 33 )
+				if ( yy_current_state >= 36 )
 					yy_c = yy_meta[(unsigned int) yy_c];
 				}
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
@@ -845,7 +845,7 @@ YY_RULE_SETUP
 case 13:
 YY_RULE_SETUP
 #line 78 "mini_l.lex"
-{if(isdigit(yytext[0])){
+{if(isdigit(yytext[0]) || yytext[0]=='_'){
                    printf("Error at line %d, column %d: Identifier \"%s\" must begin with a letter\"\n", currLine, currPos, yytext); exit(0);}
                else{
                    printf("Error at line %d, column %d: Identifier \"%s\" cannot end with an underscore\"\n", currLine, currPos, yytext); exit(0);}
@@ -1153,7 +1153,7 @@ static int yy_get_next_buffer (void)
 		while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 			{
 			yy_current_state = (int) yy_def[yy_current_state];
-			if ( yy_current_state >= 33 )
+			if ( yy_current_state >= 36 )
 				yy_c = yy_meta[(unsigned int) yy_c];
 			}
 		yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
@@ -1181,11 +1181,11 @@ static int yy_get_next_buffer (void)
 	while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 		{
 		yy_current_state = (int) yy_def[yy_current_state];
-		if ( yy_current_state >= 33 )
+		if ( yy_current_state >= 36 )
 			yy_c = yy_meta[(unsigned int) yy_c];
 		}
 	yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
-	yy_is_jam = (yy_current_state == 32);
+	yy_is_jam = (yy_current_state == 35);
 
 		return yy_is_jam ? 0 : yy_current_state;
 }

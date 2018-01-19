@@ -7,7 +7,7 @@ digit           [0-9]
 COMMENT         "##".*
 WHITESPACE      [ \t]
 IDENT           {letter}({letter}|{digit})*(_+({letter}|{digit})+)*
-BADIDENT        (({digit}+{letter}+)+)|(({letter}|{digit})+_+)+
+BADIDENT        ((({digit}|_)+({letter}|{digit})+)+)|(({letter}|{digit})+_+)+
 PLUS            [\+]
 MINUS           [\-]
 MULT            [\*]
@@ -75,7 +75,7 @@ int* findWord(char*, const char*[],int);
 {MOD}         {printf("MOD\n"); currPos += yyleng;}
 {WHITESPACE}  {currPos += yyleng;}
 \n            {currLine++; currPos = 0;}
-{BADIDENT}    {if(isdigit(yytext[0])){
+{BADIDENT}    {if(isdigit(yytext[0]) || yytext[0]=='_'){
                    printf("Error at line %d, column %d: Identifier \"%s\" must begin with a letter\"\n", currLine, currPos, yytext); exit(0);}
                else{
                    printf("Error at line %d, column %d: Identifier \"%s\" cannot end with an underscore\"\n", currLine, currPos, yytext); exit(0);}
