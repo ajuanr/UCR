@@ -53,6 +53,6 @@ vec3 Sphere::Normal(const vec3& point) const
     vec3 normal;
     // TODO: set the normal
     vec3 pToC = point - center;
-    normal = pToC / pToC.magnitude();
+    normal = pToC.normalized();
     return normal;
 }
