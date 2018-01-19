@@ -5,6 +5,7 @@
 bool Boolean::Intersection(const Ray& ray, std::vector<Hit>& hits) const
 {
     // TODO
+    if (A->Intersection(ray,hits) && B->Intersection(ray,hits)) return true;
     return false;
 }
 

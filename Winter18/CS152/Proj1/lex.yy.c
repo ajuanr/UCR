@@ -369,11 +369,12 @@ struct yy_trans_info
 	flex_int32_t yy_verify;
 	flex_int32_t yy_nxt;
 	};
-static yyconst flex_int16_t yy_accept[31] =
+static yyconst flex_int16_t yy_accept[33] =
     {   0,
         0,    0,   16,   14,   11,   12,   14,   10,    3,    8,
         6,    7,    9,    5,    3,    4,   14,    4,    2,    1,
-        5,   13,    3,    4,    2,    0,    1,    0,    2,    0
+        5,   13,   13,    3,    4,    2,   13,    1,    0,    0,
+        2,    0
     } ;
 
 static yyconst flex_int32_t yy_ec[256] =
@@ -414,40 +415,42 @@ static yyconst flex_int32_t yy_meta[18] =
         1,    1,    1,    1,    1,    1,    1
     } ;
 
-static yyconst flex_int16_t yy_base[32] =
+static yyconst flex_int16_t yy_base[34] =
     {   0,
-        0,    0,   39,   40,   40,   40,   34,   40,   40,   40,
-       40,   40,   40,    7,   21,    5,   20,   18,   13,    0,
-       10,   11,   40,   40,    0,   20,    0,   17,    0,   40,
-       24
+        0,    0,   33,   46,   46,   46,   25,   46,   46,   46,
+       46,   46,   46,    7,   14,    5,   13,   12,   14,    0,
+        0,   11,   21,   46,   46,    0,   28,    0,    0,    0,
+        0,   46,   20
     } ;
 
-static yyconst flex_int16_t yy_def[32] =
+static yyconst flex_int16_t yy_def[34] =
     {   0,
-       30,    1,   30,   30,   30,   30,   30,   30,   30,   30,
-       30,   30,   30,   30,   30,   30,   30,   30,   30,   31,
-       30,   30,   30,   30,   19,   30,   31,   30,   26,    0,
-       30
+       32,    1,   32,   32,   32,   32,   32,   32,   32,   32,
+       32,   32,   32,   32,   32,   32,   32,   32,   32,   33,
+       14,   14,   32,   32,   32,   19,   32,   33,   22,   23,
+       27,    0,   32
     } ;
 
-static yyconst flex_int16_t yy_nxt[58] =
+static yyconst flex_int16_t yy_nxt[64] =
     {   0,
         4,    5,    6,    7,    8,    9,   10,   11,   12,   13,
-       14,   15,   16,   17,   18,   19,    4,   21,   24,   24,
-       21,   28,   22,   25,   27,   22,   22,   28,   25,   26,
-       29,   24,   22,   24,   23,   29,   26,   20,   30,    3,
-       30,   30,   30,   30,   30,   30,   30,   30,   30,   30,
-       30,   30,   30,   30,   30,   30,   30
+       14,   15,   16,   17,   18,   19,    4,   21,   25,   25,
+       28,   29,   22,   23,   26,   25,   25,   24,   20,   26,
+       27,   30,   32,   32,   32,   32,   30,   23,   31,   32,
+       32,   32,   32,   31,   27,    3,   32,   32,   32,   32,
+       32,   32,   32,   32,   32,   32,   32,   32,   32,   32,
+       32,   32,   32
     } ;
 
-static yyconst flex_int16_t yy_chk[58] =
+static yyconst flex_int16_t yy_chk[64] =
     {   0,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,   14,   16,   16,
-       21,   22,   14,   19,   31,   21,   22,   28,   19,   19,
-       26,   18,   28,   17,   15,   26,   26,    7,    3,   30,
-       30,   30,   30,   30,   30,   30,   30,   30,   30,   30,
-       30,   30,   30,   30,   30,   30,   30
+       33,   22,   14,   14,   19,   18,   17,   15,    7,   19,
+       19,   23,    3,    0,    0,    0,   23,   23,   27,    0,
+        0,    0,    0,   27,   27,   32,   32,   32,   32,   32,
+       32,   32,   32,   32,   32,   32,   32,   32,   32,   32,
+       32,   32,   32
     } ;
 
 static yy_state_type yy_last_accepting_state;
@@ -493,7 +496,7 @@ const char *cmpLexPattern[] = {"==","<>","<",">","<=",">="};
 const char *cmpToken[] = {"EQ","NEQ","LT","GT","LTE","GTE"};
 
 int* findWord(char*, const char*[],int);
-#line 497 "lex.yy.c"
+#line 500 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -677,7 +680,7 @@ YY_DECL
     
 #line 46 "mini_l.lex"
 
-#line 681 "lex.yy.c"
+#line 684 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -730,13 +733,13 @@ yy_match:
 			while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 				{
 				yy_current_state = (int) yy_def[yy_current_state];
-				if ( yy_current_state >= 31 )
+				if ( yy_current_state >= 33 )
 					yy_c = yy_meta[(unsigned int) yy_c];
 				}
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
 			++yy_cp;
 			}
-		while ( yy_base[yy_current_state] != 40 );
+		while ( yy_base[yy_current_state] != 46 );
 
 yy_find_action:
 		yy_act = yy_accept[yy_current_state];
@@ -842,19 +845,23 @@ YY_RULE_SETUP
 case 13:
 YY_RULE_SETUP
 #line 78 "mini_l.lex"
-{printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(0);}
+{if(isdigit(yytext[0])){
+                   printf("Error at line %d, column %d: Identifier \"%s\" must begin with a letter\"\n", currLine, currPos, yytext); exit(0);}
+               else{
+                   printf("Error at line %d, column %d: Identifier \"%s\" cannot end with an underscore\"\n", currLine, currPos, yytext); exit(0);}
+              }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 79 "mini_l.lex"
+#line 83 "mini_l.lex"
 {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(0);}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 80 "mini_l.lex"
+#line 84 "mini_l.lex"
 ECHO;
 	YY_BREAK
-#line 858 "lex.yy.c"
+#line 865 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1146,7 +1153,7 @@ static int yy_get_next_buffer (void)
 		while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 			{
 			yy_current_state = (int) yy_def[yy_current_state];
-			if ( yy_current_state >= 31 )
+			if ( yy_current_state >= 33 )
 				yy_c = yy_meta[(unsigned int) yy_c];
 			}
 		yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
@@ -1174,11 +1181,11 @@ static int yy_get_next_buffer (void)
 	while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 		{
 		yy_current_state = (int) yy_def[yy_current_state];
-		if ( yy_current_state >= 31 )
+		if ( yy_current_state >= 33 )
 			yy_c = yy_meta[(unsigned int) yy_c];
 		}
 	yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
-	yy_is_jam = (yy_current_state == 30);
+	yy_is_jam = (yy_current_state == 32);
 
 		return yy_is_jam ? 0 : yy_current_state;
 }
@@ -1848,7 +1855,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 80 "mini_l.lex"
+#line 84 "mini_l.lex"
 
 
 
