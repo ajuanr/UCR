@@ -7,7 +7,8 @@ digit           [0-9]
 COMMENT         "##".*
 WHITESPACE      [ \t]
 IDENT           {letter}({letter}|{digit})*(_+({letter}|{digit})+)*
-BADIDENT        ((({digit}|_)+({letter}|{digit})+)+)|(({letter}|{digit})+_+)+
+BADSTART        ((({digit}|_)+({letter}|{digit})+)+)
+BADEND          (({letter}|{digit})+_+)+
 PLUS            [\+]
 MINUS           [\-]
 MULT            [\*]
@@ -75,11 +76,12 @@ int* findWord(char*, const char*[],int);
 {MOD}         {printf("MOD\n"); currPos += yyleng;}
 {WHITESPACE}  {currPos += yyleng;}
 \n            {currLine++; currPos = 0;}
-{BADIDENT}    {if(isdigit(yytext[0]) || yytext[0]=='_'){
-                   printf("Error at line %d, column %d: Identifier \"%s\" must begin with a letter\"\n", currLine, currPos, yytext); exit(0);}
-               else{
-                   printf("Error at line %d, column %d: Identifier \"%s\" cannot end with an underscore\"\n", currLine, currPos, yytext); exit(0);}
-              }
+{BADSTART}    {printf("Error at line %d, column %d: Identifier \"%s\" must begin with a letter\"\n", currLine, currPos, yytext); exit(0);}
+{BADEND}      {if (isdigit(yytext[0])) {
+                 printf("Error at line %d, column %d: Identifier \"%s\" must start with a letter and cannot end with an underscore\"\n", currLine, currPos, yytext); exit(0);}
+               else {
+                 printf("Error at line %d, column %d: Identifier \"%s\" cannot end with an underscore\"\n", currLine, currPos, yytext); exit(0);}
+               }
 .             {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(0);}
 %%
 
