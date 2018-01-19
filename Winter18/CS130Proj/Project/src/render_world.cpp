@@ -26,14 +26,15 @@ Render_World::~Render_World()
 // Any intersection with t<=small_t should be ignored.
 Object* Render_World::Closest_Intersection(const Ray& ray,Hit& hit)
 {
-    // /DONE
+    // DONE
     double min_t = std::numeric_limits<double>::max();
     Object* closest_object=0;
+    hit.t = min_t;
     for (std::vector<Object*>::const_iterator i = objects.begin(); i != objects.end(); ++i) {
        std::vector<Hit> hits;
        (*i)->Intersection(ray,hits);
        for (std::vector<Hit>::const_iterator h = hits.begin(); h != hits.end(); ++h) {
-          if (h->t > small_t){// && h->t < min_t) {
+          if (h->t > small_t){
              closest_object = *i;
              hit = *h;
              min_t = h->t; 
