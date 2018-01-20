@@ -9,7 +9,7 @@ bool Sphere::Intersection(const Ray& ray, std::vector<Hit>& hits) const
     vec3 u = ray.direction;
     vec3 v = ray.endpoint - center;
     double disc = (4 * dot(u,v) * dot(u,v))-4 * (dot(v,v) - radius * radius);
-    if (disc >= 0) { // there is an intersection
+    if (disc >= 0) {               // there is an intersection
        Hit h,h2;
        double t;
        double a = 1;
@@ -34,18 +34,18 @@ bool Sphere::Intersection(const Ray& ray, std::vector<Hit>& hits) const
              hits.push_back(h);
              hits.push_back(h2);
           }
-          else if (t2>0){         // object behind ray
+          else if (t2>0){         
              h.t = t2;
              h.ray_exiting = true;
              hits.push_back(h);
           }
-          else {
+          else {                  // no solutions
              return false;
           }
        }
        return true;
     }
-    return false;               // no intersections
+    return false;                 // no intersections
 }
 
 vec3 Sphere::Normal(const vec3& point) const
