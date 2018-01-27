@@ -29,15 +29,15 @@ Object* Render_World::Closest_Intersection(const Ray& ray,Hit& hit)
     // DONE
     double min_t = std::numeric_limits<double>::max();
     Object* closest_object=0;
-    hit.t = 0;
-    for (auto obj = objects.begin(); obj != objects.end(); ++obj) {
+    hit.t = min_t;
+    for (auto &obj : objects) {
        std::vector<Hit> hits;
-       (*obj)->Intersection(ray,hits);
-       for (auto h = hits.begin(); h != hits.end(); ++h) {
-          if (h->t > small_t && h->t < min_t){
-             closest_object = *obj;
-             hit = *h;
-             min_t = h->t; 
+       (*obj).Intersection(ray,hits);
+       for (auto &h : hits) {
+          if (h.t > small_t && h.t < min_t){
+             closest_object = obj;
+             hit = h;
+             min_t = h.t; 
           }
        }
     } 
