@@ -8,6 +8,7 @@ Shade_Surface(const Ray& ray,const vec3& intersection_point,
 {
     
     vec3 color;
+<<<<<<< HEAD
     vec3 N = same_side_normal;
     vec3 shaderColor;
     shaderColor = shader->Shade_Surface(ray,intersection_point, N, recursion_depth, is_exiting);
@@ -16,5 +17,12 @@ Shade_Surface(const Ray& ray,const vec3& intersection_point,
     Ray reflectedRay(intersection_point, R);
     vec3 reflectedColor = world.Cast_Ray(reflectedRay, ++recursion_depth);
     color = reflectedColor * reflectivity + (1 - reflectivity) * shaderColor;
+=======
+    // TODO: determine the color
+    for (auto light : world.lights) {
+       vec3 l = light->position - intersection_point;
+
+    }
+>>>>>>> de2e551931a65918f09d0de64541ba834416040b
     return color;
 }
