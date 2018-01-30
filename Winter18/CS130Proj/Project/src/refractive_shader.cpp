@@ -11,9 +11,14 @@ Shade_Surface(const Ray& ray, const vec3& intersection_point,
     vec3 reflection_color;
     vec3 refraction_color;
     double reflectance_ratio=-1;
+
+    vec3 D = ray.direction;
+    vec3 N = same_side_normal;
+    vec3 R = (D - 2 * dot(N, D) * N ).normalized();
     if(!world.disable_fresnel_refraction)
     {
         //TODO (Test 27+): Compute the refraction_color:
+        double n_r = (is_exiting) ? REFRACTIVE_INDICES::AIR : refractive_index;        
         // - Check if it is total internal reflection. 
         //      If so update the reflectance_ratio for total internal refraction
         //
@@ -28,13 +33,8 @@ Shade_Surface(const Ray& ray, const vec3& intersection_point,
     if(!world.disable_fresnel_reflection){
         //TODO:(Test 26+): Compute reflection_color:
         // - Cast Reflection Ray and get color
-  /*
-        vec3 L = ray.direction;
-        vec3 N = same_side_normal;
-        vec3 R = (L - 2 * dot(N, L) * N ).normalized();
         Ray reflectedRay(intersection_point, R);
-        vec3 reflectedColor = world.Cast_Ray(reflectedRay, ++recursion_depth);
-*/
+        reflection_color = world.Cast_Ray(reflectedRay, ++recursion_depth);
 
     }
 
@@ -42,7 +42,7 @@ Shade_Surface(const Ray& ray, const vec3& intersection_point,
     vec3 color;
     // TODO: (Test 26+) Compute final 'color' by blending reflection_color and refraction_color using 
     //                  reflectance_ratio
-    //
+    color = reflectance_ratio  *  reflection_color  +   ( 1   -  reflectance_ratio )   *  refraction_color;
     return color;
 }
 
