@@ -13,7 +13,8 @@ Intersection(const Ray& ray, std::vector<Hit>& hits) const
     double denominator = dot(normal, ray.direction);
     if (denominator) {
        Hit hit;
-       double t1 = dot((x1- ray.endpoint),normal)/denominator; 
+       double t1 = dot((x1 - ray.endpoint),normal)/denominator; 
+       if (t1 <= small_t) return false;
        hit.t = t1;
        hit.ray_exiting = false;
        hits.push_back(hit);
