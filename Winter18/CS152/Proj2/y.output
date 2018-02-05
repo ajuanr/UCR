@@ -1,0 +1,185 @@
+Terminals unused in grammar
+
+   T_Identifier
+
+
+Grammar
+
+    0 $accept: prog_start $end
+
+    1 prog_start: functions
+
+    2 functions: function functions
+    3          | %empty
+
+    4 function: FUNC IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS
+
+    5 declarations: END_LOCALS BEGIN_BODY statements END_BODY
+
+    6 statements: %empty
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+error (256)
+T_Identifier (258)
+FUNC (259) 4
+IDENT (260) 4
+SEMICOLON (261) 4
+BEGIN_PARAMS (262) 4
+END_PARAMS (263) 4
+BEGIN_LOCALS (264) 4
+END_LOCALS (265) 5
+BEGIN_BODY (266) 5
+END_BODY (267) 5
+
+
+Nonterminals, with rules where they appear
+
+$accept (13)
+    on left: 0
+prog_start (14)
+    on left: 1, on right: 0
+functions (15)
+    on left: 2 3, on right: 1 2
+function (16)
+    on left: 4, on right: 2
+declarations (17)
+    on left: 5, on right: 4
+statements (18)
+    on left: 6, on right: 5
+
+
+State 0
+
+    0 $accept: . prog_start $end
+
+    FUNC  shift, and go to state 1
+
+    $default  reduce using rule 3 (functions)
+
+    prog_start  go to state 2
+    functions   go to state 3
+    function    go to state 4
+
+
+State 1
+
+    4 function: FUNC . IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS
+
+    IDENT  shift, and go to state 5
+
+
+State 2
+
+    0 $accept: prog_start . $end
+
+    $end  shift, and go to state 6
+
+
+State 3
+
+    1 prog_start: functions .
+
+    $default  reduce using rule 1 (prog_start)
+
+
+State 4
+
+    2 functions: function . functions
+
+    FUNC  shift, and go to state 1
+
+    $default  reduce using rule 3 (functions)
+
+    functions  go to state 7
+    function   go to state 4
+
+
+State 5
+
+    4 function: FUNC IDENT . SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS
+
+    SEMICOLON  shift, and go to state 8
+
+
+State 6
+
+    0 $accept: prog_start $end .
+
+    $default  accept
+
+
+State 7
+
+    2 functions: function functions .
+
+    $default  reduce using rule 2 (functions)
+
+
+State 8
+
+    4 function: FUNC IDENT SEMICOLON . BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS
+
+    BEGIN_PARAMS  shift, and go to state 9
+
+
+State 9
+
+    4 function: FUNC IDENT SEMICOLON BEGIN_PARAMS . declarations END_PARAMS BEGIN_LOCALS
+
+    END_LOCALS  shift, and go to state 10
+
+    declarations  go to state 11
+
+
+State 10
+
+    5 declarations: END_LOCALS . BEGIN_BODY statements END_BODY
+
+    BEGIN_BODY  shift, and go to state 12
+
+
+State 11
+
+    4 function: FUNC IDENT SEMICOLON BEGIN_PARAMS declarations . END_PARAMS BEGIN_LOCALS
+
+    END_PARAMS  shift, and go to state 13
+
+
+State 12
+
+    5 declarations: END_LOCALS BEGIN_BODY . statements END_BODY
+
+    $default  reduce using rule 6 (statements)
+
+    statements  go to state 14
+
+
+State 13
+
+    4 function: FUNC IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS . BEGIN_LOCALS
+
+    BEGIN_LOCALS  shift, and go to state 15
+
+
+State 14
+
+    5 declarations: END_LOCALS BEGIN_BODY statements . END_BODY
+
+    END_BODY  shift, and go to state 16
+
+
+State 15
+
+    4 function: FUNC IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS .
+
+    $default  reduce using rule 4 (function)
+
+
+State 16
+
+    5 declarations: END_LOCALS BEGIN_BODY statements END_BODY .
+
+    $default  reduce using rule 5 (declarations)
