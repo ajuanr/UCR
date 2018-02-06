@@ -45,20 +45,52 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    T_Identifier = 258,
-    FUNC = 259,
-    IDENT = 260,
-    SEMICOLON = 261,
-    BEGIN_PARAMS = 262,
-    END_PARAMS = 263,
-    BEGIN_LOCALS = 264,
+    FUNCTION = 258,
+    IDENT = 259,
+    SEMICOLON = 260,
+    BEGIN_PARAMS = 261,
+    BEGIN_LOCALS = 262,
+    BEGIN_BODY = 263,
+    END_PARAMS = 264,
     END_LOCALS = 265,
-    BEGIN_BODY = 266,
-    END_BODY = 267
+    END_BODY = 266,
+    NUMBER = 267,
+    ADD = 268,
+    MULT = 269,
+    DIV = 270,
+    MOD = 271,
+    AND = 272,
+    OR = 273,
+    COLON = 274,
+    COMMA = 275,
+    L_PAREN = 276,
+    R_PAREN = 277,
+    L_SQUARE_BRACKET = 278,
+    R_SQUARE_BRACKET = 279,
+    ASSIGN = 280,
+    SUB = 281,
+    NOT = 282
   };
 #endif
 
 /* Value type.  */
+#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
+
+union YYSTYPE
+{
+#line 33 "mini_l.y" /* yacc.c:1909  */
+
+   int		int_val;
+   char*   	reserved;
+   char		arithmetic;
+
+#line 88 "y.tab.h" /* yacc.c:1909  */
+};
+
+typedef union YYSTYPE YYSTYPE;
+# define YYSTYPE_IS_TRIVIAL 1
+# define YYSTYPE_IS_DECLARED 1
+#endif
 
 
 extern YYSTYPE yylval;

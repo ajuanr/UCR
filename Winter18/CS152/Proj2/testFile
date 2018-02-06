@@ -1,6 +1,5 @@
 function fibonacci;
 beginparams
-	k : integer;
 endparams
 beginlocals
 endlocals

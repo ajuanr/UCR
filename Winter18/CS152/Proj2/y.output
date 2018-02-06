@@ -1,6 +1,21 @@
 Terminals unused in grammar
 
-   T_Identifier
+   NUMBER
+   ADD
+   MULT
+   DIV
+   MOD
+   AND
+   OR
+   COLON
+   COMMA
+   L_PAREN
+   R_PAREN
+   L_SQUARE_BRACKET
+   R_SQUARE_BRACKET
+   ASSIGN
+   SUB
+   NOT
 
 
 Grammar
@@ -12,7 +27,7 @@ Grammar
     2 functions: function functions
     3          | %empty
 
-    4 function: FUNC IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS
+    4 function: FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS
 
     5 declarations: END_LOCALS BEGIN_BODY statements END_BODY
 
@@ -23,31 +38,46 @@ Terminals, with rules where they appear
 
 $end (0) 0
 error (256)
-T_Identifier (258)
-FUNC (259) 4
-IDENT (260) 4
-SEMICOLON (261) 4
-BEGIN_PARAMS (262) 4
-END_PARAMS (263) 4
-BEGIN_LOCALS (264) 4
+FUNCTION (258) 4
+IDENT (259) 4
+SEMICOLON (260) 4
+BEGIN_PARAMS (261) 4
+BEGIN_LOCALS (262) 4
+BEGIN_BODY (263) 5
+END_PARAMS (264) 4
 END_LOCALS (265) 5
-BEGIN_BODY (266) 5
-END_BODY (267) 5
+END_BODY (266) 5
+NUMBER (267)
+ADD (268)
+MULT (269)
+DIV (270)
+MOD (271)
+AND (272)
+OR (273)
+COLON (274)
+COMMA (275)
+L_PAREN (276)
+R_PAREN (277)
+L_SQUARE_BRACKET (278)
+R_SQUARE_BRACKET (279)
+ASSIGN (280)
+SUB (281)
+NOT (282)
 
 
 Nonterminals, with rules where they appear
 
-$accept (13)
+$accept (28)
     on left: 0
-prog_start (14)
+prog_start (29)
     on left: 1, on right: 0
-functions (15)
+functions (30)
     on left: 2 3, on right: 1 2
-function (16)
+function (31)
     on left: 4, on right: 2
-declarations (17)
+declarations (32)
     on left: 5, on right: 4
-statements (18)
+statements (33)
     on left: 6, on right: 5
 
 
@@ -55,7 +85,7 @@ State 0
 
     0 $accept: . prog_start $end
 
-    FUNC  shift, and go to state 1
+    FUNCTION  shift, and go to state 1
 
     $default  reduce using rule 3 (functions)
 
@@ -66,7 +96,7 @@ State 0
 
 State 1
 
-    4 function: FUNC . IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS
+    4 function: FUNCTION . IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS
 
     IDENT  shift, and go to state 5
 
@@ -89,7 +119,7 @@ State 4
 
     2 functions: function . functions
 
-    FUNC  shift, and go to state 1
+    FUNCTION  shift, and go to state 1
 
     $default  reduce using rule 3 (functions)
 
@@ -99,7 +129,7 @@ State 4
 
 State 5
 
-    4 function: FUNC IDENT . SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS
+    4 function: FUNCTION IDENT . SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS
 
     SEMICOLON  shift, and go to state 8
 
@@ -120,14 +150,14 @@ State 7
 
 State 8
 
-    4 function: FUNC IDENT SEMICOLON . BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS
+    4 function: FUNCTION IDENT SEMICOLON . BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS
 
     BEGIN_PARAMS  shift, and go to state 9
 
 
 State 9
 
-    4 function: FUNC IDENT SEMICOLON BEGIN_PARAMS . declarations END_PARAMS BEGIN_LOCALS
+    4 function: FUNCTION IDENT SEMICOLON BEGIN_PARAMS . declarations END_PARAMS BEGIN_LOCALS
 
     END_LOCALS  shift, and go to state 10
 
@@ -143,7 +173,7 @@ State 10
 
 State 11
 
-    4 function: FUNC IDENT SEMICOLON BEGIN_PARAMS declarations . END_PARAMS BEGIN_LOCALS
+    4 function: FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations . END_PARAMS BEGIN_LOCALS
 
     END_PARAMS  shift, and go to state 13
 
@@ -159,7 +189,7 @@ State 12
 
 State 13
 
-    4 function: FUNC IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS . BEGIN_LOCALS
+    4 function: FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS . BEGIN_LOCALS
 
     BEGIN_LOCALS  shift, and go to state 15
 
@@ -173,7 +203,7 @@ State 14
 
 State 15
 
-    4 function: FUNC IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS .
+    4 function: FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS .
 
     $default  reduce using rule 4 (function)
 

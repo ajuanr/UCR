@@ -19,6 +19,7 @@ COMPARE         ==|<>|<|>|<=|>=
 
 %{
 #include <stdlib.h>
+#include "y.tab.h"
 
 int currPos = 0; int currLine = 1;
 // identifiers and reserved words
@@ -49,50 +50,54 @@ int* findWord(char*, const char*[],int);
 %%
 {COMMENT}      {;}
 {IDENT}        {int *result = findWord(yytext, lexPattern, numIdent);
-                 if (result[0]) printf("%s\n",token[result[1]]);
-                 else
-                   printf("IDENT %s\n",yytext);
+                 if (result[0]){ 
+                    return token[result[1]];
+                    //printf("%s\n",token[result[1]]); 
+                 }
+                 else {
+                   return IDENT;
+                   //printf("IDENT %s\n",yytext);
+                }
                 currPos += yyleng;
                 free(result);
                }
 {OTHERSPECIAL} {int *result = findWord(yytext, spclLexPattern, numSpecial);
-                 if (result[0]) printf("%s\n",spclToken[result[1]]);
-                 else
-                   printf("IDENTIFIER %s\n",yytext);
+                 if (result[0]) //printf("HELLOO %s\n",spclToken[result[1]]);
+                    return spclToken[result[1]];
                 currPos += yyleng;
                 free(result);
                }
 {COMPARE}      {int *result = findWord(yytext, cmpLexPattern, numCmp);
-                  if (result[0]) printf("%s\n",cmpToken[result[1]]);
+                  if (result[0]) printf("%s\n",cmpToken[result[1]]) ;
                   else
                     printf("IDENTIFIER %s\n",yytext);
                  currPos += yyleng;
                  free(result);
                }
 
-{digit}+      {printf("NUMBER %s\n", yytext); currPos += yyleng;}
-{PLUS}        {printf("ADD\n"); currPos += yyleng;}
-{MINUS}       {printf("SUB\n"); currPos += yyleng;}
-{MULT}        {printf("MULT\n"); currPos += yyleng;}
-{DIV}         {printf("DIV\n"); currPos += yyleng;}
-{MOD}         {printf("MOD\n"); currPos += yyleng;}
+{digit}+      {currPos += yyleng; return NUMBER;}
+{PLUS}        {currPos += yyleng; return ADD;}
+{MINUS}       {currPos += yyleng; return SUB;}
+{MULT}        {currPos += yyleng; return MULT;}
+{DIV}         {currPos += yyleng; return DIV;}
+{MOD}         {currPos += yyleng; return MOD;}
 {WHITESPACE}  {currPos += yyleng;}
 \n            {currLine++; currPos = 0;}
-{BADSTART}    {printf("Error at line %d, column %d: Identifier \"%s\" must begin with a letter\"\n", currLine, currPos, yytext); exit(0);}
+{BADSTART}    {printf("Error at line %d, column %d: Identifier \"%s\" must begin with a letter\"\n", currLine, currPos, yytext); exit(1);}
 {BADEND}      {if (isdigit(yytext[0])) {
                  printf("Error at line %d, column %d: Identifier \"%s\" must start with a letter and cannot end with an underscore\"\n", currLine, currPos, yytext); exit(0);}
                else {
-                 printf("Error at line %d, column %d: Identifier \"%s\" cannot end with an underscore\"\n", currLine, currPos, yytext); exit(0);}
+                 printf("Error at line %d, column %d: Identifier \"%s\" cannot end with an underscore\"\n", currLine, currPos, yytext); exit(1);}
                }
-.             {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(0);}
+.             {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(1);}
 %%
 
-
+/*
 main()
 {
   yylex();
 }
-
+*/
 int* findWord(char *word, const char *list[], int size) {
     // pos 0: word found? 0 for false 1 for true
     // pos 1: index of the word
