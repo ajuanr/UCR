@@ -475,6 +475,9 @@ char *yytext;
 #include <stdlib.h>
 #include "y.tab.h"
 
+int* findWord(char*, const char*[],int);
+int charToEnum(const char*); 
+
 int currPos = 0; int currLine = 1;
 // identifiers and reserved words
 const int numIdent = 27;
@@ -498,8 +501,7 @@ const int numCmp = 6;
 const char *cmpLexPattern[] = {"==","<>","<",">","<=",">="};
 const char *cmpToken[] = {"EQ","NEQ","LT","GT","LTE","GTE"};
 
-int* findWord(char*, const char*[],int);
-#line 503 "lex.yy.c"
+#line 505 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -681,9 +683,9 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 50 "mini_l.lex"
+#line 52 "mini_l.lex"
 
-#line 687 "lex.yy.c"
+#line 689 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -768,15 +770,17 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 51 "mini_l.lex"
+#line 53 "mini_l.lex"
 {;}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 52 "mini_l.lex"
+#line 54 "mini_l.lex"
 {int *result = findWord(yytext, lexPattern, numIdent);
                  if (result[0]){ 
-                    return token[result[1]];
+                    //return token[result[1]];
+                    printf("%d\n",charToEnum(lexPattern[result[1]]));
+                    return charToEnum(lexPattern[result[1]]);
                     //printf("%s\n",token[result[1]]); 
                  }
                  else {
@@ -789,17 +793,18 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 64 "mini_l.lex"
+#line 68 "mini_l.lex"
 {int *result = findWord(yytext, spclLexPattern, numSpecial);
                  if (result[0]) //printf("HELLOO %s\n",spclToken[result[1]]);
-                    return spclToken[result[1]];
+                    printf("%d\n",charToEnum(spclLexPattern[result[1]]));
+                    //return spclToken[result[1]];
                 currPos += yyleng;
                 free(result);
                }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 70 "mini_l.lex"
+#line 75 "mini_l.lex"
 {int *result = findWord(yytext, cmpLexPattern, numCmp);
                   if (result[0]) printf("%s\n",cmpToken[result[1]]) ;
                   else
@@ -810,53 +815,53 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 78 "mini_l.lex"
+#line 83 "mini_l.lex"
 {currPos += yyleng; return NUMBER;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 79 "mini_l.lex"
+#line 84 "mini_l.lex"
 {currPos += yyleng; return ADD;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 80 "mini_l.lex"
+#line 85 "mini_l.lex"
 {currPos += yyleng; return SUB;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 81 "mini_l.lex"
+#line 86 "mini_l.lex"
 {currPos += yyleng; return MULT;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 82 "mini_l.lex"
+#line 87 "mini_l.lex"
 {currPos += yyleng; return DIV;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 83 "mini_l.lex"
+#line 88 "mini_l.lex"
 {currPos += yyleng; return MOD;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 84 "mini_l.lex"
+#line 89 "mini_l.lex"
 {currPos += yyleng;}
 	YY_BREAK
 case 12:
 /* rule 12 can match eol */
 YY_RULE_SETUP
-#line 85 "mini_l.lex"
+#line 90 "mini_l.lex"
 {currLine++; currPos = 0;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 86 "mini_l.lex"
+#line 91 "mini_l.lex"
 {printf("Error at line %d, column %d: Identifier \"%s\" must begin with a letter\"\n", currLine, currPos, yytext); exit(1);}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 87 "mini_l.lex"
+#line 92 "mini_l.lex"
 {if (isdigit(yytext[0])) {
                  printf("Error at line %d, column %d: Identifier \"%s\" must start with a letter and cannot end with an underscore\"\n", currLine, currPos, yytext); exit(0);}
                else {
@@ -865,15 +870,15 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 92 "mini_l.lex"
+#line 97 "mini_l.lex"
 {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(1);}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 93 "mini_l.lex"
+#line 98 "mini_l.lex"
 ECHO;
 	YY_BREAK
-#line 877 "lex.yy.c"
+#line 882 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1867,7 +1872,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 93 "mini_l.lex"
+#line 98 "mini_l.lex"
 
 
 
@@ -1897,4 +1902,23 @@ int* findWord(char *word, const char *list[], int size) {
     return result;
 }
 
+int charToEnum(const char * s) {
+   if (s == "function")		return FUNCTION;
+   if (s == "beginparams")	return BEGIN_PARAMS;
+   if (s == "endparams") 	return END_PARAMS;
+   if (s == "beginlocals") 	return BEGIN_LOCALS;
+   if (s == "endlocals") 	return END_LOCALS;
+   if (s == "beginbody")	return BEGIN_BODY;
+   if (s == "endbody")		return END_BODY;
+   if (s == ";") 		return SEMICOLON;
+   if (s == ":")		return COLON;
+   if (!strcmp(s, ","))		return COMMA;
+   if (!strcmp(s, "("))		return L_PAREN;
+   if (!strcmp(s, ")"))		return R_PAREN;
+   if (s == "[")		return L_SQUARE_BRACKET;
+   if (s == "]")		return R_SQUARE_BRACKET;
+
+return IDENT;
+
+}
 

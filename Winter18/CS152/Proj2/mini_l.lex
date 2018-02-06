@@ -21,6 +21,9 @@ COMPARE         ==|<>|<|>|<=|>=
 #include <stdlib.h>
 #include "y.tab.h"
 
+int* findWord(char*, const char*[],int);
+int charToEnum(const char*); 
+
 int currPos = 0; int currLine = 1;
 // identifiers and reserved words
 const int numIdent = 27;
@@ -44,14 +47,15 @@ const int numCmp = 6;
 const char *cmpLexPattern[] = {"==","<>","<",">","<=",">="};
 const char *cmpToken[] = {"EQ","NEQ","LT","GT","LTE","GTE"};
 
-int* findWord(char*, const char*[],int);
 %}
 
 %%
 {COMMENT}      {;}
 {IDENT}        {int *result = findWord(yytext, lexPattern, numIdent);
                  if (result[0]){ 
-                    return token[result[1]];
+                    //return token[result[1]];
+                    printf("%d\n",charToEnum(lexPattern[result[1]]));
+                    return charToEnum(lexPattern[result[1]]);
                     //printf("%s\n",token[result[1]]); 
                  }
                  else {
@@ -63,7 +67,8 @@ int* findWord(char*, const char*[],int);
                }
 {OTHERSPECIAL} {int *result = findWord(yytext, spclLexPattern, numSpecial);
                  if (result[0]) //printf("HELLOO %s\n",spclToken[result[1]]);
-                    return spclToken[result[1]];
+                    printf("%d\n",charToEnum(spclLexPattern[result[1]]));
+                    //return spclToken[result[1]];
                 currPos += yyleng;
                 free(result);
                }
@@ -118,3 +123,22 @@ int* findWord(char *word, const char *list[], int size) {
     return result;
 }
 
+int charToEnum(const char * s) {
+   if (s == "function")		return FUNCTION;
+   if (s == "beginparams")	return BEGIN_PARAMS;
+   if (s == "endparams") 	return END_PARAMS;
+   if (s == "beginlocals") 	return BEGIN_LOCALS;
+   if (s == "endlocals") 	return END_LOCALS;
+   if (s == "beginbody")	return BEGIN_BODY;
+   if (s == "endbody")		return END_BODY;
+   if (s == ";") 		return SEMICOLON;
+   if (s == ":")		return COLON;
+   if (!strcmp(s, ","))		return COMMA;
+   if (!strcmp(s, "("))		return L_PAREN;
+   if (!strcmp(s, ")"))		return R_PAREN;
+   if (s == "[")		return L_SQUARE_BRACKET;
+   if (s == "]")		return R_SQUARE_BRACKET;
+
+return IDENT;
+
+}
