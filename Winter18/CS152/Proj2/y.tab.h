@@ -47,29 +47,54 @@ extern int yydebug;
   {
     FUNCTION = 258,
     IDENT = 259,
-    SEMICOLON = 260,
-    BEGIN_PARAMS = 261,
-    BEGIN_LOCALS = 262,
-    BEGIN_BODY = 263,
-    END_PARAMS = 264,
-    END_LOCALS = 265,
-    END_BODY = 266,
-    NUMBER = 267,
-    ADD = 268,
-    MULT = 269,
-    DIV = 270,
-    MOD = 271,
-    AND = 272,
-    OR = 273,
-    COLON = 274,
-    COMMA = 275,
-    L_PAREN = 276,
-    R_PAREN = 277,
-    L_SQUARE_BRACKET = 278,
-    R_SQUARE_BRACKET = 279,
-    ASSIGN = 280,
-    SUB = 281,
-    NOT = 282
+    INTEGER = 260,
+    OF = 261,
+    ARRAY = 262,
+    READ = 263,
+    IF = 264,
+    THEN = 265,
+    ENDIF = 266,
+    ELSE = 267,
+    WHILE = 268,
+    DO = 269,
+    BEGIN_PARAMS = 270,
+    BEGIN_LOCALS = 271,
+    BEGIN_BODY = 272,
+    IN = 273,
+    BEGINLOOP = 274,
+    ENDLOOP = 275,
+    END_PARAMS = 276,
+    END_LOCALS = 277,
+    END_BODY = 278,
+    CONTINUE = 279,
+    WRITE = 280,
+    TRUE = 281,
+    FOREACH = 282,
+    FALSE = 283,
+    RETURN = 284,
+    NUMBER = 285,
+    ADD = 286,
+    MULT = 287,
+    DIV = 288,
+    MOD = 289,
+    AND = 290,
+    OR = 291,
+    SEMICOLON = 292,
+    COLON = 293,
+    COMMA = 294,
+    L_PAREN = 295,
+    R_PAREN = 296,
+    L_SQUARE_BRACKET = 297,
+    R_SQUARE_BRACKET = 298,
+    EQ = 299,
+    NEQ = 300,
+    LT = 301,
+    GT = 302,
+    LTE = 303,
+    GTE = 304,
+    SUB = 305,
+    NOT = 306,
+    ASSIGN = 307
   };
 #endif
 
@@ -78,13 +103,13 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 33 "mini_l.y" /* yacc.c:1909  */
+#line 21 "mini_l.y" /* yacc.c:1909  */
 
-   int		int_val;
-   char*   	reserved;
-   char		arithmetic;
+   int		iVal;
+   char*   	strVal;
+   char		charVal;
 
-#line 88 "y.tab.h" /* yacc.c:1909  */
+#line 113 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

@@ -4,9 +4,10 @@
 #include <vector>
 #include "camera.h"
 #include "hit.h"
+#include "light.h"
 
 class Object;
-class Light;
+//class Light;
 class Shader;
 class Ray;
 

@@ -15,7 +15,12 @@ Shade_Surface(const Ray& ray,const vec3& intersection_point,
     vec3 diffuse;
     vec3 specular;
                           // ray pointing in : ray pointing out
+<<<<<<< HEAD
     vec3 N = (is_exiting) ? -same_side_normal : same_side_normal;
+=======
+    vec3 N = same_side_normal;// = (is_exiting) ? -same_side_normal : same_side_normal;
+    
+>>>>>>> 277c684ffa71ff6d6e4b050fb7f85992def941c0
     vec3 C =  (ray.endpoint - intersection_point).normalized();        // camera position
 
     // ambient color

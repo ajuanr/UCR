@@ -360,8 +360,8 @@ static void yy_fatal_error (yyconst char msg[]  );
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
 
-#define YY_NUM_RULES 16
-#define YY_END_OF_BUFFER 17
+#define YY_NUM_RULES 17
+#define YY_END_OF_BUFFER 18
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -369,12 +369,12 @@ struct yy_trans_info
 	flex_int32_t yy_verify;
 	flex_int32_t yy_nxt;
 	};
-static yyconst flex_int16_t yy_accept[36] =
+static yyconst flex_int16_t yy_accept[37] =
     {   0,
-        0,    0,   17,   15,   11,   12,   15,   10,    3,    8,
-        6,    7,    9,    5,    3,    4,   15,    4,    2,   15,
-        1,    5,   13,   14,    3,    4,    2,   14,   13,   13,
-        0,    1,   13,    2,    0
+        0,    0,   18,   16,   12,   13,   16,   11,    3,    9,
+        7,    8,   10,    6,    3,    4,   16,    4,    2,   16,
+       12,    1,    6,   14,   15,    5,    4,    2,   15,   14,
+       14,    0,    1,   14,    2,    0
     } ;
 
 static yyconst flex_int32_t yy_ec[256] =
@@ -415,42 +415,42 @@ static yyconst flex_int32_t yy_meta[18] =
         1,    1,    1,    1,    1,    1,    1
     } ;
 
-static yyconst flex_int16_t yy_base[37] =
+static yyconst flex_int16_t yy_base[38] =
     {   0,
-        0,    0,   33,   46,   46,   46,   25,   46,   46,   46,
-       46,   46,   46,    7,   14,    5,   13,   12,   14,   21,
-        0,    0,   11,    0,   46,   46,    0,   28,    0,    0,
-        0,    0,    0,    0,   46,   20
+        0,    0,   35,   46,   32,   46,   29,   46,   46,   46,
+       46,   46,   46,    7,   15,    5,   14,   13,   14,   21,
+       24,    0,    0,   11,    0,   46,   46,    0,   28,    0,
+        0,    0,    0,    0,    0,   46,   20
     } ;
 
-static yyconst flex_int16_t yy_def[37] =
+static yyconst flex_int16_t yy_def[38] =
     {   0,
-       35,    1,   35,   35,   35,   35,   35,   35,   35,   35,
-       35,   35,   35,   35,   35,   35,   35,   35,   35,   35,
-       36,   14,   14,   23,   35,   35,   19,   35,   20,   20,
-       20,   36,   23,   28,    0,   35
+       36,    1,   36,   36,   36,   36,   36,   36,   36,   36,
+       36,   36,   36,   36,   36,   36,   36,   36,   36,   36,
+       36,   37,   14,   14,   24,   36,   36,   19,   36,   20,
+       20,   20,   37,   24,   29,    0,   36
     } ;
 
 static yyconst flex_int16_t yy_nxt[64] =
     {   0,
         4,    5,    6,    7,    8,    9,   10,   11,   12,   13,
-       14,   15,   16,   17,   18,   19,   20,   22,   26,   26,
-       32,   33,   23,   24,   27,   26,   26,   25,   21,   27,
-       28,   29,   35,   35,   35,   35,   30,   31,   34,   35,
-       35,   35,   35,   34,   28,    3,   35,   35,   35,   35,
-       35,   35,   35,   35,   35,   35,   35,   35,   35,   35,
-       35,   35,   35
+       14,   15,   16,   17,   18,   19,   20,   23,   27,   27,
+       33,   34,   24,   25,   28,   21,   27,   27,   26,   28,
+       29,   30,   22,   21,   36,   36,   31,   32,   35,   36,
+       36,   36,   36,   35,   29,    3,   36,   36,   36,   36,
+       36,   36,   36,   36,   36,   36,   36,   36,   36,   36,
+       36,   36,   36
     } ;
 
 static yyconst flex_int16_t yy_chk[64] =
     {   0,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,   14,   16,   16,
-       36,   23,   14,   14,   19,   18,   17,   15,    7,   19,
-       19,   20,    3,    0,    0,    0,   20,   20,   28,    0,
-        0,    0,    0,   28,   28,   35,   35,   35,   35,   35,
-       35,   35,   35,   35,   35,   35,   35,   35,   35,   35,
-       35,   35,   35
+       37,   24,   14,   14,   19,   21,   18,   17,   15,   19,
+       19,   20,    7,    5,    3,    0,   20,   20,   29,    0,
+        0,    0,    0,   29,   29,   36,   36,   36,   36,   36,
+       36,   36,   36,   36,   36,   36,   36,   36,   36,   36,
+       36,   36,   36
     } ;
 
 static yy_state_type yy_last_accepting_state;
@@ -471,7 +471,7 @@ char *yytext;
 /* 
  *     Lexical Analysis
  */
-#line 21 "mini_l.lex"
+#line 23 "mini_l.lex"
 #include <stdlib.h>
 #include "y.tab.h"
 
@@ -486,22 +486,13 @@ const char *lexPattern[] = {"function","beginparams","endparams","beginlocals",
                             "array","of","if","then","endif","else","while",
                             "do","beginloop","endloop","continue","read",
                             "write","and","or","not","true","false","return"};
-const char *token[] = {"FUNCTION","BEGIN_PARAMS","END_PARAMS","BEGIN_LOCALS", 
-                       "END_LOCALS", "BEGIN_BODY","END_BODY", "INTEGER",
-                       "ARRAY","OF","IF","THEN","ENDIF","ELSE","WHILE","DO",
-                       "BEGINLOOP","ENDLOOP","CONTINUE","READ","WRITE","AND",
-                       "OR","NOT","TRUE","FALSE","RETURN"};
 // other special characters
 const int numSpecial = 8;
-const char *spclLexPattern[] = {";",":",",","(",")","[","]",":="};
-const char *spclToken[] = {"SEMICOLON","COLON","COMMA","L_PAREN","R_PAREN",
-                           "L_SQUARE_BRACKET","R_SQUARE_BRACKET","ASSIGN"};
+const char *spclLexPattern[] = {";",":",",","(",")","[","]"};
 // comparison operators
 const int numCmp = 6;
 const char *cmpLexPattern[] = {"==","<>","<",">","<=",">="};
-const char *cmpToken[] = {"EQ","NEQ","LT","GT","LTE","GTE"};
-
-#line 505 "lex.yy.c"
+#line 496 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -683,9 +674,9 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 52 "mini_l.lex"
+#line 45 "mini_l.lex"
 
-#line 689 "lex.yy.c"
+#line 680 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -738,7 +729,7 @@ yy_match:
 			while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 				{
 				yy_current_state = (int) yy_def[yy_current_state];
-				if ( yy_current_state >= 36 )
+				if ( yy_current_state >= 37 )
 					yy_c = yy_meta[(unsigned int) yy_c];
 				}
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
@@ -770,115 +761,119 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 53 "mini_l.lex"
+#line 46 "mini_l.lex"
 {;}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 54 "mini_l.lex"
-{int *result = findWord(yytext, lexPattern, numIdent);
+#line 47 "mini_l.lex"
+{
+                 int *result = findWord(yytext, lexPattern, numIdent);
+                 yylval.strVal = yytext;
+                 currPos += yyleng;
                  if (result[0]){ 
-                    //return token[result[1]];
-                    printf("%d\n",charToEnum(lexPattern[result[1]]));
-                    return charToEnum(lexPattern[result[1]]);
-                    //printf("%s\n",token[result[1]]); 
+                    free(result);
+                    return charToEnum(yytext);
                  }
                  else {
-                   return IDENT;
-                   //printf("IDENT %s\n",yytext);
+                   free(result);
+                   return charToEnum(yytext);
                 }
-                currPos += yyleng;
-                free(result);
                }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 68 "mini_l.lex"
+#line 60 "mini_l.lex"
 {int *result = findWord(yytext, spclLexPattern, numSpecial);
-                 if (result[0]) //printf("HELLOO %s\n",spclToken[result[1]]);
-                    printf("%d\n",charToEnum(spclLexPattern[result[1]]));
-                    //return spclToken[result[1]];
-                currPos += yyleng;
+                 currPos += yyleng;
+                 if (result[0]) {
+                    free(result);
+                    yylval.charVal = yytext[0];
+                    return charToEnum(yytext); 
+                 }
                 free(result);
                }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 75 "mini_l.lex"
+#line 69 "mini_l.lex"
 {int *result = findWord(yytext, cmpLexPattern, numCmp);
-                  if (result[0]) printf("%s\n",cmpToken[result[1]]) ;
-                  else
-                    printf("IDENTIFIER %s\n",yytext);
                  currPos += yyleng;
+                 if (result[0]) printf("%s\n",yytext);
                  free(result);
                }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 83 "mini_l.lex"
-{currPos += yyleng; return NUMBER;}
+#line 74 "mini_l.lex"
+{currPos += yyleng; return ASSIGN;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 84 "mini_l.lex"
-{currPos += yyleng; return ADD;}
+#line 75 "mini_l.lex"
+{currPos += yyleng; yylval.iVal = atoi(yytext);return NUMBER;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 85 "mini_l.lex"
-{currPos += yyleng; return SUB;}
+#line 76 "mini_l.lex"
+{currPos += yyleng; yylval.charVal = yytext[0]; return ADD;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 86 "mini_l.lex"
-{currPos += yyleng; return MULT;}
+#line 77 "mini_l.lex"
+{currPos += yyleng; yylval.charVal = yytext[0]; return SUB;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 87 "mini_l.lex"
-{currPos += yyleng; return DIV;}
+#line 78 "mini_l.lex"
+{currPos += yyleng; yylval.charVal = yytext[0];  return MULT;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 88 "mini_l.lex"
-{currPos += yyleng; return MOD;}
+#line 79 "mini_l.lex"
+{currPos += yyleng; yylval.charVal = yytext[0];  return DIV;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 89 "mini_l.lex"
-{currPos += yyleng;}
+#line 80 "mini_l.lex"
+{currPos += yyleng; yylval.charVal = yytext[0]; return MOD;}
 	YY_BREAK
 case 12:
-/* rule 12 can match eol */
 YY_RULE_SETUP
-#line 90 "mini_l.lex"
-{currLine++; currPos = 0;}
+#line 81 "mini_l.lex"
+{currPos += yyleng;}
 	YY_BREAK
 case 13:
+/* rule 13 can match eol */
 YY_RULE_SETUP
-#line 91 "mini_l.lex"
-{printf("Error at line %d, column %d: Identifier \"%s\" must begin with a letter\"\n", currLine, currPos, yytext); exit(1);}
+#line 82 "mini_l.lex"
+{currLine++; currPos = 0;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 92 "mini_l.lex"
+#line 83 "mini_l.lex"
+{printf("Error at line %d, column %d: Identifier \"%s\" must begin with a letter\"\n", currLine, currPos, yytext); exit(1);}
+	YY_BREAK
+case 15:
+YY_RULE_SETUP
+#line 84 "mini_l.lex"
 {if (isdigit(yytext[0])) {
                  printf("Error at line %d, column %d: Identifier \"%s\" must start with a letter and cannot end with an underscore\"\n", currLine, currPos, yytext); exit(0);}
                else {
                  printf("Error at line %d, column %d: Identifier \"%s\" cannot end with an underscore\"\n", currLine, currPos, yytext); exit(1);}
                }
 	YY_BREAK
-case 15:
-YY_RULE_SETUP
-#line 97 "mini_l.lex"
-{printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(1);}
-	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 98 "mini_l.lex"
+#line 89 "mini_l.lex"
+{printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(1);}
+	YY_BREAK
+case 17:
+YY_RULE_SETUP
+#line 90 "mini_l.lex"
 ECHO;
 	YY_BREAK
-#line 882 "lex.yy.c"
+#line 877 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1170,7 +1165,7 @@ static int yy_get_next_buffer (void)
 		while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 			{
 			yy_current_state = (int) yy_def[yy_current_state];
-			if ( yy_current_state >= 36 )
+			if ( yy_current_state >= 37 )
 				yy_c = yy_meta[(unsigned int) yy_c];
 			}
 		yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
@@ -1198,11 +1193,11 @@ static int yy_get_next_buffer (void)
 	while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 		{
 		yy_current_state = (int) yy_def[yy_current_state];
-		if ( yy_current_state >= 36 )
+		if ( yy_current_state >= 37 )
 			yy_c = yy_meta[(unsigned int) yy_c];
 		}
 	yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
-	yy_is_jam = (yy_current_state == 35);
+	yy_is_jam = (yy_current_state == 36);
 
 		return yy_is_jam ? 0 : yy_current_state;
 }
@@ -1872,16 +1867,10 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 98 "mini_l.lex"
+#line 90 "mini_l.lex"
 
 
 
-/*
-main()
-{
-  yylex();
-}
-*/
 int* findWord(char *word, const char *list[], int size) {
     // pos 0: word found? 0 for false 1 for true
     // pos 1: index of the word
@@ -1903,22 +1892,47 @@ int* findWord(char *word, const char *list[], int size) {
 }
 
 int charToEnum(const char * s) {
-   if (s == "function")		return FUNCTION;
-   if (s == "beginparams")	return BEGIN_PARAMS;
-   if (s == "endparams") 	return END_PARAMS;
-   if (s == "beginlocals") 	return BEGIN_LOCALS;
-   if (s == "endlocals") 	return END_LOCALS;
-   if (s == "beginbody")	return BEGIN_BODY;
-   if (s == "endbody")		return END_BODY;
-   if (s == ";") 		return SEMICOLON;
-   if (s == ":")		return COLON;
+   if (!strcmp(s,"function"))	return FUNCTION;
+   if (!strcmp(s,"beginparams"))return BEGIN_PARAMS;
+   if (!strcmp(s,"endparams")) 	return END_PARAMS;
+   if (!strcmp(s,"beginlocals"))return BEGIN_LOCALS;
+   if (!strcmp(s,"endlocals")) 	return END_LOCALS;
+   if (!strcmp(s,"beginbody"))	return BEGIN_BODY;
+   if (!strcmp(s,"endbody"))	return END_BODY;
+   if (!strcmp(s,";")) 		return SEMICOLON;
+   if (!strcmp(s,":"))		return COLON;
    if (!strcmp(s, ","))		return COMMA;
    if (!strcmp(s, "("))		return L_PAREN;
    if (!strcmp(s, ")"))		return R_PAREN;
-   if (s == "[")		return L_SQUARE_BRACKET;
-   if (s == "]")		return R_SQUARE_BRACKET;
-
+   if (!strcmp(s,"["))		return L_SQUARE_BRACKET;
+   if (!strcmp(s,"]"))		return R_SQUARE_BRACKET;
+   if (!strcmp(s,"integer"))	return INTEGER;
+   if (!strcmp(s,"array"))	return ARRAY;
+   if (!strcmp(s,"of"))		return OF;
+   if (!strcmp(s,"if"))		return IF;
+   if (!strcmp(s,"then"))	return THEN;
+   if (!strcmp(s,"endif"))	return ENDIF;
+   if (!strcmp(s,"else"))	return ELSE;
+   if (!strcmp(s,"while"))	return WHILE;
+   if (!strcmp(s,"do"))		return DO;
+   if (!strcmp(s,"foreach"))	return FOREACH;
+   if (!strcmp(s,"read"))	return READ;
+   if (!strcmp(s,"write"))	return WRITE;
+   if (!strcmp(s,"beginloop"))	return BEGINLOOP; 
+   if (!strcmp(s,"endloop"))	return ENDLOOP;
+   if (!strcmp(s,"continue"))	return CONTINUE;
+   if (!strcmp(s,"and"))	return AND;
+   if (!strcmp(s,"or"))		return OR;
+   if (!strcmp(s,"not"))	return NOT;
+   if (!strcmp(s,"true"))	return TRUE;
+   if (!strcmp(s,"false"))	return FALSE;
+   if (!strcmp(s,"return"))	return RETURN;
+   if (!strcmp(s,"=="))		return EQ;
+   if (!strcmp(s,"<"))		return LT;
+   if (!strcmp(s,">"))		return GT;
+   if (!strcmp(s,"<="))		return LTE;
+   if (!strcmp(s,">="))		return GTE;
+   if (!strcmp(s,"<>"))		return NEQ;
 return IDENT;
-
 }
 

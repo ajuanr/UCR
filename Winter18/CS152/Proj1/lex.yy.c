@@ -795,8 +795,8 @@ YY_RULE_SETUP
 #line 63 "mini_l.lex"
 {int *result = findWord(yytext, cmpLexPattern, numCmp);
                   if (result[0]) printf("%s\n",cmpToken[result[1]]);
-                  else
-                    printf("IDENTIFIER %s\n",yytext);
+                //  else
+                //    printf("IDENTIFIER %s\n",yytext);
                  currPos += yyleng;
                  free(result);
                }

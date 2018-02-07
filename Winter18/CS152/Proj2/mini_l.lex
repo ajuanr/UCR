@@ -5,7 +5,8 @@
 letter          [a-zA-Z]
 digit           [0-9]
 COMMENT         "##".*
-WHITESPACE      [ \t]
+WHITESPACE      [ \t]+
+NEWLINE         [\n]
 IDENT           {letter}({letter}|{digit})*(_+({letter}|{digit})+)*
 BADSTART        ((({digit}|_)+({letter}|{digit})+)+)
 BADEND          (({letter}|{digit})+_+)+
@@ -14,7 +15,8 @@ MINUS           [\-]
 MULT            [\*]
 DIV             [\/]
 MOD             [\%]
-OTHERSPECIAL    []:;,\(\)[]|:=
+OTHERSPECIAL    []:;,\(\)[]
+ASSIGN		:=
 COMPARE         ==|<>|<|>|<=|>=
 
 %{
@@ -32,62 +34,52 @@ const char *lexPattern[] = {"function","beginparams","endparams","beginlocals",
                             "array","of","if","then","endif","else","while",
                             "do","beginloop","endloop","continue","read",
                             "write","and","or","not","true","false","return"};
-const char *token[] = {"FUNCTION","BEGIN_PARAMS","END_PARAMS","BEGIN_LOCALS", 
-                       "END_LOCALS", "BEGIN_BODY","END_BODY", "INTEGER",
-                       "ARRAY","OF","IF","THEN","ENDIF","ELSE","WHILE","DO",
-                       "BEGINLOOP","ENDLOOP","CONTINUE","READ","WRITE","AND",
-                       "OR","NOT","TRUE","FALSE","RETURN"};
 // other special characters
 const int numSpecial = 8;
-const char *spclLexPattern[] = {";",":",",","(",")","[","]",":="};
-const char *spclToken[] = {"SEMICOLON","COLON","COMMA","L_PAREN","R_PAREN",
-                           "L_SQUARE_BRACKET","R_SQUARE_BRACKET","ASSIGN"};
+const char *spclLexPattern[] = {";",":",",","(",")","[","]"};
 // comparison operators
 const int numCmp = 6;
 const char *cmpLexPattern[] = {"==","<>","<",">","<=",">="};
-const char *cmpToken[] = {"EQ","NEQ","LT","GT","LTE","GTE"};
-
 %}
 
 %%
 {COMMENT}      {;}
-{IDENT}        {int *result = findWord(yytext, lexPattern, numIdent);
+{IDENT}        {
+                 int *result = findWord(yytext, lexPattern, numIdent);
+                 yylval.strVal = yytext;
+                 currPos += yyleng;
                  if (result[0]){ 
-                    //return token[result[1]];
-                    printf("%d\n",charToEnum(lexPattern[result[1]]));
-                    return charToEnum(lexPattern[result[1]]);
-                    //printf("%s\n",token[result[1]]); 
+                    free(result);
+                    return charToEnum(yytext);
                  }
                  else {
-                   return IDENT;
-                   //printf("IDENT %s\n",yytext);
+                   free(result);
+                   return charToEnum(yytext);
                 }
-                currPos += yyleng;
-                free(result);
                }
 {OTHERSPECIAL} {int *result = findWord(yytext, spclLexPattern, numSpecial);
-                 if (result[0]) //printf("HELLOO %s\n",spclToken[result[1]]);
-                    printf("%d\n",charToEnum(spclLexPattern[result[1]]));
-                    //return spclToken[result[1]];
-                currPos += yyleng;
+                 currPos += yyleng;
+                 if (result[0]) {
+                    free(result);
+                    yylval.charVal = yytext[0];
+                    return charToEnum(yytext); 
+                 }
                 free(result);
                }
 {COMPARE}      {int *result = findWord(yytext, cmpLexPattern, numCmp);
-                  if (result[0]) printf("%s\n",cmpToken[result[1]]) ;
-                  else
-                    printf("IDENTIFIER %s\n",yytext);
                  currPos += yyleng;
+                 if (result[0]) printf("%s\n",yytext);
                  free(result);
                }
-
-{digit}+      {currPos += yyleng; return NUMBER;}
-{PLUS}        {currPos += yyleng; return ADD;}
-{MINUS}       {currPos += yyleng; return SUB;}
-{MULT}        {currPos += yyleng; return MULT;}
-{DIV}         {currPos += yyleng; return DIV;}
-{MOD}         {currPos += yyleng; return MOD;}
+{ASSIGN}      {currPos += yyleng; return ASSIGN;}
+{digit}+      {currPos += yyleng; yylval.iVal = atoi(yytext);return NUMBER;}
+{PLUS}        {currPos += yyleng; yylval.charVal = yytext[0]; return ADD;}
+{MINUS}       {currPos += yyleng; yylval.charVal = yytext[0]; return SUB;}
+{MULT}        {currPos += yyleng; yylval.charVal = yytext[0];  return MULT;}
+{DIV}         {currPos += yyleng; yylval.charVal = yytext[0];  return DIV;}
+{MOD}         {currPos += yyleng; yylval.charVal = yytext[0]; return MOD;}
 {WHITESPACE}  {currPos += yyleng;}
-\n            {currLine++; currPos = 0;}
+{NEWLINE}            {currLine++; currPos = 0;}
 {BADSTART}    {printf("Error at line %d, column %d: Identifier \"%s\" must begin with a letter\"\n", currLine, currPos, yytext); exit(1);}
 {BADEND}      {if (isdigit(yytext[0])) {
                  printf("Error at line %d, column %d: Identifier \"%s\" must start with a letter and cannot end with an underscore\"\n", currLine, currPos, yytext); exit(0);}
@@ -97,12 +89,6 @@ const char *cmpToken[] = {"EQ","NEQ","LT","GT","LTE","GTE"};
 .             {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(1);}
 %%
 
-/*
-main()
-{
-  yylex();
-}
-*/
 int* findWord(char *word, const char *list[], int size) {
     // pos 0: word found? 0 for false 1 for true
     // pos 1: index of the word
@@ -124,21 +110,46 @@ int* findWord(char *word, const char *list[], int size) {
 }
 
 int charToEnum(const char * s) {
-   if (s == "function")		return FUNCTION;
-   if (s == "beginparams")	return BEGIN_PARAMS;
-   if (s == "endparams") 	return END_PARAMS;
-   if (s == "beginlocals") 	return BEGIN_LOCALS;
-   if (s == "endlocals") 	return END_LOCALS;
-   if (s == "beginbody")	return BEGIN_BODY;
-   if (s == "endbody")		return END_BODY;
-   if (s == ";") 		return SEMICOLON;
-   if (s == ":")		return COLON;
+   if (!strcmp(s,"function"))	return FUNCTION;
+   if (!strcmp(s,"beginparams"))return BEGIN_PARAMS;
+   if (!strcmp(s,"endparams")) 	return END_PARAMS;
+   if (!strcmp(s,"beginlocals"))return BEGIN_LOCALS;
+   if (!strcmp(s,"endlocals")) 	return END_LOCALS;
+   if (!strcmp(s,"beginbody"))	return BEGIN_BODY;
+   if (!strcmp(s,"endbody"))	return END_BODY;
+   if (!strcmp(s,";")) 		return SEMICOLON;
+   if (!strcmp(s,":"))		return COLON;
    if (!strcmp(s, ","))		return COMMA;
    if (!strcmp(s, "("))		return L_PAREN;
    if (!strcmp(s, ")"))		return R_PAREN;
-   if (s == "[")		return L_SQUARE_BRACKET;
-   if (s == "]")		return R_SQUARE_BRACKET;
-
+   if (!strcmp(s,"["))		return L_SQUARE_BRACKET;
+   if (!strcmp(s,"]"))		return R_SQUARE_BRACKET;
+   if (!strcmp(s,"integer"))	return INTEGER;
+   if (!strcmp(s,"array"))	return ARRAY;
+   if (!strcmp(s,"of"))		return OF;
+   if (!strcmp(s,"if"))		return IF;
+   if (!strcmp(s,"then"))	return THEN;
+   if (!strcmp(s,"endif"))	return ENDIF;
+   if (!strcmp(s,"else"))	return ELSE;
+   if (!strcmp(s,"while"))	return WHILE;
+   if (!strcmp(s,"do"))		return DO;
+   if (!strcmp(s,"foreach"))	return FOREACH;
+   if (!strcmp(s,"read"))	return READ;
+   if (!strcmp(s,"write"))	return WRITE;
+   if (!strcmp(s,"beginloop"))	return BEGINLOOP; 
+   if (!strcmp(s,"endloop"))	return ENDLOOP;
+   if (!strcmp(s,"continue"))	return CONTINUE;
+   if (!strcmp(s,"and"))	return AND;
+   if (!strcmp(s,"or"))		return OR;
+   if (!strcmp(s,"not"))	return NOT;
+   if (!strcmp(s,"true"))	return TRUE;
+   if (!strcmp(s,"false"))	return FALSE;
+   if (!strcmp(s,"return"))	return RETURN;
+   if (!strcmp(s,"=="))		return EQ;
+   if (!strcmp(s,"<"))		return LT;
+   if (!strcmp(s,">"))		return GT;
+   if (!strcmp(s,"<="))		return LTE;
+   if (!strcmp(s,">="))		return GTE;
+   if (!strcmp(s,"<>"))		return NEQ;
 return IDENT;
-
 }
