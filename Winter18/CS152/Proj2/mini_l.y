@@ -35,7 +35,7 @@ int yylex(void);
 %left   <charVal>	SEMICOLON COLON COMMA L_PAREN R_PAREN L_SQUARE_BRACKET R_SQUARE_BRACKET 
 %left	<strVal>	EQ NEQ LT GT LTE GTE
 %right  <charVal> 	SUB 
-%right	<charVal>	NOT 
+%right	<charVal>	NOT UMINUS
 %right   <strVal>	ASSIGN
 
 
@@ -105,12 +105,12 @@ multiplicative_expression:	  term {printf("multiplicative_expression -> term\n")
 				| term MOD term {printf("multiplicative_expression -> term MOD term\n");}
                 		;
 
-term:		SUB NUMBER {printf("term -> SUB NUMBER\n");}
+term:		SUB NUMBER %prec UMINUS {printf("term -> SUB NUMBER\n");}
                 | NUMBER {printf("term -> NUMBER\n");}
 		| var {printf("term -> var\n");}
-		| SUB var {printf("term ->  SUB var\n");}
+		| SUB var %prec UMINUS {printf("term ->  SUB var\n");}
                 | L_PAREN expression R_PAREN {printf("term -> L_PAREN expression R_PAREN\n");}
-                | SUB L_PAREN expression R_PAREN {printf("term -> SUB L_PAREN expression R_PAREN\n");}
+                | SUB L_PAREN expression R_PAREN  %prec UMINUS {printf("term -> SUB L_PAREN expression R_PAREN\n");}
 		| IDENT L_PAREN expressions R_PAREN {printf("term -> IDENT L_PAREN expressions R_PAREN\n");}
 		;
 

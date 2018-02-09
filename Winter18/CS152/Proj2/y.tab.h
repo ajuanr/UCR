@@ -94,7 +94,8 @@ extern int yydebug;
     GTE = 304,
     SUB = 305,
     NOT = 306,
-    ASSIGN = 307
+    UMINUS = 307,
+    ASSIGN = 308
   };
 #endif
 
@@ -109,7 +110,7 @@ union YYSTYPE
    char*   	strVal;
    char		charVal;
 
-#line 113 "y.tab.h" /* yacc.c:1909  */
+#line 114 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
