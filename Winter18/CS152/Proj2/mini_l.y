@@ -60,14 +60,15 @@ statements:       statement SEMICOLON statements {printf("statement SEMICOLON st
                 ;
 
 statement:        var ASSIGN expression {printf("statement -> var ASSIGN expression\n");}
-                | IF bool_exp THEN statement SEMICOLON ENDIF {printf("statement -> IF bool_exp THEN statements ENDIF\n");}
+                | IF bool_exp THEN statements ENDIF {printf("statement -> IF bool_exp THEN statements ENDIF\n");}
+                | IF bool_exp THEN statements ELSE statements ENDIF {printf("statement -> IF bool_exp THEN statements ENDIF\n");}
        		| WHILE bool_exp BEGINLOOP statements ENDLOOP       
 		| DO BEGINLOOP statements ENDLOOP WHILE bool_exp {printf("statement -> DO BEGINLOOP statements ENDLOOP WHILE bool_exp\n");}
-  		| FOREACH IDENT IN IDENT BEGINLOOP statements ENDLOOP
+  		| FOREACH IDENT IN IDENT BEGINLOOP statements ENDLOOP {printf("statement -> FOREACH IDENT IN IDENT BEGINLOOP statements ENDLOOP\n");}
 		| READ vars {printf("statements->READ vars\n");}
                 | WRITE vars {printf("statements -> WRITE vars\n");}
                 | CONTINUE {printf("statement -> CONTINUE\n");}
-                | RETURN expression
+                | RETURN expression {printf("statement -> RETURN expression\n");}
                 ;
 
 bool_exp:	  relation_and_exp {printf("bool_exp -> relation_and_exp\n");}

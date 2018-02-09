@@ -28,10 +28,10 @@ int charToEnum(const char*);
 
 int currPos = 0; int currLine = 1;
 // identifiers and reserved words
-const int numIdent = 27;
+const int numIdent = 29;
 const char *lexPattern[] = {"function","beginparams","endparams","beginlocals",
                             "endlocals","beginbody", "endbody","integer",
-                            "array","of","if","then","endif","else","while",
+                            "array","of","foreach","in","if","then","endif","else","while",
                             "do","beginloop","endloop","continue","read",
                             "write","and","or","not","true","false","return"};
 // other special characters
@@ -137,6 +137,7 @@ int charToEnum(const char * s) {
    if (!strcmp(s,"while"))	return WHILE;
    if (!strcmp(s,"do"))		return DO;
    if (!strcmp(s,"foreach"))	return FOREACH;
+   if (!strcmp(s,"in"))		return IN;
    if (!strcmp(s,"read"))	return READ;
    if (!strcmp(s,"write"))	return WRITE;
    if (!strcmp(s,"beginloop"))	return BEGINLOOP; 
