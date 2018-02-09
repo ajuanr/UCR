@@ -57,7 +57,7 @@ beginbody	## main program
    beginloop
    	if is_prime == 0 then
 		write i;
-	endif
+	endif;
 	i := i + 1;
    endloop;
 endbody

@@ -140,7 +140,8 @@ int main() {
 void
 yyerror (char const *s)
 {
-  fprintf (stderr, "ERROR: %s at symbol \"%s\" on line %d\n", s, yytext,currLine);
+//  fprintf (stderr, "ERROR: %s at symbol \"%s\" on line %d\n", s, yytext,currLine);
+  fprintf (stderr, "error at line %d:  \"%s\"\n", currLine, s);
 }
 
 
