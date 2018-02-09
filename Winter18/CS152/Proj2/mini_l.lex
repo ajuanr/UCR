@@ -68,8 +68,11 @@ const char *cmpLexPattern[] = {"==","<>","<",">","<=",">="};
                }
 {COMPARE}      {int *result = findWord(yytext, cmpLexPattern, numCmp);
                  currPos += yyleng;
-                 if (result[0]) printf("%s\n",yytext);
-                 free(result);
+                 if (result[0]) {
+                    yylval.strVal = yytext;
+                    return charToEnum(yytext); 
+                    free(result);
+                 }
                }
 {ASSIGN}      {currPos += yyleng; return ASSIGN;}
 {digit}+      {currPos += yyleng; yylval.iVal = atoi(yytext);return NUMBER;}

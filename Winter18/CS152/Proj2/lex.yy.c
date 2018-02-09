@@ -799,64 +799,67 @@ YY_RULE_SETUP
 #line 69 "mini_l.lex"
 {int *result = findWord(yytext, cmpLexPattern, numCmp);
                  currPos += yyleng;
-                 if (result[0]) printf("%s\n",yytext);
-                 free(result);
+                 if (result[0]) {
+                    yylval.strVal = yytext;
+                    return charToEnum(yytext); 
+                    free(result);
+                 }
                }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 74 "mini_l.lex"
+#line 77 "mini_l.lex"
 {currPos += yyleng; return ASSIGN;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 75 "mini_l.lex"
+#line 78 "mini_l.lex"
 {currPos += yyleng; yylval.iVal = atoi(yytext);return NUMBER;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 76 "mini_l.lex"
+#line 79 "mini_l.lex"
 {currPos += yyleng; yylval.charVal = yytext[0]; return ADD;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 77 "mini_l.lex"
+#line 80 "mini_l.lex"
 {currPos += yyleng; yylval.charVal = yytext[0]; return SUB;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 78 "mini_l.lex"
+#line 81 "mini_l.lex"
 {currPos += yyleng; yylval.charVal = yytext[0];  return MULT;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 79 "mini_l.lex"
+#line 82 "mini_l.lex"
 {currPos += yyleng; yylval.charVal = yytext[0];  return DIV;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 80 "mini_l.lex"
+#line 83 "mini_l.lex"
 {currPos += yyleng; yylval.charVal = yytext[0]; return MOD;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 81 "mini_l.lex"
+#line 84 "mini_l.lex"
 {currPos += yyleng;}
 	YY_BREAK
 case 13:
 /* rule 13 can match eol */
 YY_RULE_SETUP
-#line 82 "mini_l.lex"
+#line 85 "mini_l.lex"
 {currLine++; currPos = 0;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 83 "mini_l.lex"
+#line 86 "mini_l.lex"
 {printf("Error at line %d, column %d: Identifier \"%s\" must begin with a letter\"\n", currLine, currPos, yytext); exit(1);}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 84 "mini_l.lex"
+#line 87 "mini_l.lex"
 {if (isdigit(yytext[0])) {
                  printf("Error at line %d, column %d: Identifier \"%s\" must start with a letter and cannot end with an underscore\"\n", currLine, currPos, yytext); exit(0);}
                else {
@@ -865,15 +868,15 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 89 "mini_l.lex"
+#line 92 "mini_l.lex"
 {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(1);}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 90 "mini_l.lex"
+#line 93 "mini_l.lex"
 ECHO;
 	YY_BREAK
-#line 877 "lex.yy.c"
+#line 880 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1867,7 +1870,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 90 "mini_l.lex"
+#line 93 "mini_l.lex"
 
 
 

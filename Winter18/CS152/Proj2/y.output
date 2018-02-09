@@ -1,3 +1,8 @@
+Terminals unused in grammar
+
+   ELSE
+
+
 Grammar
 
     0 $accept: prog_start $end
@@ -19,7 +24,7 @@ Grammar
    10           | %empty
 
    11 statement: var ASSIGN expression
-   12          | IF bool_exp THEN statement ELSE statements ENDIF
+   12          | IF bool_exp THEN statement SEMICOLON ENDIF
    13          | WHILE bool_exp BEGINLOOP statements ENDLOOP
    14          | DO BEGINLOOP statements ENDLOOP WHILE bool_exp
    15          | FOREACH IDENT IN IDENT BEGINLOOP statements ENDLOOP
@@ -73,8 +78,8 @@ Grammar
    53 var: IDENT
    54    | IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET
 
-   55 identifiers: IDENT COMMA identifiers
-   56            | %empty
+   55 identifiers: IDENT
+   56            | IDENT COMMA identifiers
 
 
 Terminals, with rules where they appear
@@ -82,7 +87,7 @@ Terminals, with rules where they appear
 $end (0) 0
 error (256)
 FUNCTION (258) 4
-IDENT (259) 4 15 48 53 54 55
+IDENT (259) 4 15 48 53 54 55 56
 INTEGER (260) 7 8
 OF (261) 8
 ARRAY (262) 8
@@ -90,7 +95,7 @@ READ (263) 16
 IF (264) 12
 THEN (265) 12
 ENDIF (266) 12
-ELSE (267) 12
+ELSE (267)
 WHILE (268) 13 14
 DO (269) 14
 BEGIN_PARAMS (270) 4
@@ -115,9 +120,9 @@ DIV (288) 40
 MOD (289) 41
 AND (290) 23
 OR (291) 21
-SEMICOLON (292) 4 5 9
+SEMICOLON (292) 4 5 9 12
 COLON (293) 7 8
-COMMA (294) 50 52 55
+COMMA (294) 50 52 56
 L_PAREN (295) 28 46 47 48
 R_PAREN (296) 28 46 47 48
 L_SQUARE_BRACKET (297) 8 54
@@ -148,7 +153,7 @@ declarations (57)
 declaration (58)
     on left: 7 8, on right: 5
 statements (59)
-    on left: 9 10, on right: 4 9 12 13 14 15
+    on left: 9 10, on right: 4 9 13 14 15
 statement (60)
     on left: 11 12 13 14 15 16 17 18 19, on right: 9 12
 bool_exp (61)
@@ -172,7 +177,7 @@ vars (69)
 var (70)
     on left: 53 54, on right: 11 44 45 51 52
 identifiers (71)
-    on left: 55 56, on right: 7 8 55
+    on left: 55 56, on right: 7 8 56
 
 
 State 0
@@ -255,7 +260,6 @@ State 9
 
     IDENT  shift, and go to state 10
 
-    COLON     reduce using rule 56 (identifiers)
     $default  reduce using rule 6 (declarations)
 
     declarations  go to state 11
@@ -265,9 +269,12 @@ State 9
 
 State 10
 
-   55 identifiers: IDENT . COMMA identifiers
+   55 identifiers: IDENT .
+   56            | IDENT . COMMA identifiers
 
     COMMA  shift, and go to state 14
+
+    $default  reduce using rule 55 (identifiers)
 
 
 State 11
@@ -294,11 +301,9 @@ State 13
 
 State 14
 
-   55 identifiers: IDENT COMMA . identifiers
+   56 identifiers: IDENT COMMA . identifiers
 
     IDENT  shift, and go to state 10
-
-    $default  reduce using rule 56 (identifiers)
 
     identifiers  go to state 18
 
@@ -316,7 +321,6 @@ State 16
 
     IDENT  shift, and go to state 10
 
-    COLON     reduce using rule 56 (identifiers)
     $default  reduce using rule 6 (declarations)
 
     declarations  go to state 20
@@ -335,9 +339,9 @@ State 17
 
 State 18
 
-   55 identifiers: IDENT COMMA identifiers .
+   56 identifiers: IDENT COMMA identifiers .
 
-    $default  reduce using rule 55 (identifiers)
+    $default  reduce using rule 56 (identifiers)
 
 
 State 19
@@ -346,7 +350,6 @@ State 19
 
     IDENT  shift, and go to state 10
 
-    COLON     reduce using rule 56 (identifiers)
     $default  reduce using rule 6 (declarations)
 
     declarations  go to state 23
@@ -453,7 +456,7 @@ State 30
 
 State 31
 
-   12 statement: IF . bool_exp THEN statement ELSE statements ENDIF
+   12 statement: IF . bool_exp THEN statement SEMICOLON ENDIF
 
     IDENT    shift, and go to state 45
     TRUE     shift, and go to state 46
@@ -688,7 +691,7 @@ State 51
 
 State 52
 
-   12 statement: IF bool_exp . THEN statement ELSE statements ENDIF
+   12 statement: IF bool_exp . THEN statement SEMICOLON ENDIF
 
     THEN  shift, and go to state 78
 
@@ -968,7 +971,7 @@ State 77
 
 State 78
 
-   12 statement: IF bool_exp THEN . statement ELSE statements ENDIF
+   12 statement: IF bool_exp THEN . statement SEMICOLON ENDIF
 
     IDENT     shift, and go to state 29
     READ      shift, and go to state 30
@@ -1257,9 +1260,9 @@ State 105
 
 State 106
 
-   12 statement: IF bool_exp THEN statement . ELSE statements ENDIF
+   12 statement: IF bool_exp THEN statement . SEMICOLON ENDIF
 
-    ELSE  shift, and go to state 121
+    SEMICOLON  shift, and go to state 121
 
 
 State 107
@@ -1371,23 +1374,9 @@ State 120
 
 State 121
 
-   12 statement: IF bool_exp THEN statement ELSE . statements ENDIF
+   12 statement: IF bool_exp THEN statement SEMICOLON . ENDIF
 
-    IDENT     shift, and go to state 29
-    READ      shift, and go to state 30
-    IF        shift, and go to state 31
-    WHILE     shift, and go to state 32
-    DO        shift, and go to state 33
-    CONTINUE  shift, and go to state 34
-    WRITE     shift, and go to state 35
-    FOREACH   shift, and go to state 36
-    RETURN    shift, and go to state 37
-
-    $default  reduce using rule 10 (statements)
-
-    statements  go to state 126
-    statement   go to state 39
-    var         go to state 40
+    ENDIF  shift, and go to state 126
 
 
 State 122
@@ -1448,9 +1437,9 @@ State 125
 
 State 126
 
-   12 statement: IF bool_exp THEN statement ELSE statements . ENDIF
+   12 statement: IF bool_exp THEN statement SEMICOLON ENDIF .
 
-    ENDIF  shift, and go to state 129
+    $default  reduce using rule 12 (statement)
 
 
 State 127
@@ -1464,17 +1453,10 @@ State 128
 
    15 statement: FOREACH IDENT IN IDENT BEGINLOOP statements . ENDLOOP
 
-    ENDLOOP  shift, and go to state 130
+    ENDLOOP  shift, and go to state 129
 
 
 State 129
-
-   12 statement: IF bool_exp THEN statement ELSE statements ENDIF .
-
-    $default  reduce using rule 12 (statement)
-
-
-State 130
 
    15 statement: FOREACH IDENT IN IDENT BEGINLOOP statements ENDLOOP .
 

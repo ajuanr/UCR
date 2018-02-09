@@ -11,6 +11,7 @@
 #include <stdlib.h>
 
 extern int currLine;	
+extern int currPos;
 extern char *yytext;
 
 void yyerror(char const*);
@@ -51,15 +52,15 @@ declarations:	declaration SEMICOLON declarations {printf("declaration -> declara
                 ;
 
 declaration:    identifiers COLON INTEGER {printf("declaration -> identifiers COLON INTEGER\n");}
-		| identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {printf("identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER\n");}
+		| identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {printf("declaration -> identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER\n");}
                 ;
 
 statements:       statement SEMICOLON statements {printf("statement SEMICOLON statements\n");} 
-                | %empty {printf("statements -> epsilon");}
+                | %empty {printf("statements -> epsilon\n");}
                 ;
 
 statement:        var ASSIGN expression {printf("statement -> var ASSIGN expression\n");}
-                | IF bool_exp THEN statement ELSE statements ENDIF {printf("statement -> IF bool_exp THEN statements ENDIF");}
+                | IF bool_exp THEN statement SEMICOLON ENDIF {printf("statement -> IF bool_exp THEN statements ENDIF\n");}
        		| WHILE bool_exp BEGINLOOP statements ENDLOOP       
 		| DO BEGINLOOP statements ENDLOOP WHILE bool_exp {printf("statement -> DO BEGINLOOP statements ENDLOOP WHILE bool_exp\n");}
   		| FOREACH IDENT IN IDENT BEGINLOOP statements ENDLOOP
@@ -84,7 +85,7 @@ relation_exp:	  NOT relation_exp
                 | L_PAREN bool_exp R_PAREN
                 ;
 
-comp:	   	  EQ {printf("comp -> EQ\n");}	
+comp:	   	  EQ {printf("comp -> EQ\n");}
 		| NEQ {printf("comp -> NEQ\n");}
 		| LT {printf("comp -> LT\n");}
 		| GT {printf("comp -> GT\n");}
@@ -109,24 +110,23 @@ term:		SUB NUMBER {printf("term -> SUB NUMBER\n");}
 		| SUB var {printf("term ->  SUB var\n");}
                 | L_PAREN expression R_PAREN {printf("term -> L_PAREN expression R_PAREN\n");}
                 | SUB L_PAREN expression R_PAREN {printf("term -> SUB L_PAREN expression R_PAREN\n");}
-		| IDENT L_PAREN expressions R_PAREN
+		| IDENT L_PAREN expressions R_PAREN {printf("term -> IDENT L_PAREN expressions R_PAREN\n");}
 		;
 
-
-expressions:	  expression
-		| expression COMMA expressions {printf("expressions -> expression COMMA expressions");}
+expressions:	  expression {printf("expressions ->expression\n");}
+		| expression COMMA expressions {printf("expressions -> expression COMMA expressions\n");}
 		;
 
 vars:		var {printf("vars->vars\n");}
                 | var COMMA vars {printf("vars -> var COMMA vars\n");}
                 ;
 
-var:		IDENT {printf("var-> ident\n");}
-                | IDENT  L_SQUARE_BRACKET expression R_SQUARE_BRACKET
+var:		IDENT {printf("var-> IDENT\n");}
+                | IDENT  L_SQUARE_BRACKET expression R_SQUARE_BRACKET {printf("var -> IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");}
 		;
 
-identifiers:	IDENT COMMA identifiers 
-                | %empty
+identifiers:    IDENT {printf("identifiers -> IDENT\n");}
+		|IDENT COMMA identifiers  {printf("identifiers -> IDENT COMMA identifiers\n");}
 		;
 %%
 
@@ -139,7 +139,7 @@ int main() {
 void
 yyerror (char const *s)
 {
-  fprintf (stderr, "ERROR: %s at symbol \"%s \" on line %d\n", s, yytext,currLine);
+  fprintf (stderr, "ERROR: %s at symbol \"%s\" on line %d\n", s, yytext,currLine);
 }
 
 
