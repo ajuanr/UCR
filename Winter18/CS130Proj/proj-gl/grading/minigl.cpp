@@ -35,6 +35,30 @@ typedef vec<MGLfloat,4> vec4;   //data structure storing a 4 dimensional vector,
 typedef vec<MGLfloat,3> vec3;   //data structure storing a 3 dimensional vector, see vec.h
 typedef vec<MGLfloat,2> vec2;   //data structure storing a 2 dimensional vector, see vec.h
 
+
+// MODES
+MGLpoly_mode currMode;
+MGLmatrix_mode currMatMode;
+
+// Global Variables
+vec3 color;
+vec4 vertices;
+mat4 currentMatrix= {1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f};
+
+// Structures
+struct Vertex {
+    vec3 color;
+    vec4 position;
+};
+
+struct Triangle {
+  vector<Vertex> vertices;
+};
+
+// Lists
+vector<Vertex> verticesList;
+vector<Triangle> triangleList;
+
 /**
  * Standard macro to report errors
  */
@@ -43,6 +67,81 @@ inline void MGL_ERROR(const char* description) {
     exit(1);
 }
 
+// helper function
+MGLfloat getArea(Vertex a, Vertex b, Vertex c) {
+   MGLfloat ax, ay, bx, by, cx, cy;
+
+   ax = a.position[0];
+   ay = a.position[1]; 
+   bx = b.position[0];
+   by = b.position[1]; 
+   cx = c.position[0];
+   cy = c.position[1]; 
+
+   return ax * (by - cy) + ay * (cx - bx) + (bx * cy - by * cx);
+}
+
+// helper function
+void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *data) {
+    Vertex A = tri.vertices.at(0);
+
+    MGLfloat x = A.position[0];
+    MGLfloat y = A.position[1];
+    MGLfloat i = (x + 1) * 0.5 * width;
+    MGLfloat j = (y + 1) * 0.5 * height;
+    i -= 0.5;
+    j -= 0.5;
+
+    A.position[0] = i;
+    A.position[1] = j;
+
+    Vertex B = tri.vertices.at(1);
+
+    x = B.position[0];
+    y = B.position[1];
+    i = (x + 1) * 0.5 * width;
+    j = (y + 1) * 0.5 * height;
+    i -= 0.5;
+    j -= 0.5;
+
+    B.position[0] = i;
+    B.position[1] = j;
+
+    Vertex C = tri.vertices.at(2);
+
+    x = C.position[0];
+    y = C.position[1];
+    i = (x + 1) * 0.5 * width;
+    j = (y + 1) * 0.5 * height;
+    i -= 0.5;
+    j -= 0.5;
+
+    C.position[0] = i;
+    C.position[1] = j;
+
+    for (int x = 0; x != width; ++x) {
+        for (int y = 0; y != height; ++y) {
+           Vertex I;
+           I.position[0] = x;
+           I.position[1] = y; 
+
+           MGLfloat areaABC = getArea(A, B, C);
+
+           MGLfloat areaPBC = getArea(I, B, C);
+           MGLfloat alpha = areaPBC / areaABC;
+
+           MGLfloat areaAPC = getArea(A, I, C);
+           MGLfloat beta = areaAPC /areaABC;
+       
+           MGLfloat areaABP = getArea(A, B, I);
+           MGLfloat gamma = areaABP /areaABC;
+//std::cout << "alpha " << alpha << " beta " << beta << " gamma " << gamma << std::endl;
+           if (alpha > 0 && beta > 0 && gamma > 0) {
+              data[x + y*width] = Make_Pixel(255,255,255);
+           } 
+       }
+   }
+}
 
 /**
  * Read pixel data starting with the pixel at coordinates
@@ -60,6 +159,16 @@ void mglReadPixels(MGLsize width,
                    MGLsize height,
                    MGLpixel *data)
 {
+    for (unsigned int i = 0; i != width; ++i) {
+       for (unsigned int j = 0; j != height; ++j) {
+          data[i+j*width] = Make_Pixel(0, 0, 0);
+       }
+    }
+
+    for (auto triangle : triangleList) {
+        Raterize_Triangle(triangle, width, height, data);
+    }
+    triangleList.clear();
 }
 
 /**
@@ -68,6 +177,7 @@ void mglReadPixels(MGLsize width,
  */
 void mglBegin(MGLpoly_mode mode)
 {
+     currMode = mode;
 }
 
 
@@ -76,6 +186,38 @@ void mglBegin(MGLpoly_mode mode)
  */
 void mglEnd()
 {
+    if (currMode == MGL_TRIANGLES) {
+       for (unsigned int vertex = 0; vertex < verticesList.size();vertex +=3 ) {
+           Triangle triangle;
+           triangle.vertices.push_back(verticesList.at(vertex));     
+           triangle.vertices.push_back(verticesList.at(vertex+1));
+           triangle.vertices.push_back(verticesList.at(vertex+2));
+           triangleList.push_back(triangle);
+       }
+    }
+
+    if (currMode == MGL_QUADS) {
+        for (unsigned int i = 0; i < verticesList.size(); i += 4) {
+        Triangle t1,t2;
+        unsigned int bottomLeft, topLeft, bottomRight, topRight;
+	bottomLeft = i;
+        bottomRight = i + 1;
+        topRight = i + 2;
+        topLeft = i + 3;
+
+        t1.vertices.push_back(verticesList.at(bottomLeft));
+        t1.vertices.push_back(verticesList.at(bottomRight));
+        t1.vertices.push_back(verticesList.at(topRight));
+        
+        t2.vertices.push_back(verticesList.at(bottomLeft));
+        t2.vertices.push_back(verticesList.at(topRight));
+        t2.vertices.push_back(verticesList.at(topLeft));
+
+        triangleList.push_back(t1);
+        triangleList.push_back(t2);
+        }
+    }
+    verticesList.clear();
 }
 
 /**
@@ -87,6 +229,7 @@ void mglEnd()
 void mglVertex2(MGLfloat x,
                 MGLfloat y)
 {
+   mglVertex3(x,y,0);
 }
 
 /**
@@ -97,6 +240,16 @@ void mglVertex3(MGLfloat x,
                 MGLfloat y,
                 MGLfloat z)
 {
+    Vertex Position;
+    vec4 position4d;
+    position4d[0] = x;
+    position4d[1] = y;
+    position4d[2] = z;
+    position4d[3] = 1;
+//    Position.position = position4d;
+    Position.position = currentMatrix*position4d;
+
+    verticesList.push_back(Position);
 }
 
 /**
@@ -104,6 +257,7 @@ void mglVertex3(MGLfloat x,
  */
 void mglMatrixMode(MGLmatrix_mode mode)
 {
+    currMatMode = mode;
 }
 
 /**
@@ -127,6 +281,7 @@ void mglPopMatrix()
  */
 void mglLoadIdentity()
 {
+ currentMatrix = {1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f};
 }
 
 /**
@@ -217,6 +372,16 @@ void mglOrtho(MGLfloat left,
               MGLfloat near,
               MGLfloat far)
 {
+MGLfloat rl = right - left;
+MGLfloat tb = top - bottom;
+MGLfloat fn = far - near;
+
+MGLfloat tx = (right+left)/rl;
+MGLfloat ty = (top+bottom)/tb;
+MGLfloat tz = (far+near)/fn;
+
+//mat4 projection = {2.f/rl,0.f,0.f,0.f, 0.f,2.f/tb,0.f,0.f, 0.f,0.f,-2.f/fn,0.f, tx, ty, tz, 1.f};
+//currentMatrix = projection * currentMatrix;
 }
 
 /**
@@ -226,4 +391,7 @@ void mglColor(MGLfloat red,
               MGLfloat green,
               MGLfloat blue)
 {
+	color[0] = red;
+	color[1] = green;
+	color[2] = blue;
 }
