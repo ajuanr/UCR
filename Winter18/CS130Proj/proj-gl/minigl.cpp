@@ -85,8 +85,8 @@ MGLfloat getArea(Vertex a, Vertex b, Vertex c) {
 void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *data) {
     Vertex A = tri.vertices.at(0);
 
-    MGLfloat x = A.position[0];
-    MGLfloat y = A.position[1];
+    MGLfloat x = A.position[0]/A.position[3]; // divide by w([3]) for frustum
+    MGLfloat y = A.position[1]/A.position[3];
     MGLfloat i = (x + 1) * 0.5f * width;
     MGLfloat j = (y + 1) * 0.5f * height;
     i -= 0.5f;
@@ -97,8 +97,8 @@ void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *dat
 
     Vertex B = tri.vertices.at(1);
 
-    x = B.position[0];
-    y = B.position[1];
+    x = B.position[0]/B.position[3];
+    y = B.position[1]/B.position[3];
     i = (x + 1) * 0.5f * width;
     j = (y + 1) * 0.5f * height;
     i -= 0.5f;
@@ -109,8 +109,8 @@ void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *dat
 
     Vertex C = tri.vertices.at(2);
 
-    x = C.position[0];
-    y = C.position[1];
+    x = C.position[0]/C.position[3];
+    y = C.position[1]/C.position[3];
     i = (x + 1) * 0.5f * width;
     j = (y + 1) * 0.5f * height;
     i -= 0.5f;
@@ -363,6 +363,16 @@ void mglFrustum(MGLfloat left,
                 MGLfloat near,
                 MGLfloat far)
 {
+MGLfloat A = (right + left) / (right - left);
+MGLfloat B = (top + bottom) / (top - bottom);  
+MGLfloat C = -((far + near)  / (far - near));
+MGLfloat D = -((2.f * far * near) / (far - near));
+
+projection = {{(2.f*near/(right-left)), 0.f,0.f,0.f,
+               0.f, (2.f*near/(top-bottom)), 0.f,0.f,
+               A, B, C, -1.f,
+               0.f, 0.f, D, 0.f}}; 
+
 }
 
 /**
@@ -384,7 +394,10 @@ MGLfloat tx = -(right+left)/rl;
 MGLfloat ty = -(top+bottom)/tb;
 MGLfloat tz = -(far+near)/fn;
 
-projection =  {{2.f/rl,0.f,0.f,0.f, 0.f,2.f/tb,0.f,0.f, 0.f,0.f,-2.f/fn,0.f, tx, ty, tz, 1.f}};
+projection =  {{2.f/rl,0.f,0.f,0.f,
+                0.f,2.f/tb,0.f,0.f,
+                0.f,0.f,-2.f/fn,0.f,
+                tx, ty, tz, 1.f}};
 }
 
 /**
