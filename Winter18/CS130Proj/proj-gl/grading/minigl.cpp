@@ -44,6 +44,7 @@ MGLmatrix_mode currMatMode;
 vec3 color; 	// stores the color
 vec4 vertices;
 mat4 identity = {{1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f}};
+vector<MGLfloat> zBuffer;
 
 // Structures
 struct Vertex {
@@ -73,21 +74,13 @@ inline void MGL_ERROR(const char* description) {
 // helper function
 //
 //
-mat4 topOfStack() {
-    if (currMatMode == MGL_MODELVIEW)
-        return modelviewStack.back();
-
-    if (currMatMode == MGL_PROJECTION)
-        return projectionStack.back();
-    return identity; // shouldn't really get here
-}
-
 void modifyStack(mat4 operation) {
     if (currMatMode == MGL_MODELVIEW)
-       modelviewStack.back() = operation * modelviewStack.back();
+       modelviewStack.back() = modelviewStack.back() * operation;
     if (currMatMode == MGL_PROJECTION)
-       projectionStack.back() = operation * projectionStack.back();
+       projectionStack.back() = projectionStack.back() * operation;
 }
+
 MGLfloat getArea(Vertex a, Vertex b, Vertex c) {
    MGLfloat ax, ay, bx, by, cx, cy;
 
@@ -156,10 +149,13 @@ void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *dat
        
            MGLfloat areaABP = getArea(A, B, I);
            MGLfloat gamma = areaABP /areaABC;
-
+        
            if (alpha > 0 && beta > 0 && gamma > 0) {
               vec3 newColor = A.color*255;
-              data[x + y*width] = Make_Pixel(newColor[0],newColor[1],newColor[2]);
+              if (zBuffer[x+y*width] > C.position[2]) {
+                 data[x + y*width] = Make_Pixel(newColor[0],newColor[1],newColor[2]);
+                 zBuffer[x+y*width] = C.position[2];
+              }
            } 
        }
    }
@@ -181,6 +177,7 @@ void mglReadPixels(MGLsize width,
                    MGLsize height,
                    MGLpixel *data)
 {
+    zBuffer = vector<MGLfloat>(width*height, 10.e6f);
     for (unsigned int i = 0; i != width; ++i) {
        for (unsigned int j = 0; j != height; ++j) {
           data[i+j*width] = Make_Pixel(0, 0, 0);
@@ -334,6 +331,15 @@ void mglLoadIdentity()
  */
 void mglLoadMatrix(const MGLfloat *matrix)
 {
+    mat4 temp = identity;
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j <4; ++j)
+            temp(i,j) = matrix[i+j*4];
+    if (currMatMode == MGL_MODELVIEW)
+       modelviewStack.back() = temp;
+
+    if (currMatMode == MGL_PROJECTION)
+       projectionStack.back() = temp;
 }
 
 /**
@@ -350,6 +356,15 @@ void mglLoadMatrix(const MGLfloat *matrix)
  */
 void mglMultMatrix(const MGLfloat *matrix)
 {
+    mat4 temp = identity;
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j <4; ++j)
+            temp(i,j) = matrix[i+j*4];
+    if (currMatMode == MGL_MODELVIEW)
+       modelviewStack.back() = modelviewStack.back() * temp;
+
+    if (currMatMode == MGL_PROJECTION)
+       projectionStack.back() = projectionStack.back() * temp;
 }
 
 /**
@@ -377,6 +392,7 @@ void mglRotate(MGLfloat angle,
                MGLfloat y,
                MGLfloat z)
 {
+   angle = angle/180*M_PI;
    MGLfloat c = cos(angle);
    MGLfloat s = sin(angle);
    vec3 normalized = {x,y,z}; 
