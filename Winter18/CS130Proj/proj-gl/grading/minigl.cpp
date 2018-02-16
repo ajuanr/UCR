@@ -132,8 +132,14 @@ void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *dat
     C.position[0] = i;
     C.position[1] = j;
 
-    for (int x = 0; x != width; ++x) {
-        for (int y = 0; y != height; ++y) {
+    // bounding box - optimization
+    int xMax = ceil(max(A.position[0],max(B.position[0],C.position[0])));
+    int xMin = floor(min(A.position[0],min(B.position[0],C.position[0])));
+    int yMax = ceil(max(A.position[1],max(B.position[1],C.position[1])));
+    int yMin = floor(min(A.position[1],min(B.position[1],C.position[1])));
+
+    for (int x = xMin; x != xMax; ++x) {
+        for (int y = yMin; y != yMax; ++y) {
            Vertex I;
            I.position[0] = x;
            I.position[1] = y; 
@@ -152,11 +158,11 @@ void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *dat
         
            if (alpha > 0 && beta > 0 && gamma > 0) {
               vec3 newColor = A.color*255;
-              if (zBuffer[x+y*width] > C.position[2]) {
+              if (zBuffer[x+y*width] > A.position[2]) {
                  data[x + y*width] = Make_Pixel(newColor[0],newColor[1],newColor[2]);
-                 zBuffer[x+y*width] = C.position[2];
+                 zBuffer[x+y*width] = A.position[2];
               }
-           } 
+           }
        }
    }
 }
@@ -296,11 +302,14 @@ void mglPushMatrix()
  */
 void mglPopMatrix()
 {
-    if (currMatMode == MGL_MODELVIEW) 
+    if (currMatMode == MGL_MODELVIEW) { 
+        if (modelviewStack.empty()) MGL_ERROR("Can't pop from empty modelview stack");
         modelviewStack.pop_back();
-
-    if (currMatMode == MGL_PROJECTION) 
+    }
+    if (currMatMode == MGL_PROJECTION) {
+        if (projectionStack.empty()) MGL_ERROR("Can't pop from empty projection stack");
         projectionStack.pop_back();
+    }
 }
 
 /**
