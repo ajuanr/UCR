@@ -73,21 +73,13 @@ inline void MGL_ERROR(const char* description) {
 // helper function
 //
 //
-mat4 topOfStack() {
-    if (currMatMode == MGL_MODELVIEW)
-        return modelviewStack.back();
-
-    if (currMatMode == MGL_PROJECTION)
-        return projectionStack.back();
-    return identity; // shouldn't really get here
-}
-
 void modifyStack(mat4 operation) {
     if (currMatMode == MGL_MODELVIEW)
-       modelviewStack.back() = operation * modelviewStack.back();
+       modelviewStack.back() = modelviewStack.back() * operation;
     if (currMatMode == MGL_PROJECTION)
        projectionStack.back() = operation * projectionStack.back();
 }
+
 MGLfloat getArea(Vertex a, Vertex b, Vertex c) {
    MGLfloat ax, ay, bx, by, cx, cy;
 
