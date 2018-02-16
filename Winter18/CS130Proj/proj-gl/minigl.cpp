@@ -138,7 +138,8 @@ void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *dat
            MGLfloat gamma = areaABP /areaABC;
 
            if (alpha > 0 && beta > 0 && gamma > 0) {
-              data[x + y*width] = Make_Pixel(255,255,255);
+              vec3 newColor = A.color*255;
+              data[x + y*width] = Make_Pixel(newColor[0],newColor[1],newColor[2]);
            } 
        }
    }
