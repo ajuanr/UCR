@@ -43,7 +43,9 @@ MGLmatrix_mode currMatMode;
 // Global Variables
 vec3 color; 	// stores the color
 vec4 vertices;
+mat4 identity = {{1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f}};
 mat4 projection; 
+mat4 modelview;
 
 // Structures
 struct Vertex {
@@ -58,6 +60,9 @@ struct Triangle {
 // Lists
 vector<Vertex> verticesList;
 vector<Triangle> triangleList;
+vector<mat4> projectionStack;
+vector<mat4> modelviewStack;
+
 
 /**
  * Standard macro to report errors
@@ -68,6 +73,23 @@ inline void MGL_ERROR(const char* description) {
 }
 
 // helper function
+//
+//
+mat4 topOfStack() {
+    if (currMatMode == MGL_MODELVIEW)
+        return modelviewStack.back();
+
+    if (currMatMode == MGL_PROJECTION)
+        return projectionStack.back();
+    return identity; // shouldn't really get here
+}
+
+void modifyStack(mat4 operation) {
+    if (currMatMode == MGL_MODELVIEW)
+       modelviewStack.back() = operation * modelviewStack.back();
+    if (currMatMode == MGL_PROJECTION)
+       projectionStack.back() = operation * projectionStack.back();
+}
 MGLfloat getArea(Vertex a, Vertex b, Vertex c) {
    MGLfloat ax, ay, bx, by, cx, cy;
 
@@ -247,9 +269,7 @@ void mglVertex3(MGLfloat x,
     Position.color = color;  // assign current color to Position vertex
     vec4 position4d={x,y,z,1};
     
-//    Position.position = position4d;
-    
-    Position.position = projection*position4d;
+    Position.position = projectionStack.back()*(modelview*position4d);
 
     verticesList.push_back(Position);
 }
@@ -268,6 +288,12 @@ void mglMatrixMode(MGLmatrix_mode mode)
  */
 void mglPushMatrix()
 {
+    if (currMatMode == MGL_MODELVIEW) 
+        modelviewStack.push_back(modelview);
+
+    if (currMatMode == MGL_PROJECTION) 
+        projectionStack.push_back(projection);
+    
 }
 
 /**
@@ -276,6 +302,11 @@ void mglPushMatrix()
  */
 void mglPopMatrix()
 {
+    if (currMatMode == MGL_MODELVIEW) 
+        modelviewStack.pop_back();
+
+    if (currMatMode == MGL_PROJECTION) 
+        projectionStack.pop_back();
 }
 
 /**
@@ -283,10 +314,14 @@ void mglPopMatrix()
  */
 void mglLoadIdentity()
 {
+ 
  if (currMatMode ==  MGL_PROJECTION)  {
-     projection = {{1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f}};
+     if (projectionStack.empty()) projectionStack.push_back(identity);
+     else  projectionStack.back() = identity;
  }
  if (currMatMode ==  MGL_MODELVIEW) ;
+     if (modelviewStack.empty()) modelviewStack.push_back(identity);
+     modelview = {{1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f}};
 }
 
 /**
@@ -351,6 +386,17 @@ void mglScale(MGLfloat x,
               MGLfloat y,
               MGLfloat z)
 {
+   mat4 scaleMatrix = {{x, 0.f, 0.f, 0.f,
+                        0.f, y, 0.f, 0.f,
+                        0.f, 0.f, z, 0.f,
+                        0.f,0.f, 0.f, 1.f}};
+
+    if (currMatMode == MGL_MODELVIEW)
+        modelviewStack.back() = scaleMatrix * modelviewStack.back();
+
+    if (currMatMode == MGL_PROJECTION)
+        projectionStack.back() = scaleMatrix * projectionStack.back();
+
 }
 
 /**
@@ -373,6 +419,7 @@ projection = {{(2.f*near/(right-left)), 0.f,0.f,0.f,
                0.f, (2.f*near/(top-bottom)), 0.f,0.f,
                A, B, C, -1.f,
                0.f, 0.f, D, 0.f}}; 
+    modifyStack(projection);
 
 }
 
@@ -399,6 +446,8 @@ projection =  {{2.f/rl,0.f,0.f,0.f,
                 0.f,2.f/tb,0.f,0.f,
                 0.f,0.f,-2.f/fn,0.f,
                 tx, ty, tz, 1.f}};
+
+modifyStack(projection);
 }
 
 /**
