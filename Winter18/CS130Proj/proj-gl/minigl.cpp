@@ -156,10 +156,13 @@ void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *dat
            MGLfloat areaABP = getArea(A, B, I);
            MGLfloat gamma = areaABP /areaABC;
         
-           if (alpha > 0 && beta > 0 && gamma > 0) {
-              vec3 newColor = A.color*255;
+           if (alpha >= 0 && beta >= 0 && gamma >= 0) {
+              vec3 c0= A.color*255;
+              vec3 c1 = B.color*255;
+              vec3 c2 = C.color*255;
               if (zBuffer[x+y*width] > A.position[2]) {
-                 data[x + y*width] = Make_Pixel(newColor[0],newColor[1],newColor[2]);
+                 vec3 c =  alpha*c0+beta*c1+gamma*c2;
+                 data[x + y*width] = Make_Pixel(c[0],c[1],c[2]);
                  zBuffer[x+y*width] = A.position[2];
               }
            }
