@@ -43,8 +43,6 @@ MGLmatrix_mode currMatMode;
 // Global Variables
 vec3 color; 	// stores the color
 vec4 vertices;
-mat4 modelview;
-mat4 projection;
 mat4 identity = {{1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f}};
 
 // Structures
@@ -362,6 +360,11 @@ void mglTranslate(MGLfloat x,
                   MGLfloat y,
                   MGLfloat z)
 {
+   mat4 translate = {{1.f, 0.f, 0.f, 0.f,
+                      0.f, 1.f, 0.f, 0.f,
+                      0.f, 0.f, 1.f, 0.f,
+                      x, y, z, 1.f}};
+   modifyStack(translate);
 }
 
 /**
@@ -374,6 +377,24 @@ void mglRotate(MGLfloat angle,
                MGLfloat y,
                MGLfloat z)
 {
+   angle = angle/180*M_PI;
+   MGLfloat c = cos(angle);
+   MGLfloat s = sin(angle);
+   vec3 normalized = {x,y,z}; 
+   normalized.normalized();
+   MGLfloat denom = sqrt(x*x+y*y+z*z);
+
+   // normalize the coordinates
+   x /= denom;
+   y /= denom;
+   z /= denom;
+
+   MGLfloat d= 1-c;
+   mat4 rotate = {{x*x*d+c, y*x*d+z*s, x*z*d-y*s, 0.f,
+                   x*y*d-z*s, y*y*d+c, y*z*d+x*s, 0.f,
+                   x*z*d+y*s, y*z*d-x*s, z*z*d+c, 0.f,
+                   0.f, 0.f, 0.f, 1.f}};
+   modifyStack(rotate);
 }
 
 /**
@@ -408,12 +429,12 @@ void mglFrustum(MGLfloat left,
     MGLfloat C = -((far + near)  / (far - near));
     MGLfloat D = -((2.f * far * near) / (far - near));
 
-    projection = {{(2.f*near/(right-left)), 0.f,0.f,0.f,
+    mat4 frust= {{(2.f*near/(right-left)), 0.f,0.f,0.f,
                     0.f, (2.f*near/(top-bottom)), 0.f,0.f,
                     A, B, C, -1.f,
                     0.f, 0.f, D, 0.f}}; 
 
-    modifyStack(projection);
+    modifyStack(frust);
 }
 
 /**
@@ -427,20 +448,20 @@ void mglOrtho(MGLfloat left,
               MGLfloat near,
               MGLfloat far)
 {
-MGLfloat rl = right - left;
-MGLfloat tb = top - bottom;
-MGLfloat fn = far - near;
+    MGLfloat rl = right - left;
+    MGLfloat tb = top - bottom;
+    MGLfloat fn = far - near;
 
-MGLfloat tx = -(right+left)/rl;
-MGLfloat ty = -(top+bottom)/tb;
-MGLfloat tz = -(far+near)/fn;
+    MGLfloat tx = -(right+left)/rl;
+    MGLfloat ty = -(top+bottom)/tb;
+    MGLfloat tz = -(far+near)/fn;
 
-projection =  {{2.f/rl,0.f,0.f,0.f,
+    mat4 ortho=  {{2.f/rl,0.f,0.f,0.f,
                 0.f,2.f/tb,0.f,0.f,
                 0.f,0.f,-2.f/fn,0.f,
                 tx, ty, tz, 1.f}};
 
-modifyStack(projection);
+   modifyStack(ortho);
 }
 
 /**

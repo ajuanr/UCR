@@ -41,9 +41,9 @@ MGLpoly_mode currMode;
 MGLmatrix_mode currMatMode;
 
 // Global Variables
-vec3 color;
+vec3 color; 	// stores the color
 vec4 vertices;
-mat4 currentMatrix= {1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f};
+mat4 identity = {{1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f}};
 
 // Structures
 struct Vertex {
@@ -58,6 +58,9 @@ struct Triangle {
 // Lists
 vector<Vertex> verticesList;
 vector<Triangle> triangleList;
+vector<mat4> projectionStack;
+vector<mat4> modelviewStack;
+
 
 /**
  * Standard macro to report errors
@@ -68,6 +71,23 @@ inline void MGL_ERROR(const char* description) {
 }
 
 // helper function
+//
+//
+mat4 topOfStack() {
+    if (currMatMode == MGL_MODELVIEW)
+        return modelviewStack.back();
+
+    if (currMatMode == MGL_PROJECTION)
+        return projectionStack.back();
+    return identity; // shouldn't really get here
+}
+
+void modifyStack(mat4 operation) {
+    if (currMatMode == MGL_MODELVIEW)
+       modelviewStack.back() = operation * modelviewStack.back();
+    if (currMatMode == MGL_PROJECTION)
+       projectionStack.back() = operation * projectionStack.back();
+}
 MGLfloat getArea(Vertex a, Vertex b, Vertex c) {
    MGLfloat ax, ay, bx, by, cx, cy;
 
@@ -85,36 +105,36 @@ MGLfloat getArea(Vertex a, Vertex b, Vertex c) {
 void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *data) {
     Vertex A = tri.vertices.at(0);
 
-    MGLfloat x = A.position[0];
-    MGLfloat y = A.position[1];
-    MGLfloat i = (x + 1) * 0.5 * width;
-    MGLfloat j = (y + 1) * 0.5 * height;
-    i -= 0.5;
-    j -= 0.5;
+    MGLfloat x = A.position[0]/A.position[3]; // divide by w([3]) for frustum
+    MGLfloat y = A.position[1]/A.position[3];
+    MGLfloat i = (x + 1) * 0.5f * width;
+    MGLfloat j = (y + 1) * 0.5f * height;
+    i -= 0.5f;
+    j -= 0.5f;
 
     A.position[0] = i;
     A.position[1] = j;
 
     Vertex B = tri.vertices.at(1);
 
-    x = B.position[0];
-    y = B.position[1];
-    i = (x + 1) * 0.5 * width;
-    j = (y + 1) * 0.5 * height;
-    i -= 0.5;
-    j -= 0.5;
+    x = B.position[0]/B.position[3];
+    y = B.position[1]/B.position[3];
+    i = (x + 1) * 0.5f * width;
+    j = (y + 1) * 0.5f * height;
+    i -= 0.5f;
+    j -= 0.5f;
 
     B.position[0] = i;
     B.position[1] = j;
 
     Vertex C = tri.vertices.at(2);
 
-    x = C.position[0];
-    y = C.position[1];
-    i = (x + 1) * 0.5 * width;
-    j = (y + 1) * 0.5 * height;
-    i -= 0.5;
-    j -= 0.5;
+    x = C.position[0]/C.position[3];
+    y = C.position[1]/C.position[3];
+    i = (x + 1) * 0.5f * width;
+    j = (y + 1) * 0.5f * height;
+    i -= 0.5f;
+    j -= 0.5f;
 
     C.position[0] = i;
     C.position[1] = j;
@@ -124,6 +144,7 @@ void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *dat
            Vertex I;
            I.position[0] = x;
            I.position[1] = y; 
+           I.color = color;
 
            MGLfloat areaABC = getArea(A, B, C);
 
@@ -135,9 +156,10 @@ void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *dat
        
            MGLfloat areaABP = getArea(A, B, I);
            MGLfloat gamma = areaABP /areaABC;
-//std::cout << "alpha " << alpha << " beta " << beta << " gamma " << gamma << std::endl;
+
            if (alpha > 0 && beta > 0 && gamma > 0) {
-              data[x + y*width] = Make_Pixel(255,255,255);
+              vec3 newColor = A.color*255;
+              data[x + y*width] = Make_Pixel(newColor[0],newColor[1],newColor[2]);
            } 
        }
    }
@@ -198,23 +220,24 @@ void mglEnd()
 
     if (currMode == MGL_QUADS) {
         for (unsigned int i = 0; i < verticesList.size(); i += 4) {
-        Triangle t1,t2;
-        unsigned int bottomLeft, topLeft, bottomRight, topRight;
-	bottomLeft = i;
-        bottomRight = i + 1;
-        topRight = i + 2;
-        topLeft = i + 3;
+           Triangle t1,t2;
+           unsigned int bottomLeft, topLeft, bottomRight, topRight;
 
-        t1.vertices.push_back(verticesList.at(bottomLeft));
-        t1.vertices.push_back(verticesList.at(bottomRight));
-        t1.vertices.push_back(verticesList.at(topRight));
+           bottomLeft = i;
+           bottomRight = i + 1;
+           topRight = i + 2;
+           topLeft = i + 3;
+
+           t1.vertices.push_back(verticesList.at(bottomLeft));
+           t1.vertices.push_back(verticesList.at(bottomRight));
+           t1.vertices.push_back(verticesList.at(topRight));
         
-        t2.vertices.push_back(verticesList.at(bottomLeft));
-        t2.vertices.push_back(verticesList.at(topRight));
-        t2.vertices.push_back(verticesList.at(topLeft));
+           t2.vertices.push_back(verticesList.at(bottomLeft));
+           t2.vertices.push_back(verticesList.at(topRight));
+           t2.vertices.push_back(verticesList.at(topLeft));
 
-        triangleList.push_back(t1);
-        triangleList.push_back(t2);
+           triangleList.push_back(t1);
+           triangleList.push_back(t2);
         }
     }
     verticesList.clear();
@@ -241,13 +264,10 @@ void mglVertex3(MGLfloat x,
                 MGLfloat z)
 {
     Vertex Position;
-    vec4 position4d;
-    position4d[0] = x;
-    position4d[1] = y;
-    position4d[2] = z;
-    position4d[3] = 1;
-//    Position.position = position4d;
-    Position.position = currentMatrix*position4d;
+    Position.color = color;  // assign current color to Position vertex
+    vec4 position4d={x,y,z,1};
+    
+    Position.position = projectionStack.back()*(modelviewStack.back()*position4d);
 
     verticesList.push_back(Position);
 }
@@ -266,6 +286,11 @@ void mglMatrixMode(MGLmatrix_mode mode)
  */
 void mglPushMatrix()
 {
+    if (currMatMode == MGL_MODELVIEW) 
+        modelviewStack.push_back(modelviewStack.back());
+
+    if (currMatMode == MGL_PROJECTION) 
+        projectionStack.push_back(projectionStack.back());
 }
 
 /**
@@ -274,6 +299,11 @@ void mglPushMatrix()
  */
 void mglPopMatrix()
 {
+    if (currMatMode == MGL_MODELVIEW) 
+        modelviewStack.pop_back();
+
+    if (currMatMode == MGL_PROJECTION) 
+        projectionStack.pop_back();
 }
 
 /**
@@ -281,7 +311,13 @@ void mglPopMatrix()
  */
 void mglLoadIdentity()
 {
- currentMatrix = {1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f};
+ if (currMatMode ==  MGL_PROJECTION)  {
+     if (projectionStack.empty()) projectionStack.push_back(identity);
+     else  projectionStack.back() = identity;
+ }
+ if (currMatMode ==  MGL_MODELVIEW) ;
+     if (modelviewStack.empty()) modelviewStack.push_back(identity);
+     else modelviewStack.back() = identity;
 }
 
 /**
@@ -324,6 +360,11 @@ void mglTranslate(MGLfloat x,
                   MGLfloat y,
                   MGLfloat z)
 {
+   mat4 translate = {{1.f, 0.f, 0.f, 0.f,
+                      0.f, 1.f, 0.f, 0.f,
+                      0.f, 0.f, 1.f, 0.f,
+                      x, y, z, 1.f}};
+   modifyStack(translate);
 }
 
 /**
@@ -336,6 +377,23 @@ void mglRotate(MGLfloat angle,
                MGLfloat y,
                MGLfloat z)
 {
+   MGLfloat c = cos(angle);
+   MGLfloat s = sin(angle);
+   vec3 normalized = {x,y,z}; 
+   normalized.normalized();
+   MGLfloat denom = sqrt(x*x+y*y+z*z);
+
+   // normalize the coordinates
+   x /= denom;
+   y /= denom;
+   z /= denom;
+
+   MGLfloat d= 1-c;
+   mat4 rotate = {{x*x*d+c, y*x*d+z*s, x*z*d-y*s, 0.f,
+                   x*y*d-z*s, y*y*d+c, y*z*d+x*s, 0.f,
+                   x*z*d+y*s, y*z*d-x*s, z*z*d+c, 0.f,
+                   0.f, 0.f, 0.f, 1.f}};
+   modifyStack(rotate);
 }
 
 /**
@@ -346,6 +404,12 @@ void mglScale(MGLfloat x,
               MGLfloat y,
               MGLfloat z)
 {
+   mat4 scaleMatrix = {{x, 0.f, 0.f, 0.f,
+                        0.f, y, 0.f, 0.f,
+                        0.f, 0.f, z, 0.f,
+                        0.f,0.f, 0.f, 1.f}};
+
+   modifyStack(scaleMatrix);
 }
 
 /**
@@ -359,6 +423,17 @@ void mglFrustum(MGLfloat left,
                 MGLfloat near,
                 MGLfloat far)
 {
+    MGLfloat A = (right + left) / (right - left);
+    MGLfloat B = (top + bottom) / (top - bottom);  
+    MGLfloat C = -((far + near)  / (far - near));
+    MGLfloat D = -((2.f * far * near) / (far - near));
+
+    mat4 frust= {{(2.f*near/(right-left)), 0.f,0.f,0.f,
+                    0.f, (2.f*near/(top-bottom)), 0.f,0.f,
+                    A, B, C, -1.f,
+                    0.f, 0.f, D, 0.f}}; 
+
+    modifyStack(frust);
 }
 
 /**
@@ -372,16 +447,20 @@ void mglOrtho(MGLfloat left,
               MGLfloat near,
               MGLfloat far)
 {
-MGLfloat rl = right - left;
-MGLfloat tb = top - bottom;
-MGLfloat fn = far - near;
+    MGLfloat rl = right - left;
+    MGLfloat tb = top - bottom;
+    MGLfloat fn = far - near;
 
-MGLfloat tx = (right+left)/rl;
-MGLfloat ty = (top+bottom)/tb;
-MGLfloat tz = (far+near)/fn;
+    MGLfloat tx = -(right+left)/rl;
+    MGLfloat ty = -(top+bottom)/tb;
+    MGLfloat tz = -(far+near)/fn;
 
-//mat4 projection = {2.f/rl,0.f,0.f,0.f, 0.f,2.f/tb,0.f,0.f, 0.f,0.f,-2.f/fn,0.f, tx, ty, tz, 1.f};
-//currentMatrix = projection * currentMatrix;
+    mat4 ortho=  {{2.f/rl,0.f,0.f,0.f,
+                0.f,2.f/tb,0.f,0.f,
+                0.f,0.f,-2.f/fn,0.f,
+                tx, ty, tz, 1.f}};
+
+   modifyStack(ortho);
 }
 
 /**
