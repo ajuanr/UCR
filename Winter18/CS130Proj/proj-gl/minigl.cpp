@@ -43,9 +43,9 @@ MGLmatrix_mode currMatMode;
 // Global Variables
 vec3 color; 	// stores the color
 vec4 vertices;
-mat4 identity = {{1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f}};
-mat4 projection; 
 mat4 modelview;
+mat4 projection;
+mat4 identity = {{1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f}};
 
 // Structures
 struct Vertex {
@@ -269,7 +269,7 @@ void mglVertex3(MGLfloat x,
     Position.color = color;  // assign current color to Position vertex
     vec4 position4d={x,y,z,1};
     
-    Position.position = projectionStack.back()*(modelview*position4d);
+    Position.position = projectionStack.back()*(modelviewStack.back()*position4d);
 
     verticesList.push_back(Position);
 }
@@ -289,11 +289,10 @@ void mglMatrixMode(MGLmatrix_mode mode)
 void mglPushMatrix()
 {
     if (currMatMode == MGL_MODELVIEW) 
-        modelviewStack.push_back(modelview);
+        modelviewStack.push_back(modelviewStack.back());
 
     if (currMatMode == MGL_PROJECTION) 
-        projectionStack.push_back(projection);
-    
+        projectionStack.push_back(projectionStack.back());
 }
 
 /**
@@ -314,14 +313,13 @@ void mglPopMatrix()
  */
 void mglLoadIdentity()
 {
- 
  if (currMatMode ==  MGL_PROJECTION)  {
      if (projectionStack.empty()) projectionStack.push_back(identity);
      else  projectionStack.back() = identity;
  }
  if (currMatMode ==  MGL_MODELVIEW) ;
      if (modelviewStack.empty()) modelviewStack.push_back(identity);
-     modelview = {{1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f}};
+     else modelviewStack.back() = identity;
 }
 
 /**
@@ -391,12 +389,7 @@ void mglScale(MGLfloat x,
                         0.f, 0.f, z, 0.f,
                         0.f,0.f, 0.f, 1.f}};
 
-    if (currMatMode == MGL_MODELVIEW)
-        modelviewStack.back() = scaleMatrix * modelviewStack.back();
-
-    if (currMatMode == MGL_PROJECTION)
-        projectionStack.back() = scaleMatrix * projectionStack.back();
-
+   modifyStack(scaleMatrix);
 }
 
 /**
@@ -410,17 +403,17 @@ void mglFrustum(MGLfloat left,
                 MGLfloat near,
                 MGLfloat far)
 {
-MGLfloat A = (right + left) / (right - left);
-MGLfloat B = (top + bottom) / (top - bottom);  
-MGLfloat C = -((far + near)  / (far - near));
-MGLfloat D = -((2.f * far * near) / (far - near));
+    MGLfloat A = (right + left) / (right - left);
+    MGLfloat B = (top + bottom) / (top - bottom);  
+    MGLfloat C = -((far + near)  / (far - near));
+    MGLfloat D = -((2.f * far * near) / (far - near));
 
-projection = {{(2.f*near/(right-left)), 0.f,0.f,0.f,
-               0.f, (2.f*near/(top-bottom)), 0.f,0.f,
-               A, B, C, -1.f,
-               0.f, 0.f, D, 0.f}}; 
+    projection = {{(2.f*near/(right-left)), 0.f,0.f,0.f,
+                    0.f, (2.f*near/(top-bottom)), 0.f,0.f,
+                    A, B, C, -1.f,
+                    0.f, 0.f, D, 0.f}}; 
+
     modifyStack(projection);
-
 }
 
 /**
