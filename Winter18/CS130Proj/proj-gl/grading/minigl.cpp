@@ -151,7 +151,7 @@ void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *dat
 
     for (int x = xMin; x != xMax; ++x) {
         for (int y = yMin; y != yMax; ++y) {
-	   if (x < 0 || x > width || y < 0 || y > height) continue;
+	   if (x < 0 || x > width || y < 0 || y > height) break;
            Vertex I;
            I.position[0] = x;
            I.position[1] = y; 
@@ -169,7 +169,7 @@ void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *dat
               MGLfloat z = alpha*tri.vertices.at(0).position[2] + beta* tri.vertices.at(1).position[2]+ gamma*tri.vertices.at(2).position[2];
                  if (z < zBuffer[x+y*width] ) {
                     vec3 c =  alpha*c0+beta*c1+gamma*c2;
-                    std::cout << front << " " <<z << " " << back <<std::endl;
+//                    std::cout << front << " " <<z << " " << back <<std::endl;
 		    if (z >= front && z <= back) // clipping
                       data[x + y*width] = Make_Pixel(c[0],c[1],c[2]);
                     zBuffer[x+y*width] = A.position[2];
