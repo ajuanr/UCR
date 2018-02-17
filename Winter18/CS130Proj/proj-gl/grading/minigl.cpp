@@ -138,14 +138,17 @@ void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *dat
     int yMax = ceil(max(A.position[1],max(B.position[1],C.position[1])));
     int yMin = floor(min(A.position[1],min(B.position[1],C.position[1])));
 
+    // pre-compute this before entering the loop
+    MGLfloat areaABC = getArea(A, B, C);
+    vec3 c0= A.color*255;
+    vec3 c1 = B.color*255;
+    vec3 c2 = C.color*255;
+
     for (int x = xMin; x != xMax; ++x) {
         for (int y = yMin; y != yMax; ++y) {
            Vertex I;
            I.position[0] = x;
            I.position[1] = y; 
-           I.color = color;
-
-           MGLfloat areaABC = getArea(A, B, C);
 
            MGLfloat areaPBC = getArea(I, B, C);
            MGLfloat alpha = areaPBC / areaABC;
@@ -157,9 +160,6 @@ void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *dat
            MGLfloat gamma = areaABP /areaABC;
         
            if (alpha >= 0 && beta >= 0 && gamma >= 0) {
-              vec3 c0= A.color*255;
-              vec3 c1 = B.color*255;
-              vec3 c2 = C.color*255;
               MGLfloat z = alpha*tri.vertices.at(0).position[2] + beta* tri.vertices.at(1).position[2]+ gamma*tri.vertices.at(2).position[2];
               if (z < zBuffer[x+y*width] ) {
                  vec3 c =  alpha*c0+beta*c1+gamma*c2;
