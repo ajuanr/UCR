@@ -72,31 +72,30 @@ extern int yydebug;
     FOREACH = 282,
     FALSE = 283,
     RETURN = 284,
-    L_SQUARE_BRACKET = 285,
-    R_SQUARE_BRACKET = 286,
-    L_PAREN = 287,
-    R_PAREN = 288,
-    NUMBER = 289,
-    SEMICOLON = 290,
-    COLON = 291,
-    COMMA = 292,
-    ASSIGN = 293,
-    OR = 294,
-    AND = 295,
-    NOT = 296,
-    EQ = 297,
-    NEQ = 298,
-    LT = 299,
-    GT = 300,
-    LTE = 301,
-    GTE = 302,
-    ADD = 303,
-    SUB = 304,
-    MULT = 305,
-    DIV = 306,
-    MOD = 307,
-    NEG = 308,
-    FUNCTCALL = 309
+    NUMBER = 285,
+    ADD = 286,
+    MULT = 287,
+    DIV = 288,
+    MOD = 289,
+    AND = 290,
+    OR = 291,
+    SEMICOLON = 292,
+    COLON = 293,
+    COMMA = 294,
+    L_PAREN = 295,
+    R_PAREN = 296,
+    L_SQUARE_BRACKET = 297,
+    R_SQUARE_BRACKET = 298,
+    EQ = 299,
+    NEQ = 300,
+    LT = 301,
+    GT = 302,
+    LTE = 303,
+    GTE = 304,
+    SUB = 305,
+    NOT = 306,
+    UMINUS = 307,
+    ASSIGN = 308
   };
 #endif
 
@@ -111,7 +110,7 @@ union YYSTYPE
    char*   	strVal;
    char		charVal;
 
-#line 115 "y.tab.h" /* yacc.c:1909  */
+#line 114 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
