@@ -60,9 +60,8 @@ struct Triangle {
 // Lists
 vector<Vertex> verticesList;
 vector<Triangle> triangleList;
-vector<mat4> projectionStack;
-vector<mat4> modelviewStack;
-
+vector<mat4> projectionStack={identity};
+vector<mat4> modelviewStack = {identity};
 
 /**
  * Standard macro to report errors
@@ -75,14 +74,20 @@ inline void MGL_ERROR(const char* description) {
 // helper function
 //
 //
-void modifyStack(mat4 operation) {
+mat4& topOfStack() {
     if (currMatMode == MGL_MODELVIEW)
-       modelviewStack.back() = modelviewStack.back() * operation;
+       return modelviewStack.back();
     if (currMatMode == MGL_PROJECTION)
-       projectionStack.back() = projectionStack.back() * operation;
+       return projectionStack.back();
+    MGL_ERROR("No stack, or unkown stack, referenced");
+    exit(1);
 }
 
-MGLfloat getArea(Vertex a, Vertex b, Vertex c) {
+void modifyStack(mat4 operation) {
+    topOfStack() = topOfStack() * operation;
+}
+
+MGLfloat area(Vertex a, Vertex b, Vertex c) {
    MGLfloat ax, ay, bx, by, cx, cy;
 
    ax = a.position[0];
@@ -95,43 +100,26 @@ MGLfloat getArea(Vertex a, Vertex b, Vertex c) {
    return ax * (by - cy) + ay * (cx - bx) + (bx * cy - by * cx);
 }
 
-// helper function
-void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *data) {
-    Vertex A = tri.vertices.at(0);
-
-    MGLfloat x = A.position[0]/A.position[3]; // divide by w([3]) for frustum
-    MGLfloat y = A.position[1]/A.position[3];
+void toPixelCoord(Vertex &v, int width, int height) {
+    MGLfloat x = v.position[0]/v.position[3]; // divide by w([3]) for frustum
+    MGLfloat y = v.position[1]/v.position[3];
     MGLfloat i = (x + 1) * 0.5f * width;
     MGLfloat j = (y + 1) * 0.5f * height;
     i -= 0.5f;
     j -= 0.5f;
 
-    A.position[0] = i;
-    A.position[1] = j;
+    v.position[0] = i;
+    v.position[1] = j;
+}
 
+// helper function
+void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *data) {
+    Vertex A = tri.vertices.at(0);
     Vertex B = tri.vertices.at(1);
-
-    x = B.position[0]/B.position[3];
-    y = B.position[1]/B.position[3];
-    i = (x + 1) * 0.5f * width;
-    j = (y + 1) * 0.5f * height;
-    i -= 0.5f;
-    j -= 0.5f;
-
-    B.position[0] = i;
-    B.position[1] = j;
-
     Vertex C = tri.vertices.at(2);
-
-    x = C.position[0]/C.position[3];
-    y = C.position[1]/C.position[3];
-    i = (x + 1) * 0.5f * width;
-    j = (y + 1) * 0.5f * height;
-    i -= 0.5f;
-    j -= 0.5f;
-
-    C.position[0] = i;
-    C.position[1] = j;
+    toPixelCoord(A,width,height);
+    toPixelCoord(B,width,height);
+    toPixelCoord(C,width,height);
 
     // bounding box - optimization
     int xMax = ceil(max(A.position[0],max(B.position[0],C.position[0])));
@@ -144,33 +132,32 @@ void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *dat
     if (back == 0) back = 100;
 
     // pre-compute this before entering the loop
-    MGLfloat areaABC = getArea(A, B, C);
+    MGLfloat areaABC = area(A, B, C);
     vec3 c0 = A.color*255;
     vec3 c1 = B.color*255;
     vec3 c2 = C.color*255;
 
     for (int x = xMin; x != xMax; ++x) {
         for (int y = yMin; y != yMax; ++y) {
-	   if (x < 0 || x > width || y < 0 || y > height) break;
-           Vertex I;
-           I.position[0] = x;
-           I.position[1] = y; 
+	   if (x < 0 || x > width || y < 0 || y > height) break; // clipping along edges
+           Vertex P;
+           P.position[0] = x;
+           P.position[1] = y; 
 
-           MGLfloat areaPBC = getArea(I, B, C);
+           MGLfloat areaPBC = area(P, B, C);
            MGLfloat alpha = areaPBC / areaABC;
 
-           MGLfloat areaAPC = getArea(A, I, C);
+           MGLfloat areaAPC = area(A, P, C);
            MGLfloat beta = areaAPC /areaABC;
        
-           MGLfloat areaABP = getArea(A, B, I);
+           MGLfloat areaABP = area(A, B, P);
            MGLfloat gamma = areaABP /areaABC;
 
            if (alpha >= 0 && beta >= 0 && gamma >= 0) {
-              MGLfloat z = alpha*tri.vertices.at(0).position[2] + beta* tri.vertices.at(1).position[2]+ gamma*tri.vertices.at(2).position[2];
+              MGLfloat z = alpha * A.position[2] + beta * B.position[2] + gamma * C.position[2];
                  if (z < zBuffer[x+y*width] ) {
                     vec3 c =  alpha*c0+beta*c1+gamma*c2;
-//                    std::cout << front << " " <<z << " " << back <<std::endl;
-		    if (z >= front && z <= back) // clipping
+		    if (z >= front && z <= back) // clipping along plane
                       data[x + y*width] = Make_Pixel(c[0],c[1],c[2]);
                     zBuffer[x+y*width] = A.position[2];
               }
@@ -195,7 +182,7 @@ void mglReadPixels(MGLsize width,
                    MGLsize height,
                    MGLpixel *data)
 {
-    zBuffer = vector<MGLfloat>(width*height, 10.e6f);
+    zBuffer = vector<MGLfloat>(width*height, 10.e30f);
     for (unsigned int i = 0; i != width; ++i) {
        for (unsigned int j = 0; j != height; ++j) {
           data[i+j*width] = Make_Pixel(0, 0, 0);
@@ -212,6 +199,7 @@ void mglReadPixels(MGLsize width,
  * Start specifying the vertices for a group of primitives,
  * whose type is specified by the given mode.
  */
+
 void mglBegin(MGLpoly_mode mode)
 {
      currMode = mode;
@@ -301,11 +289,12 @@ void mglMatrixMode(MGLmatrix_mode mode)
  */
 void mglPushMatrix()
 {
-    if (currMatMode == MGL_MODELVIEW) 
+    if (currMatMode == MGL_MODELVIEW)
         modelviewStack.push_back(modelviewStack.back());
 
-    if (currMatMode == MGL_PROJECTION) 
+    if (currMatMode == MGL_PROJECTION) {
         projectionStack.push_back(projectionStack.back());
+    }
 }
 
 /**
@@ -329,13 +318,7 @@ void mglPopMatrix()
  */
 void mglLoadIdentity()
 {
- if (currMatMode ==  MGL_PROJECTION)  {
-     if (projectionStack.empty()) projectionStack.push_back(identity);
-     else  projectionStack.back() = identity;
- }
- if (currMatMode ==  MGL_MODELVIEW) ;
-     if (modelviewStack.empty()) modelviewStack.push_back(identity);
-     else modelviewStack.back() = identity;
+    topOfStack() = identity;
 }
 
 /**
@@ -356,11 +339,8 @@ void mglLoadMatrix(const MGLfloat *matrix)
     for (int i = 0; i < 4; ++i)
         for (int j = 0; j <4; ++j)
             temp(i,j) = matrix[i+j*4];
-    if (currMatMode == MGL_MODELVIEW)
-       modelviewStack.back() = temp;
 
-    if (currMatMode == MGL_PROJECTION)
-       projectionStack.back() = temp;
+    topOfStack() = temp;
 }
 
 /**
@@ -381,11 +361,8 @@ void mglMultMatrix(const MGLfloat *matrix)
     for (int i = 0; i < 4; ++i)
         for (int j = 0; j <4; ++j)
             temp(i,j) = matrix[i+j*4];
-    if (currMatMode == MGL_MODELVIEW)
-       modelviewStack.back() = modelviewStack.back() * temp;
 
-    if (currMatMode == MGL_PROJECTION)
-       projectionStack.back() = projectionStack.back() * temp;
+    modifyStack(temp);
 }
 
 /**
@@ -400,6 +377,7 @@ void mglTranslate(MGLfloat x,
                       0.f, 1.f, 0.f, 0.f,
                       0.f, 0.f, 1.f, 0.f,
                       x, y, z, 1.f}};
+
    modifyStack(translate);
 }
 
@@ -416,8 +394,6 @@ void mglRotate(MGLfloat angle,
    angle = angle/180*M_PI;
    MGLfloat c = cos(angle);
    MGLfloat s = sin(angle);
-   vec3 normalized = {x,y,z}; 
-   normalized.normalized();
    MGLfloat denom = sqrt(x*x+y*y+z*z);
 
    // normalize the coordinates
@@ -425,7 +401,7 @@ void mglRotate(MGLfloat angle,
    y /= denom;
    z /= denom;
 
-   MGLfloat d= 1-c;
+   MGLfloat d = 1-c;
    mat4 rotate = {{x*x*d+c, y*x*d+z*s, x*z*d-y*s, 0.f,
                    x*y*d-z*s, y*y*d+c, y*z*d+x*s, 0.f,
                    x*z*d+y*s, y*z*d-x*s, z*z*d+c, 0.f,
