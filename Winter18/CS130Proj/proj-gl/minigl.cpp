@@ -45,7 +45,7 @@ vec3 color; 	// stores the color
 vec4 vertices;
 mat4 identity = {{1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f}};
 vector<MGLfloat> zBuffer;
-MGLfloat front,back;
+MGLfloat front=0,back=100;
 
 // Structures
 struct Vertex {
@@ -103,6 +103,7 @@ MGLfloat area(Vertex a, Vertex b, Vertex c) {
 void toPixelCoord(Vertex &v, int width, int height) {
     MGLfloat x = v.position[0]/v.position[3]; // divide by w([3]) for frustum
     MGLfloat y = v.position[1]/v.position[3];
+//    v.position[2]/v.position[3];
     MGLfloat i = (x + 1) * 0.5f * width;
     MGLfloat j = (y + 1) * 0.5f * height;
     i -= 0.5f;
@@ -113,7 +114,10 @@ void toPixelCoord(Vertex &v, int width, int height) {
 }
 
 // helper function
-void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *data) {
+void Rasterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *data) {
+    MGLfloat wA = tri.vertices.at(0).position[3];
+    MGLfloat wB = tri.vertices.at(1).position[3];
+    MGLfloat wC = tri.vertices.at(2).position[3];
     Vertex A = tri.vertices.at(0);
     Vertex B = tri.vertices.at(1);
     Vertex C = tri.vertices.at(2);
@@ -127,9 +131,11 @@ void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *dat
     int yMax = ceil(max(A.position[1],max(B.position[1],C.position[1])));
     int yMin = floor(min(A.position[1],min(B.position[1],C.position[1])));
 
-    // for clipping stuff
-    if (front == 1) front = -1; 
-    if (back == 0) back = 100;
+    // keep everything inside the window
+    xMin = max(xMin, 0);
+    yMin = max(yMin, 0);
+    xMax = min(xMax, width);
+    yMax = min(yMax, height);
 
     // pre-compute this before entering the loop
     MGLfloat areaABC = area(A, B, C);
@@ -139,7 +145,7 @@ void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *dat
 
     for (int x = xMin; x != xMax; ++x) {
         for (int y = yMin; y != yMax; ++y) {
-	   if (x < 0 || x > width || y < 0 || y > height) break; // clipping along edges
+//	   if (x < 0 || x > width || y < 0 || y > height) break;
            Vertex P;
            P.position[0] = x;
            P.position[1] = y; 
@@ -154,6 +160,10 @@ void Raterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *dat
            MGLfloat gamma = areaABP /areaABC;
 
            if (alpha >= 0 && beta >= 0 && gamma >= 0) {
+              MGLfloat k = alpha/wA + beta/wB + gamma/wC;
+                    alpha = alpha / (wA * k);
+                    beta = beta / (wB * k);
+                    gamma = gamma / (wC * k);
               MGLfloat z = alpha * A.position[2] + beta * B.position[2] + gamma * C.position[2];
                  if (z < zBuffer[x + y*width] ) {
                     vec3 c =  alpha*c0+beta*c1+gamma*c2;
@@ -190,7 +200,7 @@ void mglReadPixels(MGLsize width,
     }
 
     for (auto triangle : triangleList) {
-        Raterize_Triangle(triangle, width, height, data);
+        Rasterize_Triangle(triangle, width, height, data);
     }
     triangleList.clear();
 }
@@ -445,8 +455,7 @@ void mglFrustum(MGLfloat left,
                     0.f, (2.f*near/(top-bottom)), 0.f,0.f,
                     A, B, C, -1.f,
                     0.f, 0.f, D, 0.f}}; 
-
-    front = near;
+    front = -near;
     back = far;
     modifyStack(frust);
 }
