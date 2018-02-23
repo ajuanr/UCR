@@ -24,7 +24,7 @@ int yylex(void);
    char		charVal;
 }
 %error-verbose
-%token	<strVal>   	FUNCTION
+%token		   	FUNCTION
 %token  		INTEGER OF ARRAY READ IF THEN ENDIF ELSE WHILE DO 
 %token		    	BEGIN_PARAMS BEGIN_LOCALS BEGIN_BODY IN BEGINLOOP ENDLOOP
 %token			END_PARAMS END_LOCALS END_BODY CONTINUE WRITE TRUE FOREACH
@@ -33,9 +33,9 @@ int yylex(void);
 %left		 	ADD MULT DIV MOD AND OR
 %left    		SEMICOLON COLON COMMA L_PAREN R_PAREN L_SQUARE_BRACKET R_SQUARE_BRACKET 
 %left			EQ NEQ LT GT LTE GTE
-%right  <charVal> 	SUB 
-%right	<charVal>	NOT UMINUS
-%right  <strVal>	ASSIGN
+%right  	 	SUB 
+%right			NOT UMINUS
+%right  		ASSIGN
 %token  <strVal>	IDENT
 
 
@@ -62,13 +62,16 @@ statements:       statement SEMICOLON statements {printf("statements -> statemen
 statement:        var ASSIGN expression {printf("statement -> var ASSIGN expression\n");}
                 | IF bool_exp THEN statements ENDIF {printf("statement -> IF bool_exp THEN statements ENDIF\n");}
                 | IF bool_exp THEN statements ELSE statements ENDIF {printf("statement -> IF bool_exp THEN statements ENDIF\n");}
-       		| WHILE bool_exp BEGINLOOP statements ENDLOOP       
-		| DO BEGINLOOP statements ENDLOOP WHILE bool_exp {printf("statement -> DO BEGINLOOP statements ENDLOOP WHILE bool_exp\n");}
-  		| FOREACH ident IN ident BEGINLOOP statements ENDLOOP {printf("statement -> FOREACH IDENT IN IDENT BEGINLOOP statements ENDLOOP\n");}
+       		| WHILE bool_exp loop {printf("statement -> WHILE bool_exp BEGINLOOP statements ENDLOOP\n");}
+		| DO loop WHILE bool_exp {printf("statement -> DO BEGINLOOP statements ENDLOOP WHILE bool_exp\n");}
+  		| FOREACH ident IN ident loop {printf("statement -> FOREACH IDENT IN IDENT BEGINLOOP statements ENDLOOP\n");}
 		| READ vars {printf("statements -> READ vars\n");}
                 | WRITE vars {printf("statements -> WRITE vars\n");}
                 | CONTINUE {printf("statement -> CONTINUE\n");}
                 | RETURN expression {printf("statement -> RETURN expression\n");}
+                ;
+
+loop:		BEGINLOOP statements ENDLOOP
                 ;
 
 bool_exp:	  relation_and_exp {printf("bool_exp -> relation_and_exp\n");}
