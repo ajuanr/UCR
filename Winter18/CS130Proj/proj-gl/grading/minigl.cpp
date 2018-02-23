@@ -101,9 +101,9 @@ MGLfloat area(Vertex a, Vertex b, Vertex c) {
 }
 
 void toPixelCoord(Vertex &v, int width, int height) {
-    MGLfloat x = v.position[0]/v.position[3]; // divide by w([3]) for frustum
-    MGLfloat y = v.position[1]/v.position[3];
-//    v.position[2]/v.position[3];
+    v.position = v.position / v.position[3];
+    MGLfloat x = v.position[0];///v.position[3]; // divide by w([3]) for frustum
+    MGLfloat y = v.position[1];//v.position[3];
     MGLfloat i = (x + 1) * 0.5f * width;
     MGLfloat j = (y + 1) * 0.5f * height;
     i -= 0.5f;
@@ -145,7 +145,6 @@ void Rasterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *da
 
     for (int x = xMin; x != xMax; ++x) {
         for (int y = yMin; y != yMax; ++y) {
-//	   if (x < 0 || x > width || y < 0 || y > height) break;
            Vertex P;
            P.position[0] = x;
            P.position[1] = y; 
@@ -161,15 +160,16 @@ void Rasterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *da
 
            if (alpha >= 0 && beta >= 0 && gamma >= 0) {
               MGLfloat k = alpha/wA + beta/wB + gamma/wC;
-                    alpha = alpha / (wA * k);
-                    beta = beta / (wB * k);
-                    gamma = gamma / (wC * k);
+              alpha = alpha / (wA * k);
+              beta = beta / (wB * k);
+              gamma = gamma / (wC * k);
               MGLfloat z = alpha * A.position[2] + beta * B.position[2] + gamma * C.position[2];
-                 if (z < zBuffer[x + y*width] ) {
-                    vec3 c =  alpha*c0+beta*c1+gamma*c2;
-		    if (z >= front && z <= back) // clipping along plane
-                      data[x + y*width] = Make_Pixel(c[0],c[1],c[2]);
+              if (z < zBuffer[x + y*width]) {
+                 vec3 c =  alpha * c0 + beta * c1 + gamma * c2;
+	         if (z >= front && z <= back) { // clipping along plane
+                    data[x + y*width] = Make_Pixel(c[0],c[1],c[2]);
                     zBuffer[x + y*width] = A.position[2];
+                 }
               }
            }
        }
@@ -367,12 +367,11 @@ void mglLoadMatrix(const MGLfloat *matrix)
  */
 void mglMultMatrix(const MGLfloat *matrix)
 {
-    mat4 temp = identity;
+    mat4 temp;// = identity;
     for (int i = 0; i < 4; ++i)
         for (int j = 0; j <4; ++j)
             temp(i,j) = matrix[i+j*4];
-
-    modifyStack(temp);
+   topOfStack() = temp * topOfStack();
 }
 
 /**
