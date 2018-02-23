@@ -52,7 +52,7 @@ declarations:	declaration SEMICOLON declarations {printf("declaration -> declara
                 ;
 
 declaration:    identifiers COLON INTEGER {printf("declaration -> identifiers COLON INTEGER\n");}
-		| identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {printf("declaration -> identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER\n");}
+		| identifiers COLON ARRAY L_SQUARE_BRACKET number R_SQUARE_BRACKET OF INTEGER {printf("declaration -> identifiers COLON ARRAY L_SQUARE_BRACKET number R_SQUARE_BRACKET OF INTEGER\n");}
                 ;
 
 statements:       statement SEMICOLON statements {printf("statements -> statement SEMICOLON statements\n");} 
@@ -108,8 +108,8 @@ multiplicative_expression:	  term {printf("multiplicative_expression -> term\n")
 				| term MOD term {printf("multiplicative_expression -> term MOD term\n");}
                 		;
 
-term:		SUB NUMBER %prec UMINUS {printf("term -> SUB NUMBER\n");}
-                | NUMBER {printf("term -> NUMBER\n");}
+term:		SUB number %prec UMINUS {printf("term -> SUB number\n");}
+                | number {printf("term -> number\n");}
 		| var {printf("term -> var\n");}
 		| SUB var %prec UMINUS {printf("term ->  SUB var\n");}
                 | L_PAREN expression R_PAREN {printf("term -> L_PAREN expression R_PAREN\n");}
@@ -135,6 +135,8 @@ identifiers:    ident {printf("identifiers -> ident\n");}
 
 ident:		IDENT {printf("ident -> IDENT %s\n",$1);}
                 ;
+
+number:		NUMBER {printf("number -> NUMBER %d\n", $1);}
 %%
 
 int main() {
