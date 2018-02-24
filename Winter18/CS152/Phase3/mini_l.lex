@@ -1,4 +1,5 @@
 /* 
+OTHERSPECIAL    [[]:;,\(\)[]]
  *     Lexical Analysis
  */
 
@@ -15,8 +16,8 @@ MINUS           [\-]
 MULT            [\*]
 DIV             [\/]
 MOD             [\%]
-OTHERSPECIAL    []:;,\(\)[]
-ASSIGN		:=
+OTHERSPECIAL    [\[\]:;,\(\)]
+ASSIGN		(:=)
 COMPARE         ==|<>|<|>|<=|>=
 
 %{
@@ -54,14 +55,15 @@ const char *cmpLexPattern[] = {"==","<>","<",">","<=",">="};
                  }
                  else {
                    free(result);
-                   return charToEnum(yytext);
+                   currPos += yyleng;
+		   yylval.strVal = yytext;
+                   return IDENT;
                 }
                }
 {OTHERSPECIAL} {int *result = findWord(yytext, spclLexPattern, numSpecial);
                  currPos += yyleng;
                  if (result[0]) {
                     free(result);
-                    yylval.charVal = yytext[0];
                     return charToEnum(yytext); 
                  }
                 free(result);
@@ -69,7 +71,6 @@ const char *cmpLexPattern[] = {"==","<>","<",">","<=",">="};
 {COMPARE}      {int *result = findWord(yytext, cmpLexPattern, numCmp);
                  currPos += yyleng;
                  if (result[0]) {
-                    yylval.strVal = yytext;
                     return charToEnum(yytext); 
                     free(result);
                  }
@@ -155,5 +156,4 @@ int charToEnum(const char * s) {
    if (!strcmp(s,"<="))		return LTE;
    if (!strcmp(s,">="))		return GTE;
    if (!strcmp(s,"<>"))		return NEQ;
-return IDENT;
 }
