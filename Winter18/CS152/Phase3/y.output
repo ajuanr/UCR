@@ -19,8 +19,8 @@ Grammar
    10           | %empty
 
    11 statement: var ASSIGN expression
-   12          | IF bool_exp THEN statements ENDIF
-   13          | IF bool_exp THEN statements ELSE statements ENDIF
+   12          | IF ifCond ENDIF
+   13          | IF ifCond ELSE statements ENDIF
    14          | WHILE bool_exp loop
    15          | DO loop WHILE bool_exp
    16          | FOREACH ident IN ident loop
@@ -29,59 +29,61 @@ Grammar
    19          | CONTINUE
    20          | RETURN expression
 
-   21 loop: BEGINLOOP statements ENDLOOP
+   21 ifCond: bool_exp THEN statements
 
-   22 bool_exp: relation_and_exp
-   23         | relation_and_exp OR relation_and_exp
+   22 loop: BEGINLOOP statements ENDLOOP
 
-   24 relation_and_exp: relation_exp
-   25                 | relation_exp AND relation_and_exp
+   23 bool_exp: relation_and_exp
+   24         | relation_and_exp OR relation_and_exp
 
-   26 relation_exp: NOT relation_exp
-   27             | expression comp expression
-   28             | TRUE
-   29             | FALSE
-   30             | L_PAREN bool_exp R_PAREN
+   25 relation_and_exp: relation_exp
+   26                 | relation_exp AND relation_and_exp
 
-   31 comp: EQ
-   32     | NEQ
-   33     | LT
-   34     | GT
-   35     | LTE
-   36     | GTE
+   27 relation_exp: NOT relation_exp
+   28             | expression comp expression
+   29             | TRUE
+   30             | FALSE
+   31             | L_PAREN bool_exp R_PAREN
 
-   37 expression: multiplicative_expression
-   38           | multiplicative_expression ADD expression
-   39           | multiplicative_expression SUB expression
+   32 comp: EQ
+   33     | NEQ
+   34     | LT
+   35     | GT
+   36     | LTE
+   37     | GTE
 
-   40 multiplicative_expression: term
-   41                          | term MULT term
-   42                          | term DIV term
-   43                          | term MOD term
+   38 expression: multiplicative_expression
+   39           | multiplicative_expression ADD expression
+   40           | multiplicative_expression SUB expression
 
-   44 term: SUB number
-   45     | number
-   46     | var
-   47     | SUB var
-   48     | L_PAREN expression R_PAREN
-   49     | SUB L_PAREN expression R_PAREN
-   50     | ident L_PAREN expressions R_PAREN
+   41 multiplicative_expression: term
+   42                          | term MULT term
+   43                          | term DIV term
+   44                          | term MOD term
 
-   51 expressions: expression
-   52            | expression COMMA expressions
+   45 term: SUB number
+   46     | number
+   47     | var
+   48     | SUB var
+   49     | L_PAREN expression R_PAREN
+   50     | SUB L_PAREN expression R_PAREN
+   51     | ident L_PAREN expressions R_PAREN
 
-   53 vars: var
-   54     | var COMMA vars
+   52 expressions: expression
+   53            | expression COMMA expressions
 
-   55 var: ident
-   56    | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET
+   54 vars: var
+   55     | var COMMA vars
 
-   57 identifiers: ident
-   58            | ident COMMA identifiers
+   56 var: ident
+   57    | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET
 
-   59 ident: IDENT
+   58 identifiers: ident
+   59            | ident COMMA identifiers
 
-   60 number: NUMBER
+   60 ident: IDENT
+
+   61 number: NUMBER
 
 
 Terminals, with rules where they appear
@@ -94,7 +96,7 @@ OF (260) 8
 ARRAY (261) 8
 READ (262) 17
 IF (263) 12 13
-THEN (264) 12 13
+THEN (264) 21
 ENDIF (265) 12 13
 ELSE (266) 13
 WHILE (267) 14 15
@@ -103,42 +105,42 @@ BEGIN_PARAMS (269) 4
 BEGIN_LOCALS (270) 4
 BEGIN_BODY (271) 4
 IN (272) 16
-BEGINLOOP (273) 21
-ENDLOOP (274) 21
+BEGINLOOP (273) 22
+ENDLOOP (274) 22
 END_PARAMS (275) 4
 END_LOCALS (276) 4
 END_BODY (277) 4
 CONTINUE (278) 19
 WRITE (279) 18
-TRUE (280) 28
+TRUE (280) 29
 FOREACH (281) 16
-FALSE (282) 29
+FALSE (282) 30
 RETURN (283) 20
-NUMBER (284) 60
-ADD (285) 38
-MULT (286) 41
-DIV (287) 42
-MOD (288) 43
-AND (289) 25
-OR (290) 23
+NUMBER (284) 61
+ADD (285) 39
+MULT (286) 42
+DIV (287) 43
+MOD (288) 44
+AND (289) 26
+OR (290) 24
 SEMICOLON (291) 4 5 9
 COLON (292) 7 8
-COMMA (293) 52 54 58
-L_PAREN (294) 30 48 49 50
-R_PAREN (295) 30 48 49 50
-L_SQUARE_BRACKET (296) 8 56
-R_SQUARE_BRACKET (297) 8 56
-EQ (298) 31
-NEQ (299) 32
-LT (300) 33
-GT (301) 34
-LTE (302) 35
-GTE (303) 36
-SUB (304) 39 44 47 49
-NOT (305) 26
+COMMA (293) 53 55 59
+L_PAREN (294) 31 49 50 51
+R_PAREN (295) 31 49 50 51
+L_SQUARE_BRACKET (296) 8 57
+R_SQUARE_BRACKET (297) 8 57
+EQ (298) 32
+NEQ (299) 33
+LT (300) 34
+GT (301) 35
+LTE (302) 36
+GTE (303) 37
+SUB (304) 40 45 48 50
+NOT (305) 27
 UMINUS (306)
 ASSIGN (307) 11
-IDENT (308) 59
+IDENT (308) 60
 
 
 Nonterminals, with rules where they appear
@@ -156,37 +158,39 @@ declarations (58)
 declaration (59)
     on left: 7 8, on right: 5
 statements (60)
-    on left: 9 10, on right: 4 9 12 13 21
+    on left: 9 10, on right: 4 9 13 21 22
 statement (61)
     on left: 11 12 13 14 15 16 17 18 19 20, on right: 9
-loop (62)
-    on left: 21, on right: 14 15 16
-bool_exp (63)
-    on left: 22 23, on right: 12 13 14 15 30
-relation_and_exp (64)
-    on left: 24 25, on right: 22 23 25
-relation_exp (65)
-    on left: 26 27 28 29 30, on right: 24 25 26
-comp (66)
-    on left: 31 32 33 34 35 36, on right: 27
-expression (67)
-    on left: 37 38 39, on right: 11 20 27 38 39 48 49 51 52 56
-multiplicative_expression (68)
-    on left: 40 41 42 43, on right: 37 38 39
-term (69)
-    on left: 44 45 46 47 48 49 50, on right: 40 41 42 43
-expressions (70)
-    on left: 51 52, on right: 50 52
-vars (71)
-    on left: 53 54, on right: 17 18 54
-var (72)
-    on left: 55 56, on right: 11 46 47 53 54
-identifiers (73)
-    on left: 57 58, on right: 7 8 58
-ident (74)
-    on left: 59, on right: 4 16 50 55 56 57 58
-number (75)
-    on left: 60, on right: 8 44 45
+ifCond (62)
+    on left: 21, on right: 12 13
+loop (63)
+    on left: 22, on right: 14 15 16
+bool_exp (64)
+    on left: 23 24, on right: 14 15 21 31
+relation_and_exp (65)
+    on left: 25 26, on right: 23 24 26
+relation_exp (66)
+    on left: 27 28 29 30 31, on right: 25 26 27
+comp (67)
+    on left: 32 33 34 35 36 37, on right: 28
+expression (68)
+    on left: 38 39 40, on right: 11 20 28 39 40 49 50 52 53 57
+multiplicative_expression (69)
+    on left: 41 42 43 44, on right: 38 39 40
+term (70)
+    on left: 45 46 47 48 49 50 51, on right: 41 42 43 44
+expressions (71)
+    on left: 52 53, on right: 51 53
+vars (72)
+    on left: 54 55, on right: 17 18 55
+var (73)
+    on left: 56 57, on right: 11 47 48 54 55
+identifiers (74)
+    on left: 58 59, on right: 7 8 59
+ident (75)
+    on left: 60, on right: 4 16 51 56 57 58 59
+number (76)
+    on left: 61, on right: 8 45 46
 
 
 State 0
@@ -239,9 +243,9 @@ State 4
 
 State 5
 
-   59 ident: IDENT .
+   60 ident: IDENT .
 
-    $default  reduce using rule 59 (ident)
+    $default  reduce using rule 60 (ident)
 
 
 State 6
@@ -310,12 +314,12 @@ State 13
 
 State 14
 
-   57 identifiers: ident .
-   58            | ident . COMMA identifiers
+   58 identifiers: ident .
+   59            | ident . COMMA identifiers
 
     COMMA  shift, and go to state 18
 
-    $default  reduce using rule 57 (identifiers)
+    $default  reduce using rule 58 (identifiers)
 
 
 State 15
@@ -350,7 +354,7 @@ State 17
 
 State 18
 
-   58 identifiers: ident COMMA . identifiers
+   59 identifiers: ident COMMA . identifiers
 
     IDENT  shift, and go to state 5
 
@@ -395,9 +399,9 @@ State 22
 
 State 23
 
-   58 identifiers: ident COMMA identifiers .
+   59 identifiers: ident COMMA identifiers .
 
-    $default  reduce using rule 58 (identifiers)
+    $default  reduce using rule 59 (identifiers)
 
 
 State 24
@@ -425,9 +429,9 @@ State 26
 
 State 27
 
-   60 number: NUMBER .
+   61 number: NUMBER .
 
-    $default  reduce using rule 60 (number)
+    $default  reduce using rule 61 (number)
 
 
 State 28
@@ -479,8 +483,8 @@ State 31
 
 State 32
 
-   12 statement: IF . bool_exp THEN statements ENDIF
-   13          | IF . bool_exp THEN statements ELSE statements ENDIF
+   12 statement: IF . ifCond ENDIF
+   13          | IF . ifCond ELSE statements ENDIF
 
     TRUE     shift, and go to state 46
     FALSE    shift, and go to state 47
@@ -490,15 +494,16 @@ State 32
     NOT      shift, and go to state 50
     IDENT    shift, and go to state 5
 
-    bool_exp                   go to state 51
-    relation_and_exp           go to state 52
-    relation_exp               go to state 53
-    expression                 go to state 54
-    multiplicative_expression  go to state 55
-    term                       go to state 56
-    var                        go to state 57
-    ident                      go to state 58
-    number                     go to state 59
+    ifCond                     go to state 51
+    bool_exp                   go to state 52
+    relation_and_exp           go to state 53
+    relation_exp               go to state 54
+    expression                 go to state 55
+    multiplicative_expression  go to state 56
+    term                       go to state 57
+    var                        go to state 58
+    ident                      go to state 59
+    number                     go to state 60
 
 
 State 33
@@ -513,24 +518,24 @@ State 33
     NOT      shift, and go to state 50
     IDENT    shift, and go to state 5
 
-    bool_exp                   go to state 60
-    relation_and_exp           go to state 52
-    relation_exp               go to state 53
-    expression                 go to state 54
-    multiplicative_expression  go to state 55
-    term                       go to state 56
-    var                        go to state 57
-    ident                      go to state 58
-    number                     go to state 59
+    bool_exp                   go to state 61
+    relation_and_exp           go to state 53
+    relation_exp               go to state 54
+    expression                 go to state 55
+    multiplicative_expression  go to state 56
+    term                       go to state 57
+    var                        go to state 58
+    ident                      go to state 59
+    number                     go to state 60
 
 
 State 34
 
    15 statement: DO . loop WHILE bool_exp
 
-    BEGINLOOP  shift, and go to state 61
+    BEGINLOOP  shift, and go to state 62
 
-    loop  go to state 62
+    loop  go to state 63
 
 
 State 35
@@ -546,7 +551,7 @@ State 36
 
     IDENT  shift, and go to state 5
 
-    vars   go to state 63
+    vars   go to state 64
     var    go to state 45
     ident  go to state 42
 
@@ -557,7 +562,7 @@ State 37
 
     IDENT  shift, and go to state 5
 
-    ident  go to state 64
+    ident  go to state 65
 
 
 State 38
@@ -565,54 +570,54 @@ State 38
    20 statement: RETURN . expression
 
     NUMBER   shift, and go to state 27
-    L_PAREN  shift, and go to state 65
+    L_PAREN  shift, and go to state 66
     SUB      shift, and go to state 49
     IDENT    shift, and go to state 5
 
-    expression                 go to state 66
-    multiplicative_expression  go to state 55
-    term                       go to state 56
-    var                        go to state 57
-    ident                      go to state 58
-    number                     go to state 59
+    expression                 go to state 67
+    multiplicative_expression  go to state 56
+    term                       go to state 57
+    var                        go to state 58
+    ident                      go to state 59
+    number                     go to state 60
 
 
 State 39
 
     4 function: FUNCTION ident SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements . END_BODY
 
-    END_BODY  shift, and go to state 67
+    END_BODY  shift, and go to state 68
 
 
 State 40
 
     9 statements: statement . SEMICOLON statements
 
-    SEMICOLON  shift, and go to state 68
+    SEMICOLON  shift, and go to state 69
 
 
 State 41
 
    11 statement: var . ASSIGN expression
 
-    ASSIGN  shift, and go to state 69
+    ASSIGN  shift, and go to state 70
 
 
 State 42
 
-   55 var: ident .
-   56    | ident . L_SQUARE_BRACKET expression R_SQUARE_BRACKET
+   56 var: ident .
+   57    | ident . L_SQUARE_BRACKET expression R_SQUARE_BRACKET
 
-    L_SQUARE_BRACKET  shift, and go to state 70
+    L_SQUARE_BRACKET  shift, and go to state 71
 
-    $default  reduce using rule 55 (var)
+    $default  reduce using rule 56 (var)
 
 
 State 43
 
     8 declaration: identifiers COLON ARRAY L_SQUARE_BRACKET number R_SQUARE_BRACKET OF . INTEGER
 
-    INTEGER  shift, and go to state 71
+    INTEGER  shift, and go to state 72
 
 
 State 44
@@ -624,32 +629,32 @@ State 44
 
 State 45
 
-   53 vars: var .
-   54     | var . COMMA vars
+   54 vars: var .
+   55     | var . COMMA vars
 
-    COMMA  shift, and go to state 72
+    COMMA  shift, and go to state 73
 
-    $default  reduce using rule 53 (vars)
+    $default  reduce using rule 54 (vars)
 
 
 State 46
 
-   28 relation_exp: TRUE .
-
-    $default  reduce using rule 28 (relation_exp)
-
-
-State 47
-
-   29 relation_exp: FALSE .
+   29 relation_exp: TRUE .
 
     $default  reduce using rule 29 (relation_exp)
 
 
+State 47
+
+   30 relation_exp: FALSE .
+
+    $default  reduce using rule 30 (relation_exp)
+
+
 State 48
 
-   30 relation_exp: L_PAREN . bool_exp R_PAREN
-   48 term: L_PAREN . expression R_PAREN
+   31 relation_exp: L_PAREN . bool_exp R_PAREN
+   49 term: L_PAREN . expression R_PAREN
 
     TRUE     shift, and go to state 46
     FALSE    shift, and go to state 47
@@ -659,35 +664,35 @@ State 48
     NOT      shift, and go to state 50
     IDENT    shift, and go to state 5
 
-    bool_exp                   go to state 73
-    relation_and_exp           go to state 52
-    relation_exp               go to state 53
-    expression                 go to state 74
-    multiplicative_expression  go to state 55
-    term                       go to state 56
-    var                        go to state 57
-    ident                      go to state 58
-    number                     go to state 59
+    bool_exp                   go to state 74
+    relation_and_exp           go to state 53
+    relation_exp               go to state 54
+    expression                 go to state 75
+    multiplicative_expression  go to state 56
+    term                       go to state 57
+    var                        go to state 58
+    ident                      go to state 59
+    number                     go to state 60
 
 
 State 49
 
-   44 term: SUB . number
-   47     | SUB . var
-   49     | SUB . L_PAREN expression R_PAREN
+   45 term: SUB . number
+   48     | SUB . var
+   50     | SUB . L_PAREN expression R_PAREN
 
     NUMBER   shift, and go to state 27
-    L_PAREN  shift, and go to state 75
+    L_PAREN  shift, and go to state 76
     IDENT    shift, and go to state 5
 
-    var     go to state 76
+    var     go to state 77
     ident   go to state 42
-    number  go to state 77
+    number  go to state 78
 
 
 State 50
 
-   26 relation_exp: NOT . relation_exp
+   27 relation_exp: NOT . relation_exp
 
     TRUE     shift, and go to state 46
     FALSE    shift, and go to state 47
@@ -697,121 +702,129 @@ State 50
     NOT      shift, and go to state 50
     IDENT    shift, and go to state 5
 
-    relation_exp               go to state 78
-    expression                 go to state 54
-    multiplicative_expression  go to state 55
-    term                       go to state 56
-    var                        go to state 57
-    ident                      go to state 58
-    number                     go to state 59
+    relation_exp               go to state 79
+    expression                 go to state 55
+    multiplicative_expression  go to state 56
+    term                       go to state 57
+    var                        go to state 58
+    ident                      go to state 59
+    number                     go to state 60
 
 
 State 51
 
-   12 statement: IF bool_exp . THEN statements ENDIF
-   13          | IF bool_exp . THEN statements ELSE statements ENDIF
+   12 statement: IF ifCond . ENDIF
+   13          | IF ifCond . ELSE statements ENDIF
 
-    THEN  shift, and go to state 79
+    ENDIF  shift, and go to state 80
+    ELSE   shift, and go to state 81
 
 
 State 52
 
-   22 bool_exp: relation_and_exp .
-   23         | relation_and_exp . OR relation_and_exp
+   21 ifCond: bool_exp . THEN statements
 
-    OR  shift, and go to state 80
-
-    $default  reduce using rule 22 (bool_exp)
+    THEN  shift, and go to state 82
 
 
 State 53
 
-   24 relation_and_exp: relation_exp .
-   25                 | relation_exp . AND relation_and_exp
+   23 bool_exp: relation_and_exp .
+   24         | relation_and_exp . OR relation_and_exp
 
-    AND  shift, and go to state 81
+    OR  shift, and go to state 83
 
-    $default  reduce using rule 24 (relation_and_exp)
+    $default  reduce using rule 23 (bool_exp)
 
 
 State 54
 
-   27 relation_exp: expression . comp expression
+   25 relation_and_exp: relation_exp .
+   26                 | relation_exp . AND relation_and_exp
 
-    EQ   shift, and go to state 82
-    NEQ  shift, and go to state 83
-    LT   shift, and go to state 84
-    GT   shift, and go to state 85
-    LTE  shift, and go to state 86
-    GTE  shift, and go to state 87
+    AND  shift, and go to state 84
 
-    comp  go to state 88
+    $default  reduce using rule 25 (relation_and_exp)
 
 
 State 55
 
-   37 expression: multiplicative_expression .
-   38           | multiplicative_expression . ADD expression
-   39           | multiplicative_expression . SUB expression
+   28 relation_exp: expression . comp expression
 
-    ADD  shift, and go to state 89
-    SUB  shift, and go to state 90
+    EQ   shift, and go to state 85
+    NEQ  shift, and go to state 86
+    LT   shift, and go to state 87
+    GT   shift, and go to state 88
+    LTE  shift, and go to state 89
+    GTE  shift, and go to state 90
 
-    $default  reduce using rule 37 (expression)
+    comp  go to state 91
 
 
 State 56
 
-   40 multiplicative_expression: term .
-   41                          | term . MULT term
-   42                          | term . DIV term
-   43                          | term . MOD term
+   38 expression: multiplicative_expression .
+   39           | multiplicative_expression . ADD expression
+   40           | multiplicative_expression . SUB expression
 
-    MULT  shift, and go to state 91
-    DIV   shift, and go to state 92
-    MOD   shift, and go to state 93
+    ADD  shift, and go to state 92
+    SUB  shift, and go to state 93
 
-    $default  reduce using rule 40 (multiplicative_expression)
+    $default  reduce using rule 38 (expression)
 
 
 State 57
 
-   46 term: var .
+   41 multiplicative_expression: term .
+   42                          | term . MULT term
+   43                          | term . DIV term
+   44                          | term . MOD term
 
-    $default  reduce using rule 46 (term)
+    MULT  shift, and go to state 94
+    DIV   shift, and go to state 95
+    MOD   shift, and go to state 96
+
+    $default  reduce using rule 41 (multiplicative_expression)
 
 
 State 58
 
-   50 term: ident . L_PAREN expressions R_PAREN
-   55 var: ident .
-   56    | ident . L_SQUARE_BRACKET expression R_SQUARE_BRACKET
+   47 term: var .
 
-    L_PAREN           shift, and go to state 94
-    L_SQUARE_BRACKET  shift, and go to state 70
-
-    $default  reduce using rule 55 (var)
+    $default  reduce using rule 47 (term)
 
 
 State 59
 
-   45 term: number .
+   51 term: ident . L_PAREN expressions R_PAREN
+   56 var: ident .
+   57    | ident . L_SQUARE_BRACKET expression R_SQUARE_BRACKET
 
-    $default  reduce using rule 45 (term)
+    L_PAREN           shift, and go to state 97
+    L_SQUARE_BRACKET  shift, and go to state 71
+
+    $default  reduce using rule 56 (var)
 
 
 State 60
 
-   14 statement: WHILE bool_exp . loop
+   46 term: number .
 
-    BEGINLOOP  shift, and go to state 61
-
-    loop  go to state 95
+    $default  reduce using rule 46 (term)
 
 
 State 61
 
-   21 loop: BEGINLOOP . statements ENDLOOP
+   14 statement: WHILE bool_exp . loop
+
+    BEGINLOOP  shift, and go to state 62
+
+    loop  go to state 98
+
+
+State 62
+
+   22 loop: BEGINLOOP . statements ENDLOOP
 
     READ      shift, and go to state 31
     IF        shift, and go to state 32
@@ -825,65 +838,65 @@ State 61
 
     $default  reduce using rule 10 (statements)
 
-    statements  go to state 96
+    statements  go to state 99
     statement   go to state 40
     var         go to state 41
     ident       go to state 42
 
 
-State 62
+State 63
 
    15 statement: DO loop . WHILE bool_exp
 
-    WHILE  shift, and go to state 97
+    WHILE  shift, and go to state 100
 
 
-State 63
+State 64
 
    18 statement: WRITE vars .
 
     $default  reduce using rule 18 (statement)
 
 
-State 64
+State 65
 
    16 statement: FOREACH ident . IN ident loop
 
-    IN  shift, and go to state 98
-
-
-State 65
-
-   48 term: L_PAREN . expression R_PAREN
-
-    NUMBER   shift, and go to state 27
-    L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 49
-    IDENT    shift, and go to state 5
-
-    expression                 go to state 99
-    multiplicative_expression  go to state 55
-    term                       go to state 56
-    var                        go to state 57
-    ident                      go to state 58
-    number                     go to state 59
+    IN  shift, and go to state 101
 
 
 State 66
+
+   49 term: L_PAREN . expression R_PAREN
+
+    NUMBER   shift, and go to state 27
+    L_PAREN  shift, and go to state 66
+    SUB      shift, and go to state 49
+    IDENT    shift, and go to state 5
+
+    expression                 go to state 102
+    multiplicative_expression  go to state 56
+    term                       go to state 57
+    var                        go to state 58
+    ident                      go to state 59
+    number                     go to state 60
+
+
+State 67
 
    20 statement: RETURN expression .
 
     $default  reduce using rule 20 (statement)
 
 
-State 67
+State 68
 
     4 function: FUNCTION ident SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY .
 
     $default  reduce using rule 4 (function)
 
 
-State 68
+State 69
 
     9 statements: statement SEMICOLON . statements
 
@@ -899,129 +912,135 @@ State 68
 
     $default  reduce using rule 10 (statements)
 
-    statements  go to state 100
+    statements  go to state 103
     statement   go to state 40
     var         go to state 41
     ident       go to state 42
 
 
-State 69
+State 70
 
    11 statement: var ASSIGN . expression
 
     NUMBER   shift, and go to state 27
-    L_PAREN  shift, and go to state 65
+    L_PAREN  shift, and go to state 66
     SUB      shift, and go to state 49
     IDENT    shift, and go to state 5
 
-    expression                 go to state 101
-    multiplicative_expression  go to state 55
-    term                       go to state 56
-    var                        go to state 57
-    ident                      go to state 58
-    number                     go to state 59
-
-
-State 70
-
-   56 var: ident L_SQUARE_BRACKET . expression R_SQUARE_BRACKET
-
-    NUMBER   shift, and go to state 27
-    L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 49
-    IDENT    shift, and go to state 5
-
-    expression                 go to state 102
-    multiplicative_expression  go to state 55
-    term                       go to state 56
-    var                        go to state 57
-    ident                      go to state 58
-    number                     go to state 59
+    expression                 go to state 104
+    multiplicative_expression  go to state 56
+    term                       go to state 57
+    var                        go to state 58
+    ident                      go to state 59
+    number                     go to state 60
 
 
 State 71
+
+   57 var: ident L_SQUARE_BRACKET . expression R_SQUARE_BRACKET
+
+    NUMBER   shift, and go to state 27
+    L_PAREN  shift, and go to state 66
+    SUB      shift, and go to state 49
+    IDENT    shift, and go to state 5
+
+    expression                 go to state 105
+    multiplicative_expression  go to state 56
+    term                       go to state 57
+    var                        go to state 58
+    ident                      go to state 59
+    number                     go to state 60
+
+
+State 72
 
     8 declaration: identifiers COLON ARRAY L_SQUARE_BRACKET number R_SQUARE_BRACKET OF INTEGER .
 
     $default  reduce using rule 8 (declaration)
 
 
-State 72
+State 73
 
-   54 vars: var COMMA . vars
+   55 vars: var COMMA . vars
 
     IDENT  shift, and go to state 5
 
-    vars   go to state 103
+    vars   go to state 106
     var    go to state 45
     ident  go to state 42
 
 
-State 73
-
-   30 relation_exp: L_PAREN bool_exp . R_PAREN
-
-    R_PAREN  shift, and go to state 104
-
-
 State 74
 
-   27 relation_exp: expression . comp expression
-   48 term: L_PAREN expression . R_PAREN
+   31 relation_exp: L_PAREN bool_exp . R_PAREN
 
-    R_PAREN  shift, and go to state 105
-    EQ       shift, and go to state 82
-    NEQ      shift, and go to state 83
-    LT       shift, and go to state 84
-    GT       shift, and go to state 85
-    LTE      shift, and go to state 86
-    GTE      shift, and go to state 87
-
-    comp  go to state 88
+    R_PAREN  shift, and go to state 107
 
 
 State 75
 
-   49 term: SUB L_PAREN . expression R_PAREN
+   28 relation_exp: expression . comp expression
+   49 term: L_PAREN expression . R_PAREN
 
-    NUMBER   shift, and go to state 27
-    L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 49
-    IDENT    shift, and go to state 5
+    R_PAREN  shift, and go to state 108
+    EQ       shift, and go to state 85
+    NEQ      shift, and go to state 86
+    LT       shift, and go to state 87
+    GT       shift, and go to state 88
+    LTE      shift, and go to state 89
+    GTE      shift, and go to state 90
 
-    expression                 go to state 106
-    multiplicative_expression  go to state 55
-    term                       go to state 56
-    var                        go to state 57
-    ident                      go to state 58
-    number                     go to state 59
+    comp  go to state 91
 
 
 State 76
 
-   47 term: SUB var .
+   50 term: SUB L_PAREN . expression R_PAREN
 
-    $default  reduce using rule 47 (term)
+    NUMBER   shift, and go to state 27
+    L_PAREN  shift, and go to state 66
+    SUB      shift, and go to state 49
+    IDENT    shift, and go to state 5
+
+    expression                 go to state 109
+    multiplicative_expression  go to state 56
+    term                       go to state 57
+    var                        go to state 58
+    ident                      go to state 59
+    number                     go to state 60
 
 
 State 77
 
-   44 term: SUB number .
+   48 term: SUB var .
 
-    $default  reduce using rule 44 (term)
+    $default  reduce using rule 48 (term)
 
 
 State 78
 
-   26 relation_exp: NOT relation_exp .
+   45 term: SUB number .
 
-    $default  reduce using rule 26 (relation_exp)
+    $default  reduce using rule 45 (term)
 
 
 State 79
 
-   12 statement: IF bool_exp THEN . statements ENDIF
-   13          | IF bool_exp THEN . statements ELSE statements ENDIF
+   27 relation_exp: NOT relation_exp .
+
+    $default  reduce using rule 27 (relation_exp)
+
+
+State 80
+
+   12 statement: IF ifCond ENDIF .
+
+    $default  reduce using rule 12 (statement)
+
+
+State 81
+
+   13 statement: IF ifCond ELSE . statements ENDIF
 
     READ      shift, and go to state 31
     IF        shift, and go to state 32
@@ -1035,227 +1054,249 @@ State 79
 
     $default  reduce using rule 10 (statements)
 
-    statements  go to state 107
+    statements  go to state 110
     statement   go to state 40
     var         go to state 41
     ident       go to state 42
 
 
-State 80
-
-   23 bool_exp: relation_and_exp OR . relation_and_exp
-
-    TRUE     shift, and go to state 46
-    FALSE    shift, and go to state 47
-    NUMBER   shift, and go to state 27
-    L_PAREN  shift, and go to state 48
-    SUB      shift, and go to state 49
-    NOT      shift, and go to state 50
-    IDENT    shift, and go to state 5
-
-    relation_and_exp           go to state 108
-    relation_exp               go to state 53
-    expression                 go to state 54
-    multiplicative_expression  go to state 55
-    term                       go to state 56
-    var                        go to state 57
-    ident                      go to state 58
-    number                     go to state 59
-
-
-State 81
-
-   25 relation_and_exp: relation_exp AND . relation_and_exp
-
-    TRUE     shift, and go to state 46
-    FALSE    shift, and go to state 47
-    NUMBER   shift, and go to state 27
-    L_PAREN  shift, and go to state 48
-    SUB      shift, and go to state 49
-    NOT      shift, and go to state 50
-    IDENT    shift, and go to state 5
-
-    relation_and_exp           go to state 109
-    relation_exp               go to state 53
-    expression                 go to state 54
-    multiplicative_expression  go to state 55
-    term                       go to state 56
-    var                        go to state 57
-    ident                      go to state 58
-    number                     go to state 59
-
-
 State 82
 
-   31 comp: EQ .
+   21 ifCond: bool_exp THEN . statements
 
-    $default  reduce using rule 31 (comp)
+    READ      shift, and go to state 31
+    IF        shift, and go to state 32
+    WHILE     shift, and go to state 33
+    DO        shift, and go to state 34
+    CONTINUE  shift, and go to state 35
+    WRITE     shift, and go to state 36
+    FOREACH   shift, and go to state 37
+    RETURN    shift, and go to state 38
+    IDENT     shift, and go to state 5
+
+    $default  reduce using rule 10 (statements)
+
+    statements  go to state 111
+    statement   go to state 40
+    var         go to state 41
+    ident       go to state 42
 
 
 State 83
 
-   32 comp: NEQ .
+   24 bool_exp: relation_and_exp OR . relation_and_exp
 
-    $default  reduce using rule 32 (comp)
+    TRUE     shift, and go to state 46
+    FALSE    shift, and go to state 47
+    NUMBER   shift, and go to state 27
+    L_PAREN  shift, and go to state 48
+    SUB      shift, and go to state 49
+    NOT      shift, and go to state 50
+    IDENT    shift, and go to state 5
+
+    relation_and_exp           go to state 112
+    relation_exp               go to state 54
+    expression                 go to state 55
+    multiplicative_expression  go to state 56
+    term                       go to state 57
+    var                        go to state 58
+    ident                      go to state 59
+    number                     go to state 60
 
 
 State 84
 
-   33 comp: LT .
+   26 relation_and_exp: relation_exp AND . relation_and_exp
 
-    $default  reduce using rule 33 (comp)
+    TRUE     shift, and go to state 46
+    FALSE    shift, and go to state 47
+    NUMBER   shift, and go to state 27
+    L_PAREN  shift, and go to state 48
+    SUB      shift, and go to state 49
+    NOT      shift, and go to state 50
+    IDENT    shift, and go to state 5
+
+    relation_and_exp           go to state 113
+    relation_exp               go to state 54
+    expression                 go to state 55
+    multiplicative_expression  go to state 56
+    term                       go to state 57
+    var                        go to state 58
+    ident                      go to state 59
+    number                     go to state 60
 
 
 State 85
 
-   34 comp: GT .
+   32 comp: EQ .
 
-    $default  reduce using rule 34 (comp)
+    $default  reduce using rule 32 (comp)
 
 
 State 86
 
-   35 comp: LTE .
+   33 comp: NEQ .
 
-    $default  reduce using rule 35 (comp)
+    $default  reduce using rule 33 (comp)
 
 
 State 87
 
-   36 comp: GTE .
+   34 comp: LT .
 
-    $default  reduce using rule 36 (comp)
+    $default  reduce using rule 34 (comp)
 
 
 State 88
 
-   27 relation_exp: expression comp . expression
+   35 comp: GT .
 
-    NUMBER   shift, and go to state 27
-    L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 49
-    IDENT    shift, and go to state 5
-
-    expression                 go to state 110
-    multiplicative_expression  go to state 55
-    term                       go to state 56
-    var                        go to state 57
-    ident                      go to state 58
-    number                     go to state 59
+    $default  reduce using rule 35 (comp)
 
 
 State 89
 
-   38 expression: multiplicative_expression ADD . expression
+   36 comp: LTE .
 
-    NUMBER   shift, and go to state 27
-    L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 49
-    IDENT    shift, and go to state 5
-
-    expression                 go to state 111
-    multiplicative_expression  go to state 55
-    term                       go to state 56
-    var                        go to state 57
-    ident                      go to state 58
-    number                     go to state 59
+    $default  reduce using rule 36 (comp)
 
 
 State 90
 
-   39 expression: multiplicative_expression SUB . expression
+   37 comp: GTE .
 
-    NUMBER   shift, and go to state 27
-    L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 49
-    IDENT    shift, and go to state 5
-
-    expression                 go to state 112
-    multiplicative_expression  go to state 55
-    term                       go to state 56
-    var                        go to state 57
-    ident                      go to state 58
-    number                     go to state 59
+    $default  reduce using rule 37 (comp)
 
 
 State 91
 
-   41 multiplicative_expression: term MULT . term
+   28 relation_exp: expression comp . expression
 
     NUMBER   shift, and go to state 27
-    L_PAREN  shift, and go to state 65
+    L_PAREN  shift, and go to state 66
     SUB      shift, and go to state 49
     IDENT    shift, and go to state 5
 
-    term    go to state 113
-    var     go to state 57
-    ident   go to state 58
-    number  go to state 59
+    expression                 go to state 114
+    multiplicative_expression  go to state 56
+    term                       go to state 57
+    var                        go to state 58
+    ident                      go to state 59
+    number                     go to state 60
 
 
 State 92
 
-   42 multiplicative_expression: term DIV . term
+   39 expression: multiplicative_expression ADD . expression
 
     NUMBER   shift, and go to state 27
-    L_PAREN  shift, and go to state 65
+    L_PAREN  shift, and go to state 66
     SUB      shift, and go to state 49
     IDENT    shift, and go to state 5
 
-    term    go to state 114
-    var     go to state 57
-    ident   go to state 58
-    number  go to state 59
+    expression                 go to state 115
+    multiplicative_expression  go to state 56
+    term                       go to state 57
+    var                        go to state 58
+    ident                      go to state 59
+    number                     go to state 60
 
 
 State 93
 
-   43 multiplicative_expression: term MOD . term
+   40 expression: multiplicative_expression SUB . expression
 
     NUMBER   shift, and go to state 27
-    L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 49
-    IDENT    shift, and go to state 5
-
-    term    go to state 115
-    var     go to state 57
-    ident   go to state 58
-    number  go to state 59
-
-
-State 94
-
-   50 term: ident L_PAREN . expressions R_PAREN
-
-    NUMBER   shift, and go to state 27
-    L_PAREN  shift, and go to state 65
+    L_PAREN  shift, and go to state 66
     SUB      shift, and go to state 49
     IDENT    shift, and go to state 5
 
     expression                 go to state 116
-    multiplicative_expression  go to state 55
-    term                       go to state 56
-    expressions                go to state 117
-    var                        go to state 57
-    ident                      go to state 58
-    number                     go to state 59
+    multiplicative_expression  go to state 56
+    term                       go to state 57
+    var                        go to state 58
+    ident                      go to state 59
+    number                     go to state 60
+
+
+State 94
+
+   42 multiplicative_expression: term MULT . term
+
+    NUMBER   shift, and go to state 27
+    L_PAREN  shift, and go to state 66
+    SUB      shift, and go to state 49
+    IDENT    shift, and go to state 5
+
+    term    go to state 117
+    var     go to state 58
+    ident   go to state 59
+    number  go to state 60
 
 
 State 95
+
+   43 multiplicative_expression: term DIV . term
+
+    NUMBER   shift, and go to state 27
+    L_PAREN  shift, and go to state 66
+    SUB      shift, and go to state 49
+    IDENT    shift, and go to state 5
+
+    term    go to state 118
+    var     go to state 58
+    ident   go to state 59
+    number  go to state 60
+
+
+State 96
+
+   44 multiplicative_expression: term MOD . term
+
+    NUMBER   shift, and go to state 27
+    L_PAREN  shift, and go to state 66
+    SUB      shift, and go to state 49
+    IDENT    shift, and go to state 5
+
+    term    go to state 119
+    var     go to state 58
+    ident   go to state 59
+    number  go to state 60
+
+
+State 97
+
+   51 term: ident L_PAREN . expressions R_PAREN
+
+    NUMBER   shift, and go to state 27
+    L_PAREN  shift, and go to state 66
+    SUB      shift, and go to state 49
+    IDENT    shift, and go to state 5
+
+    expression                 go to state 120
+    multiplicative_expression  go to state 56
+    term                       go to state 57
+    expressions                go to state 121
+    var                        go to state 58
+    ident                      go to state 59
+    number                     go to state 60
+
+
+State 98
 
    14 statement: WHILE bool_exp loop .
 
     $default  reduce using rule 14 (statement)
 
 
-State 96
+State 99
 
-   21 loop: BEGINLOOP statements . ENDLOOP
+   22 loop: BEGINLOOP statements . ENDLOOP
 
-    ENDLOOP  shift, and go to state 118
+    ENDLOOP  shift, and go to state 122
 
 
-State 97
+State 100
 
    15 statement: DO loop WHILE . bool_exp
 
@@ -1267,278 +1308,247 @@ State 97
     NOT      shift, and go to state 50
     IDENT    shift, and go to state 5
 
-    bool_exp                   go to state 119
-    relation_and_exp           go to state 52
-    relation_exp               go to state 53
-    expression                 go to state 54
-    multiplicative_expression  go to state 55
-    term                       go to state 56
-    var                        go to state 57
-    ident                      go to state 58
-    number                     go to state 59
+    bool_exp                   go to state 123
+    relation_and_exp           go to state 53
+    relation_exp               go to state 54
+    expression                 go to state 55
+    multiplicative_expression  go to state 56
+    term                       go to state 57
+    var                        go to state 58
+    ident                      go to state 59
+    number                     go to state 60
 
 
-State 98
+State 101
 
    16 statement: FOREACH ident IN . ident loop
 
     IDENT  shift, and go to state 5
 
-    ident  go to state 120
+    ident  go to state 124
 
 
-State 99
+State 102
 
-   48 term: L_PAREN expression . R_PAREN
+   49 term: L_PAREN expression . R_PAREN
 
-    R_PAREN  shift, and go to state 105
+    R_PAREN  shift, and go to state 108
 
 
-State 100
+State 103
 
     9 statements: statement SEMICOLON statements .
 
     $default  reduce using rule 9 (statements)
 
 
-State 101
+State 104
 
    11 statement: var ASSIGN expression .
 
     $default  reduce using rule 11 (statement)
 
 
-State 102
-
-   56 var: ident L_SQUARE_BRACKET expression . R_SQUARE_BRACKET
-
-    R_SQUARE_BRACKET  shift, and go to state 121
-
-
-State 103
-
-   54 vars: var COMMA vars .
-
-    $default  reduce using rule 54 (vars)
-
-
-State 104
-
-   30 relation_exp: L_PAREN bool_exp R_PAREN .
-
-    $default  reduce using rule 30 (relation_exp)
-
-
 State 105
 
-   48 term: L_PAREN expression R_PAREN .
+   57 var: ident L_SQUARE_BRACKET expression . R_SQUARE_BRACKET
 
-    $default  reduce using rule 48 (term)
+    R_SQUARE_BRACKET  shift, and go to state 125
 
 
 State 106
 
-   49 term: SUB L_PAREN expression . R_PAREN
+   55 vars: var COMMA vars .
 
-    R_PAREN  shift, and go to state 122
+    $default  reduce using rule 55 (vars)
 
 
 State 107
 
-   12 statement: IF bool_exp THEN statements . ENDIF
-   13          | IF bool_exp THEN statements . ELSE statements ENDIF
+   31 relation_exp: L_PAREN bool_exp R_PAREN .
 
-    ENDIF  shift, and go to state 123
-    ELSE   shift, and go to state 124
+    $default  reduce using rule 31 (relation_exp)
 
 
 State 108
 
-   23 bool_exp: relation_and_exp OR relation_and_exp .
+   49 term: L_PAREN expression R_PAREN .
 
-    $default  reduce using rule 23 (bool_exp)
+    $default  reduce using rule 49 (term)
 
 
 State 109
 
-   25 relation_and_exp: relation_exp AND relation_and_exp .
-
-    $default  reduce using rule 25 (relation_and_exp)
-
-
-State 110
-
-   27 relation_exp: expression comp expression .
-
-    $default  reduce using rule 27 (relation_exp)
-
-
-State 111
-
-   38 expression: multiplicative_expression ADD expression .
-
-    $default  reduce using rule 38 (expression)
-
-
-State 112
-
-   39 expression: multiplicative_expression SUB expression .
-
-    $default  reduce using rule 39 (expression)
-
-
-State 113
-
-   41 multiplicative_expression: term MULT term .
-
-    $default  reduce using rule 41 (multiplicative_expression)
-
-
-State 114
-
-   42 multiplicative_expression: term DIV term .
-
-    $default  reduce using rule 42 (multiplicative_expression)
-
-
-State 115
-
-   43 multiplicative_expression: term MOD term .
-
-    $default  reduce using rule 43 (multiplicative_expression)
-
-
-State 116
-
-   51 expressions: expression .
-   52            | expression . COMMA expressions
-
-    COMMA  shift, and go to state 125
-
-    $default  reduce using rule 51 (expressions)
-
-
-State 117
-
-   50 term: ident L_PAREN expressions . R_PAREN
+   50 term: SUB L_PAREN expression . R_PAREN
 
     R_PAREN  shift, and go to state 126
 
 
+State 110
+
+   13 statement: IF ifCond ELSE statements . ENDIF
+
+    ENDIF  shift, and go to state 127
+
+
+State 111
+
+   21 ifCond: bool_exp THEN statements .
+
+    $default  reduce using rule 21 (ifCond)
+
+
+State 112
+
+   24 bool_exp: relation_and_exp OR relation_and_exp .
+
+    $default  reduce using rule 24 (bool_exp)
+
+
+State 113
+
+   26 relation_and_exp: relation_exp AND relation_and_exp .
+
+    $default  reduce using rule 26 (relation_and_exp)
+
+
+State 114
+
+   28 relation_exp: expression comp expression .
+
+    $default  reduce using rule 28 (relation_exp)
+
+
+State 115
+
+   39 expression: multiplicative_expression ADD expression .
+
+    $default  reduce using rule 39 (expression)
+
+
+State 116
+
+   40 expression: multiplicative_expression SUB expression .
+
+    $default  reduce using rule 40 (expression)
+
+
+State 117
+
+   42 multiplicative_expression: term MULT term .
+
+    $default  reduce using rule 42 (multiplicative_expression)
+
+
 State 118
 
-   21 loop: BEGINLOOP statements ENDLOOP .
+   43 multiplicative_expression: term DIV term .
 
-    $default  reduce using rule 21 (loop)
+    $default  reduce using rule 43 (multiplicative_expression)
 
 
 State 119
+
+   44 multiplicative_expression: term MOD term .
+
+    $default  reduce using rule 44 (multiplicative_expression)
+
+
+State 120
+
+   52 expressions: expression .
+   53            | expression . COMMA expressions
+
+    COMMA  shift, and go to state 128
+
+    $default  reduce using rule 52 (expressions)
+
+
+State 121
+
+   51 term: ident L_PAREN expressions . R_PAREN
+
+    R_PAREN  shift, and go to state 129
+
+
+State 122
+
+   22 loop: BEGINLOOP statements ENDLOOP .
+
+    $default  reduce using rule 22 (loop)
+
+
+State 123
 
    15 statement: DO loop WHILE bool_exp .
 
     $default  reduce using rule 15 (statement)
 
 
-State 120
+State 124
 
    16 statement: FOREACH ident IN ident . loop
 
-    BEGINLOOP  shift, and go to state 61
+    BEGINLOOP  shift, and go to state 62
 
-    loop  go to state 127
-
-
-State 121
-
-   56 var: ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET .
-
-    $default  reduce using rule 56 (var)
-
-
-State 122
-
-   49 term: SUB L_PAREN expression R_PAREN .
-
-    $default  reduce using rule 49 (term)
-
-
-State 123
-
-   12 statement: IF bool_exp THEN statements ENDIF .
-
-    $default  reduce using rule 12 (statement)
-
-
-State 124
-
-   13 statement: IF bool_exp THEN statements ELSE . statements ENDIF
-
-    READ      shift, and go to state 31
-    IF        shift, and go to state 32
-    WHILE     shift, and go to state 33
-    DO        shift, and go to state 34
-    CONTINUE  shift, and go to state 35
-    WRITE     shift, and go to state 36
-    FOREACH   shift, and go to state 37
-    RETURN    shift, and go to state 38
-    IDENT     shift, and go to state 5
-
-    $default  reduce using rule 10 (statements)
-
-    statements  go to state 128
-    statement   go to state 40
-    var         go to state 41
-    ident       go to state 42
+    loop  go to state 130
 
 
 State 125
 
-   52 expressions: expression COMMA . expressions
+   57 var: ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET .
 
-    NUMBER   shift, and go to state 27
-    L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 49
-    IDENT    shift, and go to state 5
-
-    expression                 go to state 116
-    multiplicative_expression  go to state 55
-    term                       go to state 56
-    expressions                go to state 129
-    var                        go to state 57
-    ident                      go to state 58
-    number                     go to state 59
+    $default  reduce using rule 57 (var)
 
 
 State 126
 
-   50 term: ident L_PAREN expressions R_PAREN .
+   50 term: SUB L_PAREN expression R_PAREN .
 
     $default  reduce using rule 50 (term)
 
 
 State 127
 
+   13 statement: IF ifCond ELSE statements ENDIF .
+
+    $default  reduce using rule 13 (statement)
+
+
+State 128
+
+   53 expressions: expression COMMA . expressions
+
+    NUMBER   shift, and go to state 27
+    L_PAREN  shift, and go to state 66
+    SUB      shift, and go to state 49
+    IDENT    shift, and go to state 5
+
+    expression                 go to state 120
+    multiplicative_expression  go to state 56
+    term                       go to state 57
+    expressions                go to state 131
+    var                        go to state 58
+    ident                      go to state 59
+    number                     go to state 60
+
+
+State 129
+
+   51 term: ident L_PAREN expressions R_PAREN .
+
+    $default  reduce using rule 51 (term)
+
+
+State 130
+
    16 statement: FOREACH ident IN ident loop .
 
     $default  reduce using rule 16 (statement)
 
 
-State 128
+State 131
 
-   13 statement: IF bool_exp THEN statements ELSE statements . ENDIF
+   53 expressions: expression COMMA expressions .
 
-    ENDIF  shift, and go to state 130
-
-
-State 129
-
-   52 expressions: expression COMMA expressions .
-
-    $default  reduce using rule 52 (expressions)
-
-
-State 130
-
-   13 statement: IF bool_exp THEN statements ELSE statements ENDIF .
-
-    $default  reduce using rule 13 (statement)
+    $default  reduce using rule 53 (expressions)

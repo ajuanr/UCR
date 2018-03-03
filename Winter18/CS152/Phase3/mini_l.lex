@@ -56,6 +56,7 @@ const char *cmpLexPattern[] = {"==","<>","<",">","<=",">="};
                  else {
                    free(result);
                    currPos += yyleng;
+                   //strcpy(yylval.strVal, yytext);
 		   yylval.strVal = yytext;
                    return IDENT;
                 }

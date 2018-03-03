@@ -20,8 +20,10 @@ int yylex(void);
 
 %union{
    int		iVal;
+   char**       idents;
    char*   	strVal;
    char		charVal;
+   
 }
 %error-verbose
 %token		   	FUNCTION
@@ -38,17 +40,20 @@ int yylex(void);
 %right  		ASSIGN
 %token  <strVal>	IDENT
 
+%type<iVal> number
+%type<strVal> ident 
+
 
 %%
 prog_start:	functions
                 ;
 functions:	function functions
-                | %empty
+                | /*empty*/
                 ;
 function: 	FUNCTION ident SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY
                 ;
 declarations:	declaration SEMICOLON declarations
-                | %empty
+                | /*empty*/
                 ;
 
 declaration:    identifiers COLON INTEGER
@@ -56,12 +61,12 @@ declaration:    identifiers COLON INTEGER
                 ;
 
 statements:       statement SEMICOLON statements
-                | %empty
+                | /*empty*/
                 ;
 
 statement:        var ASSIGN expression
-                | IF bool_exp THEN statements ENDIF
-                | IF bool_exp THEN statements ELSE statements ENDIF
+                | IF ifCond ENDIF
+                | IF ifCond ELSE statements ENDIF
        		| WHILE bool_exp loop
 		| DO loop WHILE bool_exp
   		| FOREACH ident IN ident loop
@@ -69,6 +74,9 @@ statement:        var ASSIGN expression
                 | WRITE vars
                 | CONTINUE
                 | RETURN expression
+                ;
+
+ifCond:		bool_exp THEN statements
                 ;
 
 loop:		BEGINLOOP statements ENDLOOP
@@ -133,10 +141,10 @@ identifiers:    ident
 		|ident COMMA identifiers
 		;
 
-ident:		IDENT
+ident:		IDENT {$$ = $1;}
                 ;
 
-number:		NUMBER
+number:		NUMBER {$$ = $1;}
                 ;
 
 %%
