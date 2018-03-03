@@ -107,11 +107,10 @@ union YYSTYPE
 #line 21 "mini_l.y" /* yacc.c:1909  */
 
    int		iVal;
-   char*   	strVal;
-   char		charVal;
+   string* 	strVal;
    
 
-#line 115 "y.tab.h" /* yacc.c:1909  */
+#line 114 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

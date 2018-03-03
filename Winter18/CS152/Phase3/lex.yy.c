@@ -473,13 +473,13 @@ OTHERSPECIAL    [[]:;,\(\)[]]
  *     Lexical Analysis
  */
 #line 24 "mini_l.lex"
-#include <stdlib.h>
+#include "header.h"
 #include "y.tab.h"
 
 int* findWord(char*, const char*[],int);
 int charToEnum(const char*); 
 
-int currPos = 0; int currLine = 1;
+int currPos = 1; int currLine = 1;
 // identifiers and reserved words
 const int numIdent = 29;
 const char *lexPattern[] = {"function","beginparams","endparams","beginlocals",
@@ -770,7 +770,7 @@ YY_RULE_SETUP
 #line 48 "mini_l.lex"
 {
                  int *result = findWord(yytext, lexPattern, numIdent);
-                 yylval.strVal = yytext;
+                 yylval.strVal = new string(yytext);
                  currPos += yyleng;
                  if (result[0]){ 
                     free(result);
@@ -780,7 +780,7 @@ YY_RULE_SETUP
                    free(result);
                    currPos += yyleng;
                    //strcpy(yylval.strVal, yytext);
-		   yylval.strVal = yytext;
+		   yylval.strVal = new string(yytext);
                    return IDENT;
                 }
                }
@@ -821,27 +821,27 @@ YY_RULE_SETUP
 case 7:
 YY_RULE_SETUP
 #line 81 "mini_l.lex"
-{currPos += yyleng; yylval.charVal = yytext[0]; return ADD;}
+{currPos += yyleng; return ADD;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
 #line 82 "mini_l.lex"
-{currPos += yyleng; yylval.charVal = yytext[0]; return SUB;}
+{currPos += yyleng; return SUB;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
 #line 83 "mini_l.lex"
-{currPos += yyleng; yylval.charVal = yytext[0];  return MULT;}
+{currPos += yyleng; return MULT;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
 #line 84 "mini_l.lex"
-{currPos += yyleng; yylval.charVal = yytext[0];  return DIV;}
+{currPos += yyleng; return DIV;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
 #line 85 "mini_l.lex"
-{currPos += yyleng; yylval.charVal = yytext[0]; return MOD;}
+{currPos += yyleng; return MOD;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
@@ -1940,4 +1940,5 @@ int charToEnum(const char * s) {
    if (!strcmp(s,">="))		return GTE;
    if (!strcmp(s,"<>"))		return NEQ;
 }
+
 

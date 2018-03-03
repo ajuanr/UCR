@@ -21,13 +21,13 @@ ASSIGN		(:=)
 COMPARE         ==|<>|<|>|<=|>=
 
 %{
-#include <stdlib.h>
+#include "header.h"
 #include "y.tab.h"
 
 int* findWord(char*, const char*[],int);
 int charToEnum(const char*); 
 
-int currPos = 0; int currLine = 1;
+int currPos = 1; int currLine = 1;
 // identifiers and reserved words
 const int numIdent = 29;
 const char *lexPattern[] = {"function","beginparams","endparams","beginlocals",
@@ -47,7 +47,7 @@ const char *cmpLexPattern[] = {"==","<>","<",">","<=",">="};
 {COMMENT}      {;}
 {IDENT}        {
                  int *result = findWord(yytext, lexPattern, numIdent);
-                 yylval.strVal = yytext;
+                 yylval.strVal = new string(yytext);
                  currPos += yyleng;
                  if (result[0]){ 
                     free(result);
@@ -57,7 +57,7 @@ const char *cmpLexPattern[] = {"==","<>","<",">","<=",">="};
                    free(result);
                    currPos += yyleng;
                    //strcpy(yylval.strVal, yytext);
-		   yylval.strVal = yytext;
+		   yylval.strVal = new string(yytext);
                    return IDENT;
                 }
                }
@@ -78,11 +78,11 @@ const char *cmpLexPattern[] = {"==","<>","<",">","<=",">="};
                }
 {ASSIGN}      {currPos += yyleng; return ASSIGN;}
 {digit}+      {currPos += yyleng; yylval.iVal = atoi(yytext);return NUMBER;}
-{PLUS}        {currPos += yyleng; yylval.charVal = yytext[0]; return ADD;}
-{MINUS}       {currPos += yyleng; yylval.charVal = yytext[0]; return SUB;}
-{MULT}        {currPos += yyleng; yylval.charVal = yytext[0];  return MULT;}
-{DIV}         {currPos += yyleng; yylval.charVal = yytext[0];  return DIV;}
-{MOD}         {currPos += yyleng; yylval.charVal = yytext[0]; return MOD;}
+{PLUS}        {currPos += yyleng; return ADD;}
+{MINUS}       {currPos += yyleng; return SUB;}
+{MULT}        {currPos += yyleng; return MULT;}
+{DIV}         {currPos += yyleng; return DIV;}
+{MOD}         {currPos += yyleng; return MOD;}
 {WHITESPACE}  {currPos += yyleng;}
 {NEWLINE}            {currLine++; currPos = 0;}
 {BADSTART}    {printf("Error at line %d, column %d: Identifier \"%s\" must begin with a letter\"\n", currLine, currPos, yytext); exit(1);}
@@ -158,3 +158,4 @@ int charToEnum(const char * s) {
    if (!strcmp(s,">="))		return GTE;
    if (!strcmp(s,"<>"))		return NEQ;
 }
+

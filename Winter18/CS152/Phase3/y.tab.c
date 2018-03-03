@@ -67,10 +67,7 @@
 #define YY_NO_UNPUT
 
 
-#include <ctype.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include "header.h"
 
 extern int currLine;	
 extern int currPos;
@@ -78,6 +75,9 @@ extern char *yytext;
 
 void yyerror(char const*);
 int yylex(void);
+
+vector<string> param_table;
+
 
 #line 83 "y.tab.c" /* yacc.c:339  */
 
@@ -176,11 +176,10 @@ union YYSTYPE
 #line 21 "mini_l.y" /* yacc.c:355  */
 
    int		iVal;
-   char*   	strVal;
-   char		charVal;
+   string* 	strVal;
    
 
-#line 184 "y.tab.c" /* yacc.c:355  */
+#line 183 "y.tab.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -197,7 +196,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 201 "y.tab.c" /* yacc.c:358  */
+#line 200 "y.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -499,13 +498,13 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    47,    47,    49,    50,    52,    54,    55,    58,    59,
-      62,    63,    66,    67,    68,    69,    70,    71,    72,    73,
-      74,    75,    78,    81,    84,    85,    88,    89,    92,    93,
-      94,    95,    96,    99,   100,   101,   102,   103,   104,   107,
-     108,   109,   112,   113,   114,   115,   118,   119,   120,   121,
-     122,   123,   124,   127,   128,   131,   133,   134,   137,   139,
-     140,   143,   144,   147,   149,   152
+       0,    45,    45,    47,    48,    50,    52,    53,    56,    57,
+      60,    61,    64,    65,    66,    67,    68,    69,    70,    71,
+      72,    73,    76,    79,    82,    83,    86,    87,    90,    91,
+      92,    93,    94,    97,    98,    99,   100,   101,   102,   105,
+     106,   107,   110,   111,   112,   113,   116,   117,   118,   119,
+     120,   121,   122,   125,   126,   129,   132,   133,   136,   139,
+     140,   143,   144,   147,   150,   153
 };
 #endif
 
@@ -1372,23 +1371,23 @@ yyreduce:
         case 61:
 #line 143 "mini_l.y" /* yacc.c:1646  */
     {(yyval.strVal) = (yyvsp[0].strVal);}
-#line 1376 "y.tab.c" /* yacc.c:1646  */
+#line 1375 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 64:
-#line 149 "mini_l.y" /* yacc.c:1646  */
+#line 150 "mini_l.y" /* yacc.c:1646  */
     {(yyval.strVal) = (yyvsp[0].strVal);}
-#line 1382 "y.tab.c" /* yacc.c:1646  */
+#line 1381 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 65:
-#line 152 "mini_l.y" /* yacc.c:1646  */
+#line 153 "mini_l.y" /* yacc.c:1646  */
     {(yyval.iVal) = (yyvsp[0].iVal);}
-#line 1388 "y.tab.c" /* yacc.c:1646  */
+#line 1387 "y.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 1392 "y.tab.c" /* yacc.c:1646  */
+#line 1391 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1616,7 +1615,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 155 "mini_l.y" /* yacc.c:1906  */
+#line 156 "mini_l.y" /* yacc.c:1906  */
 
 
 int main() {

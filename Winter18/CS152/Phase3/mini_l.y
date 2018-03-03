@@ -5,10 +5,7 @@
 #define YY_NO_UNPUT
 
 
-#include <ctype.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include "header.h"
 
 extern int currLine;	
 extern int currPos;
@@ -16,12 +13,14 @@ extern char *yytext;
 
 void yyerror(char const*);
 int yylex(void);
+
+vector<string> param_table;
+
 %}
 
 %union{
    int		iVal;
-   char*   	strVal;
-   char		charVal;
+   string* 	strVal;
    
 }
 %error-verbose
@@ -41,7 +40,6 @@ int yylex(void);
 
 %type<iVal> number
 %type<strVal> ident identifiers
-
 
 %%
 prog_start:	functions
@@ -147,6 +145,7 @@ identifiers:      ident {$$ = $1;}
 		;
 
 identList:      COMMA identifiers
+		;
 
 ident:		IDENT {$$ = $1;}
                 ;
