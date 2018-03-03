@@ -20,7 +20,6 @@ int yylex(void);
 
 %union{
    int		iVal;
-   char**       idents;
    char*   	strVal;
    char		charVal;
    
@@ -41,7 +40,7 @@ int yylex(void);
 %token  <strVal>	IDENT
 
 %type<iVal> number
-%type<strVal> ident 
+%type<strVal> ident identifiers
 
 
 %%
@@ -116,7 +115,7 @@ multiplicative_expression:	  term
 				| term MOD term
                 		;
 
-term:		SUB number %prec UMINUS
+term:		  SUB number %prec UMINUS
                 | number
 		| var
 		| SUB var %prec UMINUS
@@ -126,20 +125,28 @@ term:		SUB number %prec UMINUS
 		;
 
 expressions:	  expression
-		| expression COMMA expressions
+		| expression exprList
 		;
 
-vars:		var
-                | var COMMA vars
+exprList:	COMMA expressions
+		;
+
+vars:		  var
+                | var varList
                 ;
 
-var:		ident
+varList:	COMMA vars
+		;
+
+var:		  ident
                 | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET
 		;
 
-identifiers:    ident
-		|ident COMMA identifiers
+identifiers:      ident {$$ = $1;}
+		| ident identList
 		;
+
+identList:      COMMA identifiers
 
 ident:		IDENT {$$ = $1;}
                 ;
