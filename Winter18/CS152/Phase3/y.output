@@ -129,24 +129,24 @@ L_PAREN (287) 31 49 50 51
 R_PAREN (288) 31 49 50 51
 L_SQUARE_BRACKET (289) 8 59
 R_SQUARE_BRACKET (290) 8 59
-UMINUS (291)
-MULT (292) 42
-DIV (293) 43
-MOD (294) 44
-ADD (295) 39
-SUB (296) 40 45 48 50
-LT (297) 34
-LTE (298) 36
-GT (299) 35
-GTE (300) 37
-EQ (301) 32
-NEQ (302) 33
-NOT (303) 27
-AND (304) 26
-OR (305) 24
-ASSIGN (306) 11
-NUMBER (307) 64
-IDENT (308) 63
+NUMBER (291) 64
+IDENT (292) 63
+UMINUS (293)
+MULT (294) 42
+DIV (295) 43
+MOD (296) 44
+ADD (297) 39
+SUB (298) 40 45 48 50
+LT (299) 34
+LTE (300) 36
+GT (301) 35
+GTE (302) 37
+EQ (303) 32
+NEQ (304) 33
+NOT (305) 27
+AND (306) 26
+OR (307) 24
+ASSIGN (308) 11
 
 
 Nonterminals, with rules where they appear
@@ -510,10 +510,10 @@ State 33
     TRUE     shift, and go to state 47
     FALSE    shift, and go to state 48
     L_PAREN  shift, and go to state 49
-    SUB      shift, and go to state 50
-    NOT      shift, and go to state 51
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
+    NOT      shift, and go to state 51
 
     ifCond                     go to state 52
     bool_exp                   go to state 53
@@ -534,10 +534,10 @@ State 34
     TRUE     shift, and go to state 47
     FALSE    shift, and go to state 48
     L_PAREN  shift, and go to state 49
-    SUB      shift, and go to state 50
-    NOT      shift, and go to state 51
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
+    NOT      shift, and go to state 51
 
     bool_exp                   go to state 62
     relation_and_exp           go to state 54
@@ -564,9 +564,9 @@ State 36
    20 statement: RETURN . expression
 
     L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 50
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
 
     expression                 go to state 66
     multiplicative_expression  go to state 57
@@ -682,10 +682,10 @@ State 49
     TRUE     shift, and go to state 47
     FALSE    shift, and go to state 48
     L_PAREN  shift, and go to state 49
-    SUB      shift, and go to state 50
-    NOT      shift, and go to state 51
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
+    NOT      shift, and go to state 51
 
     bool_exp                   go to state 76
     relation_and_exp           go to state 54
@@ -720,10 +720,10 @@ State 51
     TRUE     shift, and go to state 47
     FALSE    shift, and go to state 48
     L_PAREN  shift, and go to state 49
-    SUB      shift, and go to state 50
-    NOT      shift, and go to state 51
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
+    NOT      shift, and go to state 51
 
     relation_exp               go to state 81
     expression                 go to state 56
@@ -879,9 +879,9 @@ State 65
    49 term: L_PAREN . expression R_PAREN
 
     L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 50
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
 
     expression                 go to state 103
     multiplicative_expression  go to state 57
@@ -946,9 +946,9 @@ State 71
    11 statement: var ASSIGN . expression
 
     L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 50
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
 
     expression                 go to state 106
     multiplicative_expression  go to state 57
@@ -963,9 +963,9 @@ State 72
    59 var: ident L_SQUARE_BRACKET . expression R_SQUARE_BRACKET
 
     L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 50
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
 
     expression                 go to state 107
     multiplicative_expression  go to state 57
@@ -1028,9 +1028,9 @@ State 78
    50 term: SUB L_PAREN . expression R_PAREN
 
     L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 50
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
 
     expression                 go to state 111
     multiplicative_expression  go to state 57
@@ -1119,10 +1119,10 @@ State 85
     TRUE     shift, and go to state 47
     FALSE    shift, and go to state 48
     L_PAREN  shift, and go to state 49
-    SUB      shift, and go to state 50
-    NOT      shift, and go to state 51
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
+    NOT      shift, and go to state 51
 
     relation_and_exp           go to state 114
     relation_exp               go to state 55
@@ -1141,10 +1141,10 @@ State 86
     TRUE     shift, and go to state 47
     FALSE    shift, and go to state 48
     L_PAREN  shift, and go to state 49
-    SUB      shift, and go to state 50
-    NOT      shift, and go to state 51
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
+    NOT      shift, and go to state 51
 
     relation_and_exp           go to state 115
     relation_exp               go to state 55
@@ -1203,9 +1203,9 @@ State 93
    28 relation_exp: expression comp . expression
 
     L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 50
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
 
     expression                 go to state 116
     multiplicative_expression  go to state 57
@@ -1220,9 +1220,9 @@ State 94
    39 expression: multiplicative_expression ADD . expression
 
     L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 50
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
 
     expression                 go to state 117
     multiplicative_expression  go to state 57
@@ -1237,9 +1237,9 @@ State 95
    40 expression: multiplicative_expression SUB . expression
 
     L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 50
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
 
     expression                 go to state 118
     multiplicative_expression  go to state 57
@@ -1254,9 +1254,9 @@ State 96
    42 multiplicative_expression: term MULT . term
 
     L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 50
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
 
     term    go to state 119
     var     go to state 59
@@ -1269,9 +1269,9 @@ State 97
    43 multiplicative_expression: term DIV . term
 
     L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 50
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
 
     term    go to state 120
     var     go to state 59
@@ -1284,9 +1284,9 @@ State 98
    44 multiplicative_expression: term MOD . term
 
     L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 50
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
 
     term    go to state 121
     var     go to state 59
@@ -1299,9 +1299,9 @@ State 99
    51 term: ident L_PAREN . expressions R_PAREN
 
     L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 50
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
 
     expression                 go to state 122
     multiplicative_expression  go to state 57
@@ -1333,10 +1333,10 @@ State 102
     TRUE     shift, and go to state 47
     FALSE    shift, and go to state 48
     L_PAREN  shift, and go to state 49
-    SUB      shift, and go to state 50
-    NOT      shift, and go to state 51
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
+    NOT      shift, and go to state 51
 
     bool_exp                   go to state 125
     relation_and_exp           go to state 54
@@ -1552,9 +1552,9 @@ State 130
    54 exprList: COMMA . expressions
 
     L_PAREN  shift, and go to state 65
-    SUB      shift, and go to state 50
     NUMBER   shift, and go to state 28
     IDENT    shift, and go to state 5
+    SUB      shift, and go to state 50
 
     expression                 go to state 122
     multiplicative_expression  go to state 57

@@ -21,7 +21,7 @@ ASSIGN		(:=)
 COMPARE         ==|<>|<|>|<=|>=
 
 %{
-#include "header.h"
+#include "headers.h"
 #include "y.tab.h"
 
 int* findWord(char*, const char*[],int);

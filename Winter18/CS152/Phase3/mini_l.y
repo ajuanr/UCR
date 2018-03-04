@@ -5,7 +5,7 @@
 #define YY_NO_UNPUT
 
 
-#include "header.h"
+#include "headers.h"
 
 extern int currLine;	
 extern int currPos;
@@ -14,7 +14,32 @@ extern char *yytext;
 void yyerror(char const*);
 int yylex(void);
 
-vector<string> param_table;
+struct Symbol; // forward declaration
+
+typedef vector<string> vecStr;
+typedef vector<Symbol> vecSym;
+
+
+bool inSymTable(string);
+bool inArrayList(string);
+
+struct Symbol{
+    string name;
+    string type;
+    bool operator==(const string &rhs) {
+       return !(this->name.compare(rhs)); // returns true if strings are equal
+    }
+};
+
+int currentTemp=0; // the current number of temporary variables
+int currentLabel=1; // the current number of labels
+
+vecSym arrayList;
+vecStr opsList;    // Stores list of identifiers seen
+vecSym symTable; // Stores list of symbols
+vecSym paramList;
+
+bool addtoParams = false;
 
 %}
 
@@ -115,7 +140,9 @@ multiplicative_expression:	  term
 				| term MOD term
                 		;
 
-term:		  SUB number %prec UMINUS
+term:		  SUB number %prec UMINUS {
+                      
+                  }
                 | number
 		| var
 		| SUB var %prec UMINUS
@@ -138,21 +165,45 @@ vars:		  var
 varList:	COMMA vars
 		;
 
-var:		  ident
-                | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET
+var:		  ident {
+                  Symbol current = symTable.back();
+                  symTable.pop_back(); // remove the just added symbol
+                  if (!inSymTable(current.name))
+			exit(1);
+                  opsList.push_back(current.name);
+                }
+                | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
+                  Symbol current = symTable.back();
+                  symTable.pop_back(); // remove the just added symbol
+                  string ident = *($1);
+                  if (!inArrayList(current.name))
+			exit(1);
+                  opsList.push_back(". [] " + ident + ", " + current.name);
+                  cout << "last pushed symbol was " << opsList.back() << endl;  
+                    
+                }
 		;
 
-identifiers:      ident {$$ = $1;}
+identifiers:      ident 
 		| ident identList
 		;
 
 identList:      COMMA identifiers
 		;
 
-ident:		IDENT {$$ = $1;}
+ident:		IDENT {
+                    string id = (". _" + *($1));
+                    Symbol ident;
+                    ident.name = id;
+                    symTable.push_back(ident);
+                    if (addtoParams) {
+                        paramList.push_back(ident);
+                    }
+                    cout << ident.name << endl;
+                }
                 ;
 
-number:		NUMBER {$$ = $1;}
+number:		NUMBER
                 ;
 
 %%
@@ -163,9 +214,40 @@ int main() {
    return 0;
 }
 
-void
-yyerror (char const *s)
+void yyerror (char const *s)
 {
   fprintf (stderr, "error at line %d:  \"%s\"\n", currLine, s);
 }
+
+// return true if string s in in list
+bool inSymTable(string s){
+    vecSym::iterator sym = find(symTable.begin(), symTable.end(), s);
+    if (sym == symTable.end()) { // symbol not in table
+        cout << "Error at line " << currLine << ", position " << currPos
+	     << ". " << s << " is undeclared\n";
+        return false;
+    }
+    if (!(sym->type.compare("INTEGER"))) {
+        return true;
+    }
+    cout << "Error, invalid type\n";
+    return false; 
+}
+
+// return true if string s in in list
+bool inArrayList(string s){
+    vecSym::iterator sym = find(symTable.begin(), symTable.end(), s);
+    if (sym == symTable.end()) { // symbol not in table
+        cout << "Error at line " << currLine << ", position " << currPos
+             << ". " << s << " is undeclared\n";
+        return false;
+    }
+    if (!(sym->type.compare("INTEGER"))) {
+        cout << "Error, not an array\n";
+        return false;
+    }
+    return true;
+}
+
+
 

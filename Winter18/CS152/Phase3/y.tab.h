@@ -78,24 +78,24 @@ extern int yydebug;
     R_PAREN = 288,
     L_SQUARE_BRACKET = 289,
     R_SQUARE_BRACKET = 290,
-    UMINUS = 291,
-    MULT = 292,
-    DIV = 293,
-    MOD = 294,
-    ADD = 295,
-    SUB = 296,
-    LT = 297,
-    LTE = 298,
-    GT = 299,
-    GTE = 300,
-    EQ = 301,
-    NEQ = 302,
-    NOT = 303,
-    AND = 304,
-    OR = 305,
-    ASSIGN = 306,
-    NUMBER = 307,
-    IDENT = 308
+    NUMBER = 291,
+    IDENT = 292,
+    UMINUS = 293,
+    MULT = 294,
+    DIV = 295,
+    MOD = 296,
+    ADD = 297,
+    SUB = 298,
+    LT = 299,
+    LTE = 300,
+    GT = 301,
+    GTE = 302,
+    EQ = 303,
+    NEQ = 304,
+    NOT = 305,
+    AND = 306,
+    OR = 307,
+    ASSIGN = 308
   };
 #endif
 
@@ -104,7 +104,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 21 "mini_l.y" /* yacc.c:1909  */
+#line 43 "mini_l.y" /* yacc.c:1909  */
 
    int		iVal;
    string* 	strVal;

@@ -473,7 +473,7 @@ OTHERSPECIAL    [[]:;,\(\)[]]
  *     Lexical Analysis
  */
 #line 24 "mini_l.lex"
-#include "header.h"
+#include "headers.h"
 #include "y.tab.h"
 
 int* findWord(char*, const char*[],int);
