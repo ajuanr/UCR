@@ -1,0 +1,21 @@
+identifiers sees: n
+declaration sees: n
+identifiers sees: k
+declaration sees: i
+identifiers sees: t
+IN vars
+Error at line 22, position 13t is undeclared
+Error at line 27, position 21t is undeclared
+IN vars
+Error at line 32, position 11t is undeclared
+Error at line 33, position 11t is undeclared
+Error at line 34, position 17t is undeclared
+Error at line 35, position 11t is undeclared
+Error at line 35, position 21t is undeclared
+Error at line 36, position 11t is undeclared
+IN vars
+IN vars
+Error at line 52, position 16t is undeclared
+IN vars
+Error at line 56, position 16t is undeclared
+IN vars

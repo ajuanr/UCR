@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <iostream>
 #include <iterator>
+#include <stack>
 #include <stdio.h>
 #include <string>
 #include <stdlib.h>

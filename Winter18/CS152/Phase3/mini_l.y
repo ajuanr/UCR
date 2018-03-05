@@ -17,6 +17,7 @@ struct Symbol; // forward declaration
 
 typedef vector<string> vecStr;
 typedef vector<Symbol> vecSym;
+typedef stack<Symbol> stackSym;
 
 
 bool inSymTable(string);
@@ -30,6 +31,7 @@ struct Symbol{
     Symbol(string n, string t):name(n),type(t) {}
     string name;
     string type;
+    int value;
     bool operator==(const string &rhs) {
        return !(this->name.compare(rhs)); // returns true if strings are equal
     }
@@ -40,12 +42,12 @@ struct Symbol{
 int currentTemp=0; 	// the current number of temporary variables
 int currentLabel=1; 	// the current number of labels
 
-vecSym arrayList;
-vecStr identList;    	// holds list of identifiers seen
+vecStr milCode;		// holds the code generated
+vecSym identList;    	// holds list of identifiers seen
 vecSym symTable; 	// holds list of symbols
 vecSym paramList;       // for function calls
 vecStr stmntsList; 	// hold the final statements for the MIL code
-
+stackSym paramQ;	
 bool addtoParams = false;
 %}
 
@@ -80,9 +82,9 @@ typedef struct Attributes{
 %right  	ASSIGN
 
 %type<iVal> number
-%type<strVal> ident identifiers
-%type<vecA> vars varList 
-%type<attribute> var 
+%type<attribute> ident identifiers
+%type<attribute> var
+
 
 %%
 prog_start:	functions
@@ -91,10 +93,6 @@ functions:	function functions
                 | /*empty*/
                 ;
 function: 	FUNCTION ident SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
-                    for (auto stmnt : stmntsList) {
-			cout << stmnt << endl;
-
-                    }
 
                 }
                 ;
@@ -102,7 +100,10 @@ declarations:	declaration SEMICOLON declarations
                 | /*empty*/
                 ;
 
-declaration:    identifiers COLON INTEGER
+declaration:    identifiers COLON INTEGER {
+		cout << "declaration sees: " << *($1.name) << endl;
+		
+                }
 		| identifiers COLON ARRAY L_SQUARE_BRACKET number R_SQUARE_BRACKET OF INTEGER
                 ;
 
@@ -163,10 +164,12 @@ multiplicative_expression:	  term
                 		;
 
 term:		  SUB number %prec UMINUS {
+		     string newTemp = genTemp(); 
+		     milCode.push_back(genQuad("-", "0", to_string($2), newTemp));
                      
                   }
-                | number {
-}
+                | number{
+                 }
 		| var
 		| SUB var %prec UMINUS
                 | L_PAREN expression R_PAREN
@@ -175,6 +178,12 @@ term:		  SUB number %prec UMINUS {
 		;
 
 expressions:	  expression
+		  {
+		    paramQ.push(identList.back());	
+		    cout << "Pushed " << identList.back().name << "onto stack\n";
+		    identList.pop_back();
+
+		 }
 		| expression exprList
 		;
 
@@ -182,41 +191,44 @@ exprList:	COMMA expressions
 		;
 
 vars:		  var {
-                  $$->push_back($1);
-                }
-                | var varList {
-                     $$->push_back($1);
-		     for (int i = 0; i != $2->size(); ++i) cout << (*$2)[i].name << endl;
-                }
+		    cout << "IN vars\n";
+		  }
+                | var COMMA vars
                 ;
 
-varList:	COMMA vars {
-     		    $$ = $2;
-                }
-		;
-
 var:		ident {
-                  if (inSymTable(*($1))) { // symbol has already been declared
-                      cout << "Error at line " << currLine << ", position " << currPos
-	                   << ". " << *($1) << " is undeclared\n";
-			exit(1);
-		  }
-                  identList.push_back(*($1));
-                  $$.name = $1;
+                    if (inSymTable(*$1.name)) {
+                        identList.back().type = "INTEGER"; // not an array identifier
+			cout << "var ident was in table\n";
+	            }
+		    $$ = $1;
                 }
                 | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
+  		    Symbol temp = identList.back();
+		    identList.pop_back();
+                    if (inArrayList(*($1.name))) {
+		       identList.push_back(temp); 
+  		    }
                 }
 		;
 
-identifiers:      ident 
-		| ident identList
-		;
-
-identList:      COMMA identifiers
+identifiers:      ident {
+		 *($$.name) = *($1.name);
+		cout << "identifiers sees: " << *($1.name) << endl;
+ 		}
+                   
+		| ident COMMA identifiers
 		;
 
 ident:		IDENT {
-                    *($$) = ". _" + *($1);
+                    if (!inSymTable(*($1))) { // have not seen before
+		        identList.push_back(Symbol(*($1)));
+                    }
+                    else {
+			cout << "Error at line: " << currLine << "redeclaring: " << $1 << "\n";
+		    }
+	        *($$.name) = *($1);	
+			
                 }
                 ;
 
@@ -244,7 +256,7 @@ bool inSymTable(string s){
     if (sym == symTable.end()) { // symbol not in table
         return false;
     }
-    if (!(sym->type.compare("int"))) {
+    if (!(sym->type.compare("INTEGER"))) {
         return true;
     }
     cout << "Error, invalid type\n";
@@ -254,17 +266,28 @@ bool inSymTable(string s){
 // return true if string s in in list
 bool inArrayList(string s){
     vecSym::iterator sym = find(symTable.begin(), symTable.end(), s);
+    for (auto i : symTable) { cout << "var " << i.name << endl;}
     if (sym == symTable.end()) { // symbol not in table
         cout << "Error at line " << currLine << ", position " << currPos
-             << ". " << s << " is undeclared\n";
+              << s << " is undeclared\n";
         return false;
     }
-    if (!(sym->type.compare("int"))) {
+    cout << "symbol type is: " << sym->type << endl;
+    if (!(sym->type.compare("INTEGER"))) {
         cout << "Error, not an array\n";
         return false;
     }
     return true;
 }
 
+string genTemp() {
+    return "t" + to_string(currentTemp++);
+}
 
+string genLabel() {
+    return "L" + to_string(currentLabel++);
+}
 
+string genQuad(string op, string src1, string src2, string dest) {
+    return ". " + op + " " + dest + ", " + src1 + ", " + src2; 
+}
