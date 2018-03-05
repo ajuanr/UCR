@@ -4,7 +4,6 @@
 %{
 #define YY_NO_UNPUT
 
-
 #include "headers.h"
 
 extern int currLine;	
@@ -22,8 +21,13 @@ typedef vector<Symbol> vecSym;
 
 bool inSymTable(string);
 bool inArrayList(string);
+string genQuad(string op, string src1, string src2, string dest);
+string genLabel();
+string genTemp();
 
 struct Symbol{
+    Symbol(string n):name(n) {}
+    Symbol(string n, string t):name(n),type(t) {}
     string name;
     string type;
     bool operator==(const string &rhs) {
@@ -31,23 +35,33 @@ struct Symbol{
     }
 };
 
-int currentTemp=0; // the current number of temporary variables
-int currentLabel=1; // the current number of labels
+   
+
+int currentTemp=0; 	// the current number of temporary variables
+int currentLabel=1; 	// the current number of labels
 
 vecSym arrayList;
-vecStr opsList;    // Stores list of identifiers seen
-vecSym symTable; // Stores list of symbols
-vecSym paramList;
+vecStr identList;    	// holds list of identifiers seen
+vecSym symTable; 	// holds list of symbols
+vecSym paramList;       // for function calls
+vecStr stmntsList; 	// hold the final statements for the MIL code
 
 bool addtoParams = false;
-
 %}
 
 %union{
    int		iVal;
    string* 	strVal;
-   
-}
+typedef struct Attributes{
+   string* name;
+   string* type;
+   string* code;
+}Attributes;
+   Attributes attribute;
+   vector<Attributes> *vecA;
+};
+
+
 %error-verbose
 %token		FUNCTION INTEGER OF ARRAY READ IF THEN ENDIF ELSE WHILE DO 
 %token		BEGIN_PARAMS BEGIN_LOCALS BEGIN_BODY IN BEGINLOOP ENDLOOP RETURN
@@ -67,6 +81,8 @@ bool addtoParams = false;
 
 %type<iVal> number
 %type<strVal> ident identifiers
+%type<vecA> vars varList 
+%type<attribute> var 
 
 %%
 prog_start:	functions
@@ -74,7 +90,13 @@ prog_start:	functions
 functions:	function functions
                 | /*empty*/
                 ;
-function: 	FUNCTION ident SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY
+function: 	FUNCTION ident SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
+                    for (auto stmnt : stmntsList) {
+			cout << stmnt << endl;
+
+                    }
+
+                }
                 ;
 declarations:	declaration SEMICOLON declarations
                 | /*empty*/
@@ -141,9 +163,10 @@ multiplicative_expression:	  term
                 		;
 
 term:		  SUB number %prec UMINUS {
-                      
+                     
                   }
-                | number
+                | number {
+}
 		| var
 		| SUB var %prec UMINUS
                 | L_PAREN expression R_PAREN
@@ -158,29 +181,30 @@ expressions:	  expression
 exprList:	COMMA expressions
 		;
 
-vars:		  var
-                | var varList
+vars:		  var {
+                  $$->push_back($1);
+                }
+                | var varList {
+                     $$->push_back($1);
+		     for (int i = 0; i != $2->size(); ++i) cout << (*$2)[i].name << endl;
+                }
                 ;
 
-varList:	COMMA vars
+varList:	COMMA vars {
+     		    $$ = $2;
+                }
 		;
 
-var:		  ident {
-                  Symbol current = symTable.back();
-                  symTable.pop_back(); // remove the just added symbol
-                  if (!inSymTable(current.name))
+var:		ident {
+                  if (inSymTable(*($1))) { // symbol has already been declared
+                      cout << "Error at line " << currLine << ", position " << currPos
+	                   << ". " << *($1) << " is undeclared\n";
 			exit(1);
-                  opsList.push_back(current.name);
+		  }
+                  identList.push_back(*($1));
+                  $$.name = $1;
                 }
                 | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
-                  Symbol current = symTable.back();
-                  symTable.pop_back(); // remove the just added symbol
-                  string ident = *($1);
-                  if (!inArrayList(current.name))
-			exit(1);
-                  opsList.push_back(". [] " + ident + ", " + current.name);
-                  cout << "last pushed symbol was " << opsList.back() << endl;  
-                    
                 }
 		;
 
@@ -192,18 +216,13 @@ identList:      COMMA identifiers
 		;
 
 ident:		IDENT {
-                    string id = (". _" + *($1));
-                    Symbol ident;
-                    ident.name = id;
-                    symTable.push_back(ident);
-                    if (addtoParams) {
-                        paramList.push_back(ident);
-                    }
-                    cout << ident.name << endl;
+                    *($$) = ". _" + *($1);
                 }
                 ;
 
-number:		NUMBER
+number:		NUMBER {
+		   $$ = $1;
+                }
                 ;
 
 %%
@@ -219,15 +238,13 @@ void yyerror (char const *s)
   fprintf (stderr, "error at line %d:  \"%s\"\n", currLine, s);
 }
 
-// return true if string s in in list
+// return true if string s is in list
 bool inSymTable(string s){
     vecSym::iterator sym = find(symTable.begin(), symTable.end(), s);
     if (sym == symTable.end()) { // symbol not in table
-        cout << "Error at line " << currLine << ", position " << currPos
-	     << ". " << s << " is undeclared\n";
         return false;
     }
-    if (!(sym->type.compare("INTEGER"))) {
+    if (!(sym->type.compare("int"))) {
         return true;
     }
     cout << "Error, invalid type\n";
@@ -242,7 +259,7 @@ bool inArrayList(string s){
              << ". " << s << " is undeclared\n";
         return false;
     }
-    if (!(sym->type.compare("INTEGER"))) {
+    if (!(sym->type.compare("int"))) {
         cout << "Error, not an array\n";
         return false;
     }

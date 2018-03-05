@@ -66,7 +66,6 @@
 
 #define YY_NO_UNPUT
 
-
 #include "headers.h"
 
 extern int currLine;	
@@ -84,8 +83,13 @@ typedef vector<Symbol> vecSym;
 
 bool inSymTable(string);
 bool inArrayList(string);
+string genQuad(string op, string src1, string src2, string dest);
+string genLabel();
+string genTemp();
 
 struct Symbol{
+    Symbol(string n):name(n) {}
+    Symbol(string n, string t):name(n),type(t) {}
     string name;
     string type;
     bool operator==(const string &rhs) {
@@ -93,15 +97,20 @@ struct Symbol{
     }
 };
 
+   
+
+int currentTemp=0; 	// the current number of temporary variables
+int currentLabel=1; 	// the current number of labels
+
 vecSym arrayList;
-vecStr opsList;    // Stores list of identifiers seen
-vecSym symTable; // Stores list of symbols
-vecSym paramList;
+vecStr identList;    	// holds list of identifiers seen
+vecSym symTable; 	// holds list of symbols
+vecSym paramList;       // for function calls
+vecStr stmntsList; 	// hold the final statements for the MIL code
 
 bool addtoParams = false;
 
-
-#line 105 "y.tab.c" /* yacc.c:339  */
+#line 114 "y.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -195,13 +204,19 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 43 "mini_l.y" /* yacc.c:355  */
+#line 52 "mini_l.y" /* yacc.c:355  */
 
    int		iVal;
    string* 	strVal;
-   
+typedef struct Attributes{
+   string* name;
+   string* type;
+   string* code;
+}Attributes;
+   Attributes attribute;
+   vector<Attributes> *vecA;
 
-#line 205 "y.tab.c" /* yacc.c:355  */
+#line 220 "y.tab.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -218,7 +233,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 222 "y.tab.c" /* yacc.c:358  */
+#line 237 "y.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -520,13 +535,13 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    69,    69,    71,    72,    74,    76,    77,    80,    81,
-      84,    85,    88,    89,    90,    91,    92,    93,    94,    95,
-      96,    97,   100,   103,   106,   107,   110,   111,   114,   115,
-     116,   117,   118,   121,   122,   123,   124,   125,   126,   129,
-     130,   131,   134,   135,   136,   137,   140,   141,   142,   143,
-     144,   145,   146,   149,   150,   153,   156,   157,   160,   163,
-     170,   182,   183,   186,   189,   201
+       0,    88,    88,    90,    91,    93,   101,   102,   105,   106,
+     109,   110,   113,   114,   115,   116,   117,   118,   119,   120,
+     121,   122,   125,   128,   131,   132,   135,   136,   139,   140,
+     141,   142,   143,   146,   147,   148,   149,   150,   151,   154,
+     155,   156,   159,   160,   161,   162,   165,   168,   170,   171,
+     172,   173,   174,   177,   178,   181,   184,   187,   193,   198,
+     207,   211,   212,   215,   218,   223
 };
 #endif
 
@@ -1390,50 +1405,97 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-        case 59:
-#line 163 "mini_l.y" /* yacc.c:1646  */
+        case 5:
+#line 93 "mini_l.y" /* yacc.c:1646  */
     {
-                  Symbol current = symTable.back();
-                  symTable.pop_back(); // remove the just added symbol
-                  if (!inSymTable(current.name))
-			exit(1);
-                  opsList.push_back(current.name);
-                }
-#line 1403 "y.tab.c" /* yacc.c:1646  */
-    break;
+                    for (auto stmnt : stmntsList) {
+			cout << stmnt << endl;
 
-  case 60:
-#line 170 "mini_l.y" /* yacc.c:1646  */
-    {
-                  Symbol current = symTable.back();
-                  symTable.pop_back(); // remove the just added symbol
-                  string ident = *((yyvsp[-3].strVal));
-                  if (!inArrayList(current.name))
-			exit(1);
-                  opsList.push_back(". [] " + ident + ", " + current.name);
-                  cout << "last pushed symbol was " << opsList.back() << endl;  
-                    
+                    }
+
                 }
 #line 1418 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 64:
-#line 189 "mini_l.y" /* yacc.c:1646  */
+  case 46:
+#line 165 "mini_l.y" /* yacc.c:1646  */
     {
-                    string id = (". _" + *((yyvsp[0].strVal)));
-                    Symbol ident;
-                    ident.name = id;
-                    symTable.push_back(ident);
-                    if (addtoParams) {
-                        paramList.push_back(ident);
-                    }
-                    cout << ident.name << endl;
-                }
+                     
+                  }
+#line 1426 "y.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 47:
+#line 168 "mini_l.y" /* yacc.c:1646  */
+    {
+}
 #line 1433 "y.tab.c" /* yacc.c:1646  */
     break;
 
+  case 56:
+#line 184 "mini_l.y" /* yacc.c:1646  */
+    {
+                  (yyval.vecA)->push_back((yyvsp[0].attribute));
+                }
+#line 1441 "y.tab.c" /* yacc.c:1646  */
+    break;
 
-#line 1437 "y.tab.c" /* yacc.c:1646  */
+  case 57:
+#line 187 "mini_l.y" /* yacc.c:1646  */
+    {
+                     (yyval.vecA)->push_back((yyvsp[-1].attribute));
+		     for (int i = 0; i != (yyvsp[0].vecA)->size(); ++i) cout << (*(yyvsp[0].vecA))[i].name << endl;
+                }
+#line 1450 "y.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 58:
+#line 193 "mini_l.y" /* yacc.c:1646  */
+    {
+     		    (yyval.vecA) = (yyvsp[0].vecA);
+                }
+#line 1458 "y.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 59:
+#line 198 "mini_l.y" /* yacc.c:1646  */
+    {
+                  if (inSymTable(*((yyvsp[0].strVal)))) { // symbol has already been declared
+                      cout << "Error at line " << currLine << ", position " << currPos
+	                   << ". " << *((yyvsp[0].strVal)) << " is undeclared\n";
+			exit(1);
+		  }
+                  identList.push_back(*((yyvsp[0].strVal)));
+                  (yyval.attribute).name = (yyvsp[0].strVal);
+                }
+#line 1472 "y.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 60:
+#line 207 "mini_l.y" /* yacc.c:1646  */
+    {
+                }
+#line 1479 "y.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 64:
+#line 218 "mini_l.y" /* yacc.c:1646  */
+    {
+                    *((yyval.strVal)) = ". _" + *((yyvsp[0].strVal));
+                }
+#line 1487 "y.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 65:
+#line 223 "mini_l.y" /* yacc.c:1646  */
+    {
+		   (yyval.iVal) = (yyvsp[0].iVal);
+                }
+#line 1495 "y.tab.c" /* yacc.c:1646  */
+    break;
+
+
+#line 1499 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1661,7 +1723,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 204 "mini_l.y" /* yacc.c:1906  */
+#line 228 "mini_l.y" /* yacc.c:1906  */
 
 
 int main() {
@@ -1675,15 +1737,13 @@ void yyerror (char const *s)
   fprintf (stderr, "error at line %d:  \"%s\"\n", currLine, s);
 }
 
-// return true if string s in in list
+// return true if string s is in list
 bool inSymTable(string s){
     vecSym::iterator sym = find(symTable.begin(), symTable.end(), s);
     if (sym == symTable.end()) { // symbol not in table
-        cout << "Error at line " << currLine << ", position " << currPos
-	     << ". " << s << " is undeclared\n";
         return false;
     }
-    if (!(sym->type.compare("INTEGER"))) {
+    if (!(sym->type.compare("int"))) {
         return true;
     }
     cout << "Error, invalid type\n";
@@ -1698,7 +1758,7 @@ bool inArrayList(string s){
              << ". " << s << " is undeclared\n";
         return false;
     }
-    if (!(sym->type.compare("INTEGER"))) {
+    if (!(sym->type.compare("int"))) {
         cout << "Error, not an array\n";
         return false;
     }
