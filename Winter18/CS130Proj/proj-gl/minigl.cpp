@@ -45,7 +45,6 @@ vec3 color; 	// stores the color
 vec4 vertices;
 mat4 identity = {{1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f}};
 vector<MGLfloat> zBuffer;
-MGLfloat front=0,back=100;
 
 // Structures
 struct Vertex {
@@ -166,7 +165,7 @@ void Rasterize_Triangle(const Triangle& tri, int width, int height, MGLpixel *da
               MGLfloat z = alpha * A.position[2] + beta * B.position[2] + gamma * C.position[2];
               if (z < zBuffer[x + y*width]) {
                  vec3 c =  alpha * c0 + beta * c1 + gamma * c2;
-	         if (z >= front && z <= back) { // clipping along plane
+	         if (z >= -1 && z <= 1) { // clipping along plane
                     data[x + y*width] = Make_Pixel(c[0],c[1],c[2]);
                     zBuffer[x + y*width] = A.position[2];
                  }
@@ -371,7 +370,7 @@ void mglMultMatrix(const MGLfloat *matrix)
     for (int i = 0; i < 4; ++i)
         for (int j = 0; j <4; ++j)
             temp(i,j) = matrix[i+j*4];
-   topOfStack() = temp * topOfStack();
+   topOfStack() = topOfStack() * temp;
 }
 
 /**
@@ -454,8 +453,6 @@ void mglFrustum(MGLfloat left,
                     0.f, (2.f*near/(top-bottom)), 0.f,0.f,
                     A, B, C, -1.f,
                     0.f, 0.f, D, 0.f}}; 
-    front = -near;
-    back = far;
     modifyStack(frust);
 }
 
@@ -477,8 +474,6 @@ void mglOrtho(MGLfloat left,
     MGLfloat tx = -(right+left)/rl;
     MGLfloat ty = -(top+bottom)/tb;
     MGLfloat tz = -(far+near)/fn;
-    front = near;
-    back = far;
 
     mat4 ortho=  {{2.f/rl,0.f,0.f,0.f,
                 0.f,2.f/tb,0.f,0.f,
