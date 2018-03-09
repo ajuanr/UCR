@@ -14,39 +14,54 @@ void yyerror(char const*);
 int yylex(void);
 
 struct Symbol{
-   Symbol():value(777){}
+   Symbol():name("NONAME"),type("NOTYPE"),value(777), size(-1){} // 
    Symbol(string n):name(n) {}
    Symbol(string n, string t): name(n), type(t){}
-   Symbol(string n, string t, int l):name(n), type(t),limit(l) {}
+   Symbol(string n, string t, int l):name(n), type(t),size(l) {}
    string name;
    string type;
-   int limit;  // for arrays
    int value;
+   int size;  // for arrays
    bool operator==(const string &rhs) { return !(this->name.compare(rhs));}
 };
 
+struct BranchLabels {
+   string l1;
+   string l2;
+   string l3;
+};
+
 typedef list<string> lstStr;
-//typedef map<string, symbolDetails> Table;
 typedef list<Symbol> Table;
 typedef stack<string> stackStr;
+typedef stack<BranchLabels> stackBL;
+typedef queue<string> strQ;
+typedef deque<string> strDq;
 
 
 bool inTable(string);
 bool inArrayList(string);
 string genQuad(string op, string src1, string src2, string dest);
+string genQuad(string op, string src, string dest);
 string newLabel();
 string newTemp();
 string newPred();
 Table symTable;
+stackStr paramTable;
+
 int currentTemp = 1; 	// the current number of temporary variables
 int currentLabel = 1; 	// the current number of labels
 int currentPred = 1;    // the current predicate
+bool funcCall = false;	// add to paramater table for function calls
+
 
 lstStr milCode;		// holds the code generated
 stackStr identStack;   	// holds list of identifiers seen
 lstStr varList;   	// holds list of identifiers seen
 lstStr labels;		// holds the labels
-bool isReading = false;
+strDq opDeck;		// holds the operands
+stackBL ifLabels;
+stackBL loopLabels;
 
 %}
 %union{
@@ -56,7 +71,7 @@ typedef struct Attributes{
    string* name;
    string* code;
    string* type;
-   int limit; // for arrays
+   int size; // for arrays
    int value;
 }Attributes;
    Attributes attribute;
@@ -116,7 +131,7 @@ declaration:    identifiers COLON INTEGER {
                 }
 		| identifiers COLON ARRAY L_SQUARE_BRACKET number R_SQUARE_BRACKET OF INTEGER {
 			$1.type = new string("ARRAY");
-			$1.limit = $5;
+			$1.size= $5;
 			while (!identStack.empty()) {
 				string ident = identStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
@@ -133,7 +148,6 @@ statements:       statement SEMICOLON statements
                 ;
 
 statement:        var ASSIGN expression {
-			cout << "ASSSIGNMEING " << $3.value << endl;
 			string var = *($1.name);
 			Table::iterator iter = find(symTable.begin(), symTable.end(), var);
 			if (iter != symTable.end()) {
@@ -174,6 +188,8 @@ loop:		BEGINLOOP statements ENDLOOP
 bool_exp:	  relation_and_exp {
 		}
                 | relation_and_exp OR relation_and_exp {
+			milCode.push_back(genQuad("||", *($1.name), *($3.name), newPred()));
+			cout << milCode.back() << endl;
 		}
 		
 		; 
@@ -188,7 +204,12 @@ relation_exp:	  NOT relation_exp {
 			*($$.name) = "TESTING2\n";	
 
 		}
-		| expression comp expression
+		| expression comp expression {
+			*($$.name) = newPred();
+			milCode.push_back(genQuad(*($2.name), *($1.name), *($3.name), *($$.name)));
+			cout << milCode.back() << endl;
+
+		}
                 | TRUE { *($$.name) = "true";}
                 | FALSE { *($$.name) = "false";}
                 | L_PAREN bool_exp R_PAREN { *($$.name) = *($2.name);}
@@ -209,7 +230,6 @@ expression:	  multiplicative_expression {
                 | expression ADD multiplicative_expression {
 			string temp = newTemp();
 			$$.name = new string(temp);
-			cout << "ADD " << *($$.name) << endl;
 			$$.value = $1.value - $3.value;
 			milCode.push_back(genQuad("+",*($1.name), *($3.name), temp));
 			cout << milCode.back() << endl;
@@ -217,7 +237,6 @@ expression:	  multiplicative_expression {
                 | expression SUB multiplicative_expression {
 			string temp = newTemp();
 			$$.name = new string(temp);
-			cout << "SUB " << *($$.name) << endl;
 			$$.value = $1.value - $3.value;
 			milCode.push_back(genQuad("-",*($1.name), *($3.name), temp));
 			cout << milCode.back() << endl;
@@ -225,14 +244,12 @@ expression:	  multiplicative_expression {
 		;
 
 multiplicative_expression:	  term {
-					cout << "term: " << *($$.name) << endl;
 					*($$.name) = *($1.name);
 					$$.value = $1.value;
 				}
 				| multiplicative_expression MULT term {
 					string temp = newTemp();
 					$$.name = new string(temp);
-					cout << "MULT " << *($$.name) << endl;
 					$$.value = $1.value * $3.value;
 					milCode.push_back(genQuad("*",*($1.name), *($3.name), temp));
 					cout << milCode.back() << endl;
@@ -240,7 +257,6 @@ multiplicative_expression:	  term {
 				| multiplicative_expression DIV term {
 					string temp = newTemp();
 					$$.name = new string(temp);
-					cout << "DIV" << *($$.name) << endl;
 					$$.value = $1.value / $3.value;
 					milCode.push_back(genQuad("/",*($1.name), *($3.name), temp));
 					cout << milCode.back() << endl;
@@ -249,7 +265,6 @@ multiplicative_expression:	  term {
 				| multiplicative_expression MOD term {
 					string temp = newTemp();
 					$$.name = new string(temp);
-					cout << "MOD" << *($$.name) << endl;
 					$$.value = $1.value % $3.value;
 					milCode.push_back(genQuad("%",*($1.name), *($3.name), temp));
 					cout << milCode.back() << endl;
@@ -257,16 +272,34 @@ multiplicative_expression:	  term {
                 		;
 
 term:		  SUB number %prec UMINUS {
-			$$.name = new string(newTemp());
+			string temp = newTemp();
+			$$.name = new string(temp);
 			$$.value = -$2;
-			milCode.push_back(genQuad("-","0",to_string($2),*($$.name)));
+			symTable.push_back(Symbol(temp, "INTEGER"));
+			milCode.push_back(genQuad("-","0",to_string($2),temp));
+			opDeck.pop_back();
+			opDeck.push_back(temp);
 			cout << milCode.back() << endl;
                   }
                 | number {
 			$$.name = new string(to_string($$.value));
 			$$.value = $1;
+			string temp = newTemp();
+			symTable.push_back(Symbol(temp, "INTEGER"));
+			milCode.push_back(genQuad("=", temp, to_string($1)));
                  }
 		| var { 
+			string tempVar = newTemp();
+			symTable.push_back(Symbol(tempVar, "INTEGER"));
+			string oldOp = opDeck.back();
+			if (oldOp[0] == '['){
+				 string tempOldOp = string(oldOp, 3,oldOp.length()-3);
+				 milCode.push_back("=[] " + tempVar + ", " + tempOldOp);
+			}
+			else milCode.push_back("= " + tempVar + ", " + oldOp);
+			cout << milCode.back() << endl;
+			opDeck.pop_back();
+			opDeck.push_back(tempVar);
 			$$.name = $1.name;
 			$$.value = $1.value;
 		}
@@ -276,13 +309,22 @@ term:		  SUB number %prec UMINUS {
 			cout << milCode.back() << endl;
                   }
                 | L_PAREN expression R_PAREN {
-			$$.value = 777;
+			*($$.name) = *($2.name);
+			$$.value = $2.value;
+			paramTable.push(opDeck.back());
+			opDeck.pop_back();
 		  }
                 | SUB L_PAREN expression R_PAREN  %prec UMINUS {
-			$$.value = -777;
+			$$.name = new string(newTemp());
+			$$.value = -$3.value;
+			milCode.push_back(genQuad("-","0", *($3.name), *($$.name)));
 		}
 		| IDENT L_PAREN expressions R_PAREN {
-			$$.value = 888;
+			$$.name = new string(*($1));
+			while (!paramTable.empty()) {
+				milCode.push_back("param " + paramTable.top());
+				paramTable.pop();
+			}
 		}
 		;
 
@@ -297,48 +339,53 @@ vars:		  var {
 			
 		}
                 | var COMMA vars {
-//			cout << "vars -> " << *($1.name) << " COMMA " << *($3.name) << endl;
 		}
 
                 ;
 
-var:		ident{
-			string ident = *($1.name);
+var:		IDENT {
+			string ident = "_"+*$1;
 			Table::iterator iter = find(symTable.begin(),symTable.end(), ident);
-			if (iter == symTable.end()) {
+			if (iter == symTable.end()) { // not in symbol table
 				cout << "ERROR: var not declared\n";
 			}
 			else {
 				$$.value = iter->value;
+				opDeck.push_back(ident);
 			}
-			*($$.name) = *($1.name);	
-			if (find(varList.begin(), varList.end(), ident) == varList.end())
-				varList.push_back(ident);			
+			*($$.name) = *$1;	
                   }
-                | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
-			$$.name = new string("TESTING");
+                | IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
+			string oldOp = opDeck.back();
+			opDeck.pop_back();
+			string ident = "_" + *($1);
+			Table::iterator iter = find(symTable.begin(),symTable.end(), ident);
+			if (iter == symTable.end()) { // not in symbol table
+				cout << "ERROR: var not declared\n";
+			}
+			else if (iter->type != "ARRAY") cout << "ERROR: NOT an array\n";
+			else {
+				opDeck.push_back("[] " + ident + ", " + oldOp);
+			}
+			
 		   } 
 		;
 
-identifiers:      ident {
-		}
+identifiers:      ident {}
                    
-		| ident COMMA identifiers{ 
-                }
+		| ident COMMA identifiers{}
 		;
 
 ident:		IDENT {
 			string ident = "_"+*($1);	
 			Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 			if (iter == symTable.end()) identStack.push(ident);
-			else cout << "ident error: Redaclaration\n";
-		        cout << "ident -> " + ident << endl;	
+			if (funcCall) paramTable.push(ident);
 			$$.name = new string(ident);
                 }
 		
 number:		NUMBER {
 			$$ = $1;
-			cout << "number -> " << $$ << endl;	
 		}
                 ;
 %%
@@ -369,3 +416,8 @@ string newPred() {
 string genQuad(string op, string src1, string src2, string dest) {
     return op + " " + dest + ", " + src1 + ", " + src2; 
 }
+
+string genQuad(string op, string dest, string src) {
+    return op + " " + dest + ", " + src; 
+}
+

@@ -75,8 +75,8 @@ Grammar
    54 vars: var
    55     | var COMMA vars
 
-   56 var: ident
-   57    | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET
+   56 var: IDENT
+   57    | IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET
 
    58 identifiers: ident
    59            | ident COMMA identifiers
@@ -124,7 +124,7 @@ R_PAREN (288) 31 49 50 51
 L_SQUARE_BRACKET (289) 8 57
 R_SQUARE_BRACKET (290) 8 57
 NUMBER (291) 61
-IDENT (292) 4 16 51 60
+IDENT (292) 4 16 51 56 57 60
 UMINUS (293)
 MULT (294) 42
 DIV (295) 43
@@ -188,7 +188,7 @@ var (73)
 identifiers (74)
     on left: 58 59, on right: 7 8 59
 ident (75)
-    on left: 60, on right: 56 57 58 59
+    on left: 60, on right: 58 59
 number (76)
     on left: 61, on right: 8 45 46
 
@@ -451,14 +451,13 @@ State 29
     CONTINUE  shift, and go to state 36
     WRITE     shift, and go to state 37
     FOREACH   shift, and go to state 38
-    IDENT     shift, and go to state 10
+    IDENT     shift, and go to state 39
 
     $default  reduce using rule 10 (statements)
 
-    statements  go to state 39
-    statement   go to state 40
-    var         go to state 41
-    ident       go to state 42
+    statements  go to state 40
+    statement   go to state 41
+    var         go to state 42
 
 
 State 30
@@ -472,11 +471,10 @@ State 31
 
    17 statement: READ . vars
 
-    IDENT  shift, and go to state 10
+    IDENT  shift, and go to state 39
 
-    vars   go to state 44
-    var    go to state 45
-    ident  go to state 42
+    vars  go to state 44
+    var   go to state 45
 
 
 State 32
@@ -500,7 +498,6 @@ State 32
     multiplicative_expression  go to state 57
     term                       go to state 58
     var                        go to state 59
-    ident                      go to state 42
     number                     go to state 60
 
 
@@ -523,7 +520,6 @@ State 33
     multiplicative_expression  go to state 57
     term                       go to state 58
     var                        go to state 59
-    ident                      go to state 42
     number                     go to state 60
 
 
@@ -549,7 +545,6 @@ State 35
     multiplicative_expression  go to state 57
     term                       go to state 58
     var                        go to state 59
-    ident                      go to state 42
     number                     go to state 60
 
 
@@ -564,11 +559,10 @@ State 37
 
    18 statement: WRITE . vars
 
-    IDENT  shift, and go to state 10
+    IDENT  shift, and go to state 39
 
-    vars   go to state 66
-    var    go to state 45
-    ident  go to state 42
+    vars  go to state 66
+    var   go to state 45
 
 
 State 38
@@ -580,33 +574,33 @@ State 38
 
 State 39
 
-    4 function: FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements . END_BODY
+   56 var: IDENT .
+   57    | IDENT . L_SQUARE_BRACKET expression R_SQUARE_BRACKET
 
-    END_BODY  shift, and go to state 68
+    L_SQUARE_BRACKET  shift, and go to state 68
+
+    $default  reduce using rule 56 (var)
 
 
 State 40
 
-    9 statements: statement . SEMICOLON statements
+    4 function: FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements . END_BODY
 
-    SEMICOLON  shift, and go to state 69
+    END_BODY  shift, and go to state 69
 
 
 State 41
 
-   11 statement: var . ASSIGN expression
+    9 statements: statement . SEMICOLON statements
 
-    ASSIGN  shift, and go to state 70
+    SEMICOLON  shift, and go to state 70
 
 
 State 42
 
-   56 var: ident .
-   57    | ident . L_SQUARE_BRACKET expression R_SQUARE_BRACKET
+   11 statement: var . ASSIGN expression
 
-    L_SQUARE_BRACKET  shift, and go to state 71
-
-    $default  reduce using rule 56 (var)
+    ASSIGN  shift, and go to state 71
 
 
 State 43
@@ -667,18 +661,19 @@ State 48
     multiplicative_expression  go to state 57
     term                       go to state 58
     var                        go to state 59
-    ident                      go to state 42
     number                     go to state 60
 
 
 State 49
 
    51 term: IDENT . L_PAREN expressions R_PAREN
-   60 ident: IDENT .
+   56 var: IDENT .
+   57    | IDENT . L_SQUARE_BRACKET expression R_SQUARE_BRACKET
 
-    L_PAREN  shift, and go to state 76
+    L_PAREN           shift, and go to state 76
+    L_SQUARE_BRACKET  shift, and go to state 68
 
-    $default  reduce using rule 60 (ident)
+    $default  reduce using rule 56 (var)
 
 
 State 50
@@ -689,10 +684,9 @@ State 50
 
     L_PAREN  shift, and go to state 77
     NUMBER   shift, and go to state 27
-    IDENT    shift, and go to state 10
+    IDENT    shift, and go to state 39
 
     var     go to state 78
-    ident   go to state 42
     number  go to state 79
 
 
@@ -713,7 +707,6 @@ State 51
     multiplicative_expression  go to state 57
     term                       go to state 58
     var                        go to state 59
-    ident                      go to state 42
     number                     go to state 60
 
 
@@ -827,14 +820,13 @@ State 62
     CONTINUE  shift, and go to state 36
     WRITE     shift, and go to state 37
     FOREACH   shift, and go to state 38
-    IDENT     shift, and go to state 10
+    IDENT     shift, and go to state 39
 
     $default  reduce using rule 10 (statements)
 
     statements  go to state 99
-    statement   go to state 40
-    var         go to state 41
-    ident       go to state 42
+    statement   go to state 41
+    var         go to state 42
 
 
 State 63
@@ -857,7 +849,6 @@ State 64
     multiplicative_expression  go to state 57
     term                       go to state 58
     var                        go to state 59
-    ident                      go to state 42
     number                     go to state 60
 
 
@@ -889,12 +880,28 @@ State 67
 
 State 68
 
+   57 var: IDENT L_SQUARE_BRACKET . expression R_SQUARE_BRACKET
+
+    L_PAREN  shift, and go to state 64
+    NUMBER   shift, and go to state 27
+    IDENT    shift, and go to state 49
+    SUB      shift, and go to state 50
+
+    expression                 go to state 103
+    multiplicative_expression  go to state 57
+    term                       go to state 58
+    var                        go to state 59
+    number                     go to state 60
+
+
+State 69
+
     4 function: FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY .
 
     $default  reduce using rule 4 (function)
 
 
-State 69
+State 70
 
     9 statements: statement SEMICOLON . statements
 
@@ -906,36 +913,18 @@ State 69
     CONTINUE  shift, and go to state 36
     WRITE     shift, and go to state 37
     FOREACH   shift, and go to state 38
-    IDENT     shift, and go to state 10
+    IDENT     shift, and go to state 39
 
     $default  reduce using rule 10 (statements)
 
-    statements  go to state 103
-    statement   go to state 40
-    var         go to state 41
-    ident       go to state 42
-
-
-State 70
-
-   11 statement: var ASSIGN . expression
-
-    L_PAREN  shift, and go to state 64
-    NUMBER   shift, and go to state 27
-    IDENT    shift, and go to state 49
-    SUB      shift, and go to state 50
-
-    expression                 go to state 104
-    multiplicative_expression  go to state 57
-    term                       go to state 58
-    var                        go to state 59
-    ident                      go to state 42
-    number                     go to state 60
+    statements  go to state 104
+    statement   go to state 41
+    var         go to state 42
 
 
 State 71
 
-   57 var: ident L_SQUARE_BRACKET . expression R_SQUARE_BRACKET
+   11 statement: var ASSIGN . expression
 
     L_PAREN  shift, and go to state 64
     NUMBER   shift, and go to state 27
@@ -946,7 +935,6 @@ State 71
     multiplicative_expression  go to state 57
     term                       go to state 58
     var                        go to state 59
-    ident                      go to state 42
     number                     go to state 60
 
 
@@ -961,11 +949,10 @@ State 73
 
    55 vars: var COMMA . vars
 
-    IDENT  shift, and go to state 10
+    IDENT  shift, and go to state 39
 
-    vars   go to state 106
-    var    go to state 45
-    ident  go to state 42
+    vars  go to state 106
+    var   go to state 45
 
 
 State 74
@@ -1009,7 +996,6 @@ State 76
     term                       go to state 58
     expressions                go to state 110
     var                        go to state 59
-    ident                      go to state 42
     number                     go to state 60
 
 
@@ -1026,7 +1012,6 @@ State 77
     multiplicative_expression  go to state 57
     term                       go to state 58
     var                        go to state 59
-    ident                      go to state 42
     number                     go to state 60
 
 
@@ -1070,14 +1055,13 @@ State 82
     CONTINUE  shift, and go to state 36
     WRITE     shift, and go to state 37
     FOREACH   shift, and go to state 38
-    IDENT     shift, and go to state 10
+    IDENT     shift, and go to state 39
 
     $default  reduce using rule 10 (statements)
 
     statements  go to state 112
-    statement   go to state 40
-    var         go to state 41
-    ident       go to state 42
+    statement   go to state 41
+    var         go to state 42
 
 
 State 83
@@ -1092,14 +1076,13 @@ State 83
     CONTINUE  shift, and go to state 36
     WRITE     shift, and go to state 37
     FOREACH   shift, and go to state 38
-    IDENT     shift, and go to state 10
+    IDENT     shift, and go to state 39
 
     $default  reduce using rule 10 (statements)
 
     statements  go to state 113
-    statement   go to state 40
-    var         go to state 41
-    ident       go to state 42
+    statement   go to state 41
+    var         go to state 42
 
 
 State 84
@@ -1120,7 +1103,6 @@ State 84
     multiplicative_expression  go to state 57
     term                       go to state 58
     var                        go to state 59
-    ident                      go to state 42
     number                     go to state 60
 
 
@@ -1142,7 +1124,6 @@ State 85
     multiplicative_expression  go to state 57
     term                       go to state 58
     var                        go to state 59
-    ident                      go to state 42
     number                     go to state 60
 
 
@@ -1158,7 +1139,6 @@ State 86
     multiplicative_expression  go to state 116
     term                       go to state 58
     var                        go to state 59
-    ident                      go to state 42
     number                     go to state 60
 
 
@@ -1174,7 +1154,6 @@ State 87
     multiplicative_expression  go to state 117
     term                       go to state 58
     var                        go to state 59
-    ident                      go to state 42
     number                     go to state 60
 
 
@@ -1233,7 +1212,6 @@ State 94
     multiplicative_expression  go to state 57
     term                       go to state 58
     var                        go to state 59
-    ident                      go to state 42
     number                     go to state 60
 
 
@@ -1248,7 +1226,6 @@ State 95
 
     term    go to state 119
     var     go to state 59
-    ident   go to state 42
     number  go to state 60
 
 
@@ -1263,7 +1240,6 @@ State 96
 
     term    go to state 120
     var     go to state 59
-    ident   go to state 42
     number  go to state 60
 
 
@@ -1278,7 +1254,6 @@ State 97
 
     term    go to state 121
     var     go to state 59
-    ident   go to state 42
     number  go to state 60
 
 
@@ -1315,7 +1290,6 @@ State 100
     multiplicative_expression  go to state 57
     term                       go to state 58
     var                        go to state 59
-    ident                      go to state 42
     number                     go to state 60
 
 
@@ -1339,12 +1313,23 @@ State 102
 
 State 103
 
+   39 expression: expression . ADD multiplicative_expression
+   40           | expression . SUB multiplicative_expression
+   57 var: IDENT L_SQUARE_BRACKET expression . R_SQUARE_BRACKET
+
+    R_SQUARE_BRACKET  shift, and go to state 125
+    ADD               shift, and go to state 86
+    SUB               shift, and go to state 87
+
+
+State 104
+
     9 statements: statement SEMICOLON statements .
 
     $default  reduce using rule 9 (statements)
 
 
-State 104
+State 105
 
    11 statement: var ASSIGN expression .
    39 expression: expression . ADD multiplicative_expression
@@ -1354,17 +1339,6 @@ State 104
     SUB  shift, and go to state 87
 
     $default  reduce using rule 11 (statement)
-
-
-State 105
-
-   39 expression: expression . ADD multiplicative_expression
-   40           | expression . SUB multiplicative_expression
-   57 var: ident L_SQUARE_BRACKET expression . R_SQUARE_BRACKET
-
-    R_SQUARE_BRACKET  shift, and go to state 125
-    ADD               shift, and go to state 86
-    SUB               shift, and go to state 87
 
 
 State 106
@@ -1534,7 +1508,7 @@ State 124
 
 State 125
 
-   57 var: ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET .
+   57 var: IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET .
 
     $default  reduce using rule 57 (var)
 
@@ -1553,7 +1527,6 @@ State 126
     term                       go to state 58
     expressions                go to state 131
     var                        go to state 59
-    ident                      go to state 42
     number                     go to state 60
 
 
