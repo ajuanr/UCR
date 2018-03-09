@@ -13,19 +13,11 @@ extern char *yytext;
 void yyerror(char const*);
 int yylex(void);
 
-/*
-struct symbolDetails{
-   symbolDetails():value(0){}
-   string type;
-   int value;
-};
-*/
-
 struct Symbol{
    Symbol():value(777){}
    Symbol(string n):name(n) {}
    Symbol(string n, string t): name(n), type(t){}
-   Symbol(string n, int v):name(n), value(v), type("INTEGER") {}
+   Symbol(string n, string t, int l):name(n), type(t),limit(l) {}
    string name;
    string type;
    int limit;  // for arrays
@@ -101,7 +93,7 @@ prog_start:	functions {
 functions:	function functions
                 | /*empty*/
                 ;
-function: 	FUNCTION ident SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
+function: 	FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
 
                 }
                 ;
@@ -112,14 +104,26 @@ declarations:	declaration SEMICOLON declarations
 
 declaration:    identifiers COLON INTEGER {
 			$1.type = new string("INTEGER");
-			cout << "declaration -> identifiers COLON INTEGER\n";
+			while (!identStack.empty()) {
+				string ident = identStack.top();
+				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
+				if (iter == symTable.end()) {
+					symTable.push_back(Symbol(ident, "INTEGER"));
+				}
+				identStack.pop();
+			}
                 }
 		| identifiers COLON ARRAY L_SQUARE_BRACKET number R_SQUARE_BRACKET OF INTEGER {
-/*
 			$1.type = new string("ARRAY");
 			$1.limit = $5;
-			cout << "declaration -> identifiers COLON ARRAY\n";
-*/
+			while (!identStack.empty()) {
+				string ident = identStack.top();
+				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
+				if (iter == symTable.end()) {
+					symTable.push_back(Symbol(ident, "ARRAY", $5));
+				}
+				identStack.pop();
+			}
 		}
                 ;
 
@@ -133,7 +137,7 @@ statement:        var ASSIGN expression {
                 | IF ifCond ELSE statements ENDIF
        		| WHILE bool_exp loop
 		| DO loop WHILE bool_exp
-  		| FOREACH ident IN ident loop
+  		| FOREACH IDENT IN IDENT loop
 		| READ M1 vars
                 | WRITE M2 vars
                 | CONTINUE
@@ -210,7 +214,7 @@ term:		  SUB number %prec UMINUS {
 		  }
                 | SUB L_PAREN expression R_PAREN  %prec UMINUS {
 		}
-		| ident L_PAREN expressions R_PAREN {
+		| IDENT L_PAREN expressions R_PAREN {
 		}
 		;
 
@@ -235,19 +239,10 @@ var:		ident{
 		;
 
 identifiers:      ident {
-/*
-			*($1.type) = *($$.type);
-			cout << *($1.name) + " TYPE IS: " << *($$.type) << endl;
-*/
 		}
                    
 		| ident COMMA identifiers{ 
-/*
-			$1.type = new string(*($$.type));
-			$3.type = new string(*($$.type));
 			cout << "identifiers -> ident\n";
-			cout << *($1.name) + " TYPE IS: " << *($$.type) << endl;
-*/
                 }
 		;
 
@@ -255,6 +250,7 @@ ident:		IDENT {
 			string ident = "_"+*($1);	
 			Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 			if (iter == symTable.end()) identStack.push(ident);
+			else cout << "ident error: Redaclaration\n";
 		        cout << "ident -> " + ident << endl;	
 			$$.name = new string(ident);
                 }
