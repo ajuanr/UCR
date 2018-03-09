@@ -32,7 +32,7 @@
 
 
 // First part of user declarations.
-#line 4 "mini_l.y" // lalr1.cc:404
+#line 7 "mini_l.y" // lalr1.cc:404
 
 #define YY_NO_UNPUT
 
@@ -45,44 +45,39 @@ extern char *yytext;
 void yyerror(char const*);
 int yylex(void);
 
-struct Symbol; // forward declaration
+
+struct symbolDetails{
+   symbolDetails():value(0){}
+   string type;
+   int value;
+};
+
+typedef struct Attributes{
+   string name;
+   string code;
+   string type;
+   int value;
+}Attributes;
 
 typedef vector<string> vecStr;
-typedef vector<Symbol> vecSym;
+typedef map<string, symbolDetails> Table;
 
 
-bool inSymTable(string);
+bool inTable(string);
 bool inArrayList(string);
-
-struct Symbol{
-    Symbol(string n):name(n) {}
-    Symbol(string n, string t):name(n),type(t) {}
-    string name;
-    string type;
-    bool operator==(const string &rhs) {
-       return !(this->name.compare(rhs)); // returns true if strings are equal
-    }
-};
-
-   
-struct Attributes{
-   string name;
-   string type;
-   string code;
-};
-
+string genQuad(string op, string src1, string src2, string dest);
+string newLabel();
+string newTemp();
+Table symTable;
 int currentTemp=0; 	// the current number of temporary variables
 int currentLabel=1; 	// the current number of labels
 
-vecSym arrayList;
+vecStr milCode;		// holds the code generated
 vecStr identList;    	// holds list of identifiers seen
-vecSym symTable; 	// holds list of symbols
-vecSym paramList;       // for function calls
-vecStr stmntsList; 	// hold the final statements for the MIL code
+vecStr labels;		// holds the labels
+bool isReading = false;
 
-bool addtoParams = false;
-
-#line 86 "y.tab.cc" // lalr1.cc:404
+#line 81 "y.tab.cc" // lalr1.cc:404
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -96,7 +91,7 @@ bool addtoParams = false;
 
 // User implementation prologue.
 
-#line 100 "y.tab.cc" // lalr1.cc:412
+#line 95 "y.tab.cc" // lalr1.cc:412
 
 
 #ifndef YY_
@@ -163,7 +158,7 @@ bool addtoParams = false;
 
 
 namespace yy {
-#line 167 "y.tab.cc" // lalr1.cc:479
+#line 162 "y.tab.cc" // lalr1.cc:479
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -237,7 +232,32 @@ namespace yy {
     : Base (other)
     , value ()
   {
-    value = other.value;
+      switch (other.type_get ())
+    {
+      case 70: // expression
+      case 71: // multiplicative_expression
+      case 72: // term
+      case 73: // expressions
+      case 74: // vars
+      case 75: // var
+        value.copy< Attributes > (other.value);
+        break;
+
+      case 36: // NUMBER
+      case 78: // number
+        value.copy< int > (other.value);
+        break;
+
+      case 37: // IDENT
+      case 76: // identifiers
+      case 77: // ident
+        value.copy< string > (other.value);
+        break;
+
+      default:
+        break;
+    }
+
   }
 
 
@@ -245,17 +265,63 @@ namespace yy {
   inline
   parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const semantic_type& v)
     : Base (t)
-    , value (v)
-  {}
+    , value ()
+  {
+    (void) v;
+      switch (this->type_get ())
+    {
+      case 70: // expression
+      case 71: // multiplicative_expression
+      case 72: // term
+      case 73: // expressions
+      case 74: // vars
+      case 75: // var
+        value.copy< Attributes > (v);
+        break;
+
+      case 36: // NUMBER
+      case 78: // number
+        value.copy< int > (v);
+        break;
+
+      case 37: // IDENT
+      case 76: // identifiers
+      case 77: // ident
+        value.copy< string > (v);
+        break;
+
+      default:
+        break;
+    }
+}
 
 
-  /// Constructor for valueless symbols.
+  // Implementation of basic_symbol constructor for each type.
+
   template <typename Base>
-  inline
   parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t)
     : Base (t)
     , value ()
   {}
+
+  template <typename Base>
+  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const Attributes v)
+    : Base (t)
+    , value (v)
+  {}
+
+  template <typename Base>
+  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const int v)
+    : Base (t)
+    , value (v)
+  {}
+
+  template <typename Base>
+  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const string v)
+    : Base (t)
+    , value (v)
+  {}
+
 
   template <typename Base>
   inline
@@ -269,6 +335,43 @@ namespace yy {
   void
   parser::basic_symbol<Base>::clear ()
   {
+    // User destructor.
+    symbol_number_type yytype = this->type_get ();
+    basic_symbol<Base>& yysym = *this;
+    (void) yysym;
+    switch (yytype)
+    {
+   default:
+      break;
+    }
+
+    // Type destructor.
+    switch (yytype)
+    {
+      case 70: // expression
+      case 71: // multiplicative_expression
+      case 72: // term
+      case 73: // expressions
+      case 74: // vars
+      case 75: // var
+        value.template destroy< Attributes > ();
+        break;
+
+      case 36: // NUMBER
+      case 78: // number
+        value.template destroy< int > ();
+        break;
+
+      case 37: // IDENT
+      case 76: // identifiers
+      case 77: // ident
+        value.template destroy< string > ();
+        break;
+
+      default:
+        break;
+    }
+
     Base::clear ();
   }
 
@@ -286,7 +389,32 @@ namespace yy {
   parser::basic_symbol<Base>::move (basic_symbol& s)
   {
     super_type::move(s);
-    value = s.value;
+      switch (this->type_get ())
+    {
+      case 70: // expression
+      case 71: // multiplicative_expression
+      case 72: // term
+      case 73: // expressions
+      case 74: // vars
+      case 75: // var
+        value.move< Attributes > (s.value);
+        break;
+
+      case 36: // NUMBER
+      case 78: // number
+        value.move< int > (s.value);
+        break;
+
+      case 37: // IDENT
+      case 76: // identifiers
+      case 77: // ident
+        value.move< string > (s.value);
+        break;
+
+      default:
+        break;
+    }
+
   }
 
   // by_type.
@@ -326,6 +454,313 @@ namespace yy {
   {
     return type;
   }
+  // Implementation of make_symbol for each symbol type.
+  parser::symbol_type
+  parser::make_FUNCTION ()
+  {
+    return symbol_type (token::FUNCTION);
+  }
+
+  parser::symbol_type
+  parser::make_INTEGER ()
+  {
+    return symbol_type (token::INTEGER);
+  }
+
+  parser::symbol_type
+  parser::make_OF ()
+  {
+    return symbol_type (token::OF);
+  }
+
+  parser::symbol_type
+  parser::make_ARRAY ()
+  {
+    return symbol_type (token::ARRAY);
+  }
+
+  parser::symbol_type
+  parser::make_READ ()
+  {
+    return symbol_type (token::READ);
+  }
+
+  parser::symbol_type
+  parser::make_IF ()
+  {
+    return symbol_type (token::IF);
+  }
+
+  parser::symbol_type
+  parser::make_THEN ()
+  {
+    return symbol_type (token::THEN);
+  }
+
+  parser::symbol_type
+  parser::make_ENDIF ()
+  {
+    return symbol_type (token::ENDIF);
+  }
+
+  parser::symbol_type
+  parser::make_ELSE ()
+  {
+    return symbol_type (token::ELSE);
+  }
+
+  parser::symbol_type
+  parser::make_WHILE ()
+  {
+    return symbol_type (token::WHILE);
+  }
+
+  parser::symbol_type
+  parser::make_DO ()
+  {
+    return symbol_type (token::DO);
+  }
+
+  parser::symbol_type
+  parser::make_BEGIN_PARAMS ()
+  {
+    return symbol_type (token::BEGIN_PARAMS);
+  }
+
+  parser::symbol_type
+  parser::make_BEGIN_LOCALS ()
+  {
+    return symbol_type (token::BEGIN_LOCALS);
+  }
+
+  parser::symbol_type
+  parser::make_BEGIN_BODY ()
+  {
+    return symbol_type (token::BEGIN_BODY);
+  }
+
+  parser::symbol_type
+  parser::make_IN ()
+  {
+    return symbol_type (token::IN);
+  }
+
+  parser::symbol_type
+  parser::make_BEGINLOOP ()
+  {
+    return symbol_type (token::BEGINLOOP);
+  }
+
+  parser::symbol_type
+  parser::make_ENDLOOP ()
+  {
+    return symbol_type (token::ENDLOOP);
+  }
+
+  parser::symbol_type
+  parser::make_RETURN ()
+  {
+    return symbol_type (token::RETURN);
+  }
+
+  parser::symbol_type
+  parser::make_END_PARAMS ()
+  {
+    return symbol_type (token::END_PARAMS);
+  }
+
+  parser::symbol_type
+  parser::make_END_LOCALS ()
+  {
+    return symbol_type (token::END_LOCALS);
+  }
+
+  parser::symbol_type
+  parser::make_END_BODY ()
+  {
+    return symbol_type (token::END_BODY);
+  }
+
+  parser::symbol_type
+  parser::make_CONTINUE ()
+  {
+    return symbol_type (token::CONTINUE);
+  }
+
+  parser::symbol_type
+  parser::make_WRITE ()
+  {
+    return symbol_type (token::WRITE);
+  }
+
+  parser::symbol_type
+  parser::make_TRUE ()
+  {
+    return symbol_type (token::TRUE);
+  }
+
+  parser::symbol_type
+  parser::make_FALSE ()
+  {
+    return symbol_type (token::FALSE);
+  }
+
+  parser::symbol_type
+  parser::make_FOREACH ()
+  {
+    return symbol_type (token::FOREACH);
+  }
+
+  parser::symbol_type
+  parser::make_SEMICOLON ()
+  {
+    return symbol_type (token::SEMICOLON);
+  }
+
+  parser::symbol_type
+  parser::make_COLON ()
+  {
+    return symbol_type (token::COLON);
+  }
+
+  parser::symbol_type
+  parser::make_COMMA ()
+  {
+    return symbol_type (token::COMMA);
+  }
+
+  parser::symbol_type
+  parser::make_L_PAREN ()
+  {
+    return symbol_type (token::L_PAREN);
+  }
+
+  parser::symbol_type
+  parser::make_R_PAREN ()
+  {
+    return symbol_type (token::R_PAREN);
+  }
+
+  parser::symbol_type
+  parser::make_L_SQUARE_BRACKET ()
+  {
+    return symbol_type (token::L_SQUARE_BRACKET);
+  }
+
+  parser::symbol_type
+  parser::make_R_SQUARE_BRACKET ()
+  {
+    return symbol_type (token::R_SQUARE_BRACKET);
+  }
+
+  parser::symbol_type
+  parser::make_NUMBER (const int& v)
+  {
+    return symbol_type (token::NUMBER, v);
+  }
+
+  parser::symbol_type
+  parser::make_IDENT (const string& v)
+  {
+    return symbol_type (token::IDENT, v);
+  }
+
+  parser::symbol_type
+  parser::make_UMINUS ()
+  {
+    return symbol_type (token::UMINUS);
+  }
+
+  parser::symbol_type
+  parser::make_MULT ()
+  {
+    return symbol_type (token::MULT);
+  }
+
+  parser::symbol_type
+  parser::make_DIV ()
+  {
+    return symbol_type (token::DIV);
+  }
+
+  parser::symbol_type
+  parser::make_MOD ()
+  {
+    return symbol_type (token::MOD);
+  }
+
+  parser::symbol_type
+  parser::make_ADD ()
+  {
+    return symbol_type (token::ADD);
+  }
+
+  parser::symbol_type
+  parser::make_SUB ()
+  {
+    return symbol_type (token::SUB);
+  }
+
+  parser::symbol_type
+  parser::make_LT ()
+  {
+    return symbol_type (token::LT);
+  }
+
+  parser::symbol_type
+  parser::make_LTE ()
+  {
+    return symbol_type (token::LTE);
+  }
+
+  parser::symbol_type
+  parser::make_GT ()
+  {
+    return symbol_type (token::GT);
+  }
+
+  parser::symbol_type
+  parser::make_GTE ()
+  {
+    return symbol_type (token::GTE);
+  }
+
+  parser::symbol_type
+  parser::make_EQ ()
+  {
+    return symbol_type (token::EQ);
+  }
+
+  parser::symbol_type
+  parser::make_NEQ ()
+  {
+    return symbol_type (token::NEQ);
+  }
+
+  parser::symbol_type
+  parser::make_NOT ()
+  {
+    return symbol_type (token::NOT);
+  }
+
+  parser::symbol_type
+  parser::make_AND ()
+  {
+    return symbol_type (token::AND);
+  }
+
+  parser::symbol_type
+  parser::make_OR ()
+  {
+    return symbol_type (token::OR);
+  }
+
+  parser::symbol_type
+  parser::make_ASSIGN ()
+  {
+    return symbol_type (token::ASSIGN);
+  }
+
 
 
   // by_state.
@@ -378,7 +813,32 @@ namespace yy {
   parser::stack_symbol_type::stack_symbol_type (state_type s, symbol_type& that)
     : super_type (s)
   {
-    value = that.value;
+      switch (that.type_get ())
+    {
+      case 70: // expression
+      case 71: // multiplicative_expression
+      case 72: // term
+      case 73: // expressions
+      case 74: // vars
+      case 75: // var
+        value.move< Attributes > (that.value);
+        break;
+
+      case 36: // NUMBER
+      case 78: // number
+        value.move< int > (that.value);
+        break;
+
+      case 37: // IDENT
+      case 76: // identifiers
+      case 77: // ident
+        value.move< string > (that.value);
+        break;
+
+      default:
+        break;
+    }
+
     // that is emptied.
     that.type = empty_symbol;
   }
@@ -388,7 +848,32 @@ namespace yy {
   parser::stack_symbol_type::operator= (const stack_symbol_type& that)
   {
     state = that.state;
-    value = that.value;
+      switch (that.type_get ())
+    {
+      case 70: // expression
+      case 71: // multiplicative_expression
+      case 72: // term
+      case 73: // expressions
+      case 74: // vars
+      case 75: // var
+        value.copy< Attributes > (that.value);
+        break;
+
+      case 36: // NUMBER
+      case 78: // number
+        value.copy< int > (that.value);
+        break;
+
+      case 37: // IDENT
+      case 76: // identifiers
+      case 77: // ident
+        value.copy< string > (that.value);
+        break;
+
+      default:
+        break;
+    }
+
     return *this;
   }
 
@@ -400,9 +885,6 @@ namespace yy {
   {
     if (yymsg)
       YY_SYMBOL_PRINT (yymsg, yysym);
-
-    // User destructor.
-    YYUSE (yysym.type_get ());
   }
 
 #if YYDEBUG
@@ -605,16 +1087,35 @@ namespace yy {
     {
       stack_symbol_type yylhs;
       yylhs.state = yy_lr_goto_state_(yystack_[yylen].state, yyr1_[yyn]);
-      /* If YYLEN is nonzero, implement the default value of the
-         action: '$$ = $1'.  Otherwise, use the top of the stack.
+      /* Variants are always initialized to an empty instance of the
+         correct type. The default '$$ = $1' action is NOT applied
+         when using variants.  */
+        switch (yyr1_[yyn])
+    {
+      case 70: // expression
+      case 71: // multiplicative_expression
+      case 72: // term
+      case 73: // expressions
+      case 74: // vars
+      case 75: // var
+        yylhs.value.build< Attributes > ();
+        break;
 
-         Otherwise, the following line sets YYLHS.VALUE to garbage.
-         This behavior is undocumented and Bison users should not rely
-         upon it.  */
-      if (yylen)
-        yylhs.value = yystack_[yylen - 1].value;
-      else
-        yylhs.value = yystack_[0].value;
+      case 36: // NUMBER
+      case 78: // number
+        yylhs.value.build< int > ();
+        break;
+
+      case 37: // IDENT
+      case 76: // identifiers
+      case 77: // ident
+        yylhs.value.build< string > ();
+        break;
+
+      default:
+        break;
+    }
+
 
 
       // Perform the reduction.
@@ -624,98 +1125,283 @@ namespace yy {
           switch (yyn)
             {
   case 5:
-#line 90 "mini_l.y" // lalr1.cc:859
+#line 96 "mini_l.y" // lalr1.cc:859
     {
-                    for (auto stmnt : stmntsList) {
-			cout << stmnt << endl;
-
-                    }
 
                 }
-#line 636 "y.tab.cc" // lalr1.cc:859
+#line 1133 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 8:
+#line 104 "mini_l.y" // lalr1.cc:859
+    {
+//		cout << "declaration sees: " << *($1) << endl;
+	        //*($1.type) = "INTEGER";	
+		
+                }
+#line 1143 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 12:
+#line 116 "mini_l.y" // lalr1.cc:859
+    {
+//			string var = *($1.name);
+//			string expr = *($3.name);
+		}
+#line 1152 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 22:
+#line 131 "mini_l.y" // lalr1.cc:859
+    {isReading = true;}
+#line 1158 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 23:
+#line 132 "mini_l.y" // lalr1.cc:859
+    {isReading = false;}
+#line 1164 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 41:
+#line 163 "mini_l.y" // lalr1.cc:859
+    {
+//			*($$.name) = *($1.name);
+//			*($$.code) = *($1.code);
+		}
+#line 1173 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 42:
+#line 167 "mini_l.y" // lalr1.cc:859
+    {
+//			string temp = newTemp();
+//			*($$.name) = temp;
+//			*($$.code) = genQuad("+",*($1.name),*($3.name),temp) + "\n" + *($$.code);
+		}
+#line 1183 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 43:
+#line 172 "mini_l.y" // lalr1.cc:859
+    {
+//			string temp = newTemp();
+//			*($$.name) = temp;
+//			*($$.code) = genQuad("-",*($1.name),*($3.name),temp) + "\n" + *($$.code);
+		}
+#line 1193 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 44:
+#line 179 "mini_l.y" // lalr1.cc:859
+    {
+//					*($$.name) = *($1.name);
+//					*($$.code) = *($1.code);	
+				}
+#line 1202 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 45:
+#line 183 "mini_l.y" // lalr1.cc:859
+    {
+//					string temp = newTemp();
+//					*($$.name) = temp;
+//					*($$.code) = genQuad("*",*($1.name),*($3.name),temp) + "\n" + *($$.code);
+				}
+#line 1212 "y.tab.cc" // lalr1.cc:859
     break;
 
   case 46:
-#line 162 "mini_l.y" // lalr1.cc:859
+#line 188 "mini_l.y" // lalr1.cc:859
     {
-			/*
-                     string newTemp = "temp"+to_string(++currentTemp);      
-                     Symbol newTempSymbol(newTemp, "int");;
-                     symTable.push_back(newTempSymbol);
-		     stmntsList.push_back("- " + newTemp + ", 0" + identList.back());
-                     // swap the op with it's negated form
-		     identList.back() = newTemp; 
-			*/
-                     
-                  }
-#line 652 "y.tab.cc" // lalr1.cc:859
+//					string temp = newTemp();
+//					*($$.name) = temp;
+//					*($$.code) = genQuad("/",*($1.name),*($3.name),temp) + "\n" + *($$.code);
+				}
+#line 1222 "y.tab.cc" // lalr1.cc:859
     break;
 
   case 47:
-#line 173 "mini_l.y" // lalr1.cc:859
+#line 193 "mini_l.y" // lalr1.cc:859
     {
-			/*
-                     string newTemp = "temp"+to_string(++currentTemp);
-                     Symbol newTempSymbol(newTemp, "int");;
-                     symTable.push_back(newTempSymbol);
-                     stmntsList.push_back("- " + newTemp + ", 0" + identList.back());
-                     string num = to_string($1);
-                     stmntsList.push_back("= " + newTemp + ", " + num);
-			*/
+//					string temp = newTemp();
+//					*($$.name) = temp;
+//					*($$.code) = genQuad("%",*($1.name),*($3.name),temp) + "\n" + *($$.code);
+				}
+#line 1232 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 48:
+#line 200 "mini_l.y" // lalr1.cc:859
+    {
+//			string temp = newTemp();
+//			*($$.name) = temp;
+//			$$.value = -($2);
+//			*($$.code) = genQuad("-", "h",to_string($2),temp);
+                  }
+#line 1243 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 49:
+#line 206 "mini_l.y" // lalr1.cc:859
+    {
+//		    *($$.name) = to_string($1);
+//		    $$.value = $1;
+                 }
+#line 1252 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 50:
+#line 210 "mini_l.y" // lalr1.cc:859
+    {
+//		     *($$.name) = *($1.name);
+		}
+#line 1260 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 51:
+#line 213 "mini_l.y" // lalr1.cc:859
+    {
+//		      string temp = newTemp();
+//		      *($$.name) = *($2.name);
+//		      *($$.code) = genQuad("-", "0", *($2.name), temp);
+                  }
+#line 1270 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 52:
+#line 218 "mini_l.y" // lalr1.cc:859
+    {
+//			*($$.name) = *($2.name);
+//			*($$.code) = *($2.code);
+		  }
+#line 1279 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 53:
+#line 222 "mini_l.y" // lalr1.cc:859
+    {
+//			string temp = newTemp();
+//			*($$.name) = temp;
+//			*($$.code) = genQuad("-", "0",*($3.name),temp);
 }
-#line 667 "y.tab.cc" // lalr1.cc:859
+#line 1289 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 54:
+#line 227 "mini_l.y" // lalr1.cc:859
+    {
+//		 	$$.name = $3.name;
+//			$$.code = $3.code;
+}
+#line 1298 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 55:
+#line 234 "mini_l.y" // lalr1.cc:859
+    {
+			
+		 }
+#line 1306 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 57:
+#line 240 "mini_l.y" // lalr1.cc:859
+    {
+//`			cout << "vars seeing: " << (*$1.code) << endl;
+//		        string temp= *($1.name);
+//			*($$.name) = temp;
+//		 	*($$.code) = *($1.code);
+//		        if (isReading) milCode.push_back(".< " + temp);
+//		        else milCode.push_back(".> " + temp);
+		}
+#line 1319 "y.tab.cc" // lalr1.cc:859
     break;
 
   case 59:
-#line 204 "mini_l.y" // lalr1.cc:859
+#line 251 "mini_l.y" // lalr1.cc:859
     {
-	          //cout << "VAR sees: " << *($1) << endl;
-                  if (inSymTable(*((yystack_[0].value.strVal)))) { // symbol has already been declared
-                      cout << "Error at line " << currLine << ", position " << currPos
-	                   << ". " << *((yystack_[0].value.strVal)) << " is undeclared\n";
-			exit(1);
-		  }
-                  identList.push_back(*((yystack_[0].value.strVal)));
-		  cout << "pushed back " + identList.back()<< endl;
-                  (yylhs.value.attributes).name = *((yystack_[0].value.strVal));
-                }
-#line 683 "y.tab.cc" // lalr1.cc:859
+			yylhs.value.as< Attributes > ().name = yystack_[0].value.as< string > ();
+//			$$.code = "HELLO";
+
+/*
+		    string ident = *($1);
+		    Table::iterator iter = symTable.find(ident);
+		    // ident not in symbol table
+		    if (iter == symTable.end()) {
+			cout << "Error: " << ident << " was not declared. "
+			     << "Line " << currLine << ", position " << currPos << endl;
+		    }
+                    else {
+			if (iter->second.type != "INTEGER") cout << "ERROR, invalid type (var)\n";
+		        else {
+				$$.value = iter->second.value;
+			}
+		   } 
+                    *($$.name) = *($1);
+*/
+                  }
+#line 1345 "y.tab.cc" // lalr1.cc:859
     break;
 
   case 60:
-#line 215 "mini_l.y" // lalr1.cc:859
+#line 272 "mini_l.y" // lalr1.cc:859
     {
-		/*
-                  Symbol current = symTable.back();
-                  symTable.pop_back(); // remove the just added symbol
-                  string ident = *($1);
-                  if (!inArrayList(current.name))
-			exit(1);
-                  identList.push_back(". [] " + ident + ", " + current.name);
-                  cout << "last pushed symbol was " << identList.back() << endl;  
-                 */   
+/*
+		    string ident = *($1);
+		    Table::iterator iter = symTable.find(ident);
+		    // ident not in symbol table
+		    if (iter == symTable.end()) {
+			cout << "Error: " << ident << " was not declared. "
+			     << "Line " << currLine << ", position " << currPos << endl;
+		    }
+                    else {
+			if (iter->second.type == "INTEGER") cout << "ERROR, invalid type (var)\n";
+		        else $$.value = iter->second.value;
+		   } 
+                    *($$.name) = *($1);
+		    *($$.code) = *($3.code);
+*/
                 }
-#line 699 "y.tab.cc" // lalr1.cc:859
+#line 1367 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 61:
+#line 291 "mini_l.y" // lalr1.cc:859
+    {
+			yylhs.value.as< string > () = yystack_[0].value.as< string > ();
+		}
+#line 1375 "y.tab.cc" // lalr1.cc:859
+    break;
+
+  case 63:
+#line 298 "mini_l.y" // lalr1.cc:859
+    {
+			yylhs.value.as< string > () = "\t. " + yystack_[0].value.as< string > ();
+/*
+                    Table::iterator ident = symTable.find(*($1));
+		    // new symbol
+		    if (ident == symTable.end()) identList.push_back(*($1));
+		    else {
+		        cout << "Error at line " << currLine << ", pos " << currPos
+			     << ": redeclaration of " << *($1);
+		    }
+		    $$ = $1;
+*/
+                }
+#line 1393 "y.tab.cc" // lalr1.cc:859
     break;
 
   case 64:
-#line 235 "mini_l.y" // lalr1.cc:859
+#line 312 "mini_l.y" // lalr1.cc:859
     {
-                    *((yylhs.value.strVal)) = ". _" + *((yystack_[0].value.strVal));
-                }
-#line 707 "y.tab.cc" // lalr1.cc:859
-    break;
-
-  case 65:
-#line 240 "mini_l.y" // lalr1.cc:859
-    {
-		   (yylhs.value.iVal) = (yystack_[0].value.iVal);
-                }
-#line 715 "y.tab.cc" // lalr1.cc:859
+		    yylhs.value.as< int > () = yystack_[0].value.as< int > ();
+		}
+#line 1401 "y.tab.cc" // lalr1.cc:859
     break;
 
 
-#line 719 "y.tab.cc" // lalr1.cc:859
+#line 1405 "y.tab.cc" // lalr1.cc:859
             default:
               break;
             }
@@ -965,121 +1651,121 @@ namespace yy {
   }
 
 
-  const signed char parser::yypact_ninf_ = -62;
+  const signed char parser::yypact_ninf_ = -64;
 
   const signed char parser::yytable_ninf_ = -1;
 
   const signed char
   parser::yypact_[] =
   {
-      10,   -17,    27,   -62,    10,   -62,    18,   -62,   -62,    16,
-     -17,    30,    19,    23,    24,    43,   -17,     1,   -17,   -62,
-     -17,   -62,   -62,    25,   -62,    39,    28,    50,   -62,    33,
-     100,    65,   -17,    -4,    -4,    63,    86,   -62,   -17,   -17,
-      66,    61,    38,    59,    90,   -62,    64,   -62,   -62,    -4,
-     -26,    -4,    14,    95,    57,    60,    87,    -7,     2,   -62,
-     -18,   -62,    63,   100,    98,    86,   -62,   -62,    97,   -62,
-     100,    86,    86,   -62,   -17,   -62,    83,    53,    86,   -62,
-     -62,   -62,   -62,   100,   100,    -4,    -4,   -62,   -62,   -62,
-     -62,   -62,   -62,    86,    86,    86,    86,    86,    86,    86,
-     -62,   102,    -4,    84,   -17,   -62,   -62,    91,   -62,   -62,
-     -62,    94,   109,   -62,   -62,   -62,   -62,   -62,   -62,   -62,
-     -62,   -62,    99,   105,   -62,   -62,    63,   -62,   -62,   -62,
-      86,   -62,   -62,   -62,   -62
+       3,    -4,    41,   -64,     3,   -64,    17,   -64,   -64,    34,
+      -4,    30,    27,    35,    46,    55,    -4,     8,    -4,    -4,
+     -64,   -64,    61,   -64,    75,    63,    84,   -64,    69,    66,
+      96,   -64,   -16,   -16,    87,    18,   -64,   -64,    -4,    98,
+      78,    70,    88,   120,    -4,   -64,   -64,   -16,    39,   -16,
+      12,   116,    74,    76,    71,    42,   -15,   -64,     6,   -64,
+      87,    66,   117,    18,   -64,    -4,   111,   -64,    66,    18,
+      18,   -64,   -64,    99,   100,    65,    18,   -64,   -64,   -64,
+     -64,    66,    66,   -16,   -16,   -64,   -64,   -64,   -64,   -64,
+     -64,    18,    18,    18,    18,    18,    18,    18,   -64,   112,
+     -16,   101,   -64,    -4,   -64,   -64,    97,    -4,   -64,   -64,
+     102,   126,   -64,   -64,   -64,   -64,   -64,   -64,   -64,   -64,
+     -64,   106,   105,   -64,   -64,    87,   -64,   -64,   -64,   -64,
+      18,   -64,   -64,   -64
   };
 
   const unsigned char
   parser::yydefact_[] =
   {
-       4,     0,     0,     2,     4,    64,     0,     1,     3,     0,
-       7,     0,     0,     0,    61,     0,     7,     0,     0,    62,
-       7,     6,     8,     0,    63,     0,     0,     0,    65,     0,
-      11,     0,     0,     0,     0,     0,     0,    20,     0,     0,
-       0,     0,     0,    59,     0,    18,    56,    30,    31,     0,
-       0,     0,     0,     0,    24,    26,     0,    39,    42,    48,
-      59,    47,     0,    11,     0,     0,    21,    19,     0,     5,
-      11,     0,     0,     9,     0,    57,     0,     0,     0,    49,
-      46,    28,    13,    11,    11,     0,     0,    35,    37,    36,
-      38,    33,    34,     0,     0,     0,     0,     0,     0,     0,
-      15,     0,     0,     0,     0,    10,    12,     0,    58,    32,
-      50,     0,     0,    22,    25,    27,    29,    40,    41,    43,
-      44,    45,    53,     0,    23,    16,     0,    60,    51,    14,
-       0,    54,    52,    17,    55
+       4,     0,     0,     2,     4,    63,     0,     1,     3,     0,
+       7,     0,     0,     0,    61,     0,     7,     0,     0,     7,
+       6,     8,     0,    62,     0,     0,     0,    64,     0,    11,
+       0,    22,     0,     0,     0,     0,    20,    23,     0,     0,
+       0,     0,    59,     0,     0,    32,    33,     0,     0,     0,
+       0,     0,    26,    28,     0,    41,    44,    50,    59,    49,
+       0,    11,     0,     0,    21,     0,     0,     5,    11,     0,
+       0,     9,    18,    57,     0,     0,     0,    51,    48,    30,
+      13,    11,    11,     0,     0,    37,    39,    38,    40,    35,
+      36,     0,     0,     0,     0,     0,     0,     0,    15,     0,
+       0,     0,    19,     0,    10,    12,     0,     0,    34,    52,
+       0,     0,    24,    27,    29,    31,    42,    43,    45,    46,
+      47,    55,     0,    25,    16,     0,    60,    58,    53,    14,
+       0,    54,    17,    56
   };
 
   const short int
   parser::yypgoto_[] =
   {
-     -62,   -62,   135,   -62,    -8,   -62,     4,   -62,   -62,   -61,
-     -31,   -41,    89,   -62,   -15,   -62,   -21,    11,   -62,   -34,
-     -62,    22,   124,   -62,    -1,   -24
+     -64,   -64,   135,   -64,   -12,   -64,   -29,   -64,   -64,   -64,
+     -64,   -57,   -28,     9,    91,   -64,   -34,   -64,    -7,    11,
+     -63,     1,   124,    -1,   -17
   };
 
-  const short int
+  const signed char
   parser::yydefgoto_[] =
   {
-      -1,     2,     3,     4,    11,    12,    40,    41,    52,    64,
-      53,    54,    55,    93,    56,    57,    58,   123,   131,    45,
-      75,    59,    13,    19,    60,    61
+      -1,     2,     3,     4,    11,    12,    39,    40,    44,    65,
+      50,    62,    51,    52,    53,    91,    54,    55,    56,   122,
+      72,    57,    13,    58,    59
   };
 
   const unsigned char
   parser::yytable_[] =
   {
-       6,   100,    29,    62,    67,    22,    78,    23,    21,    14,
-      28,     5,    25,     1,    99,    14,    72,    14,    76,    14,
-       5,    66,    47,    48,    82,    83,    80,     7,    49,    43,
-      10,    43,    28,     5,    77,    94,    95,    43,    68,    50,
-     108,    96,    97,    98,   114,   115,    51,     9,    16,    43,
-     103,    15,    42,    17,    46,    18,   106,   107,    20,    26,
-      46,    27,    43,   111,    28,   133,    30,   101,    31,    43,
-      44,   125,    79,    43,   105,   119,   120,   121,   116,   117,
-     118,    63,    43,    43,   122,    42,   110,   112,   113,    69,
-      70,    71,    42,    72,    73,    74,    46,    87,    88,    89,
-      90,    91,    92,   126,    84,    42,    42,    32,    33,    85,
-     102,    86,    34,    35,   104,   122,   109,   110,    65,   129,
-      36,   124,    28,     5,    37,    38,   127,   128,    39,    50,
-     130,    87,    88,    89,    90,    91,    92,     5,   132,     8,
-      81,   134,    24
+       6,    64,   102,    98,    20,    60,     1,    24,    28,    14,
+      45,    46,    21,    75,    22,    14,    47,    14,    14,    74,
+      27,     5,    80,    81,    94,    95,    96,    48,    42,   101,
+      41,    78,    99,     5,    49,   105,   106,    66,    97,   104,
+      70,     7,   110,    42,   127,    73,     9,    42,    10,    77,
+      63,    15,   111,   112,    27,     5,    16,   115,   116,   117,
+      42,    48,    41,   121,    42,    17,    73,    42,   132,    41,
+      19,    76,   124,    31,    32,    27,     5,    18,    33,    34,
+      42,    42,    41,    41,    92,    93,    35,   118,   119,   120,
+      36,    37,   113,   114,    38,    25,   121,    26,   109,    27,
+      29,    43,   125,     5,    30,    61,    42,    68,    73,    85,
+      86,    87,    88,    89,    90,    85,    86,    87,    88,    89,
+      90,    67,    70,    69,    71,    82,    83,    84,   103,   100,
+     107,   123,   126,   108,   109,   128,   129,   130,   131,     8,
+      79,   133,    23
   };
 
   const unsigned char
   parser::yycheck_[] =
   {
-       1,    62,    26,    34,    38,     4,    32,     6,    16,    10,
-      36,    37,    20,     3,    32,    16,    34,    18,    49,    20,
-      37,    36,    26,    27,    10,    11,    50,     0,    32,    30,
-      14,    32,    36,    37,    49,    42,    43,    38,    39,    43,
-      74,    39,    40,    41,    85,    86,    50,    29,    29,    50,
-      65,    21,    30,    30,    32,    31,    71,    72,    15,    34,
-      38,    22,    63,    78,    36,   126,    16,    63,    35,    70,
-       5,   102,    50,    74,    70,    96,    97,    98,    93,    94,
-      95,    18,    83,    84,    99,    63,    33,    83,    84,    23,
-      29,    53,    70,    34,     4,    31,    74,    44,    45,    46,
-      47,    48,    49,   104,     9,    83,    84,     7,     8,    52,
-      12,    51,    12,    13,    17,   130,    33,    33,    32,    10,
-      20,    19,    36,    37,    24,    25,    35,    33,    28,    43,
-      31,    44,    45,    46,    47,    48,    49,    37,    33,     4,
-      51,   130,    18
+       1,    35,    65,    60,    16,    33,     3,    19,    25,    10,
+      26,    27,     4,    47,     6,    16,    32,    18,    19,    47,
+      36,    37,    10,    11,    39,    40,    41,    43,    29,    63,
+      29,    48,    61,    37,    50,    69,    70,    38,    32,    68,
+      34,     0,    76,    44,   107,    44,    29,    48,    14,    48,
+      32,    21,    81,    82,    36,    37,    29,    91,    92,    93,
+      61,    43,    61,    97,    65,    30,    65,    68,   125,    68,
+      15,    32,   100,     7,     8,    36,    37,    31,    12,    13,
+      81,    82,    81,    82,    42,    43,    20,    94,    95,    96,
+      24,    25,    83,    84,    28,    34,   130,    22,    33,    36,
+      16,     5,   103,    37,    35,    18,   107,    29,   107,    44,
+      45,    46,    47,    48,    49,    44,    45,    46,    47,    48,
+      49,    23,    34,    53,     4,     9,    52,    51,    17,    12,
+      31,    19,    35,    33,    33,    33,    10,    31,    33,     4,
+      49,   130,    18
   };
 
   const unsigned char
   parser::yystos_[] =
   {
-       0,     3,    55,    56,    57,    37,    78,     0,    56,    29,
-      14,    58,    59,    76,    78,    21,    29,    30,    31,    77,
-      15,    58,     4,     6,    76,    58,    34,    22,    36,    79,
-      16,    35,     7,     8,    12,    13,    20,    24,    25,    28,
-      60,    61,    75,    78,     5,    73,    75,    26,    27,    32,
-      43,    50,    62,    64,    65,    66,    68,    69,    70,    75,
-      78,    79,    64,    18,    63,    32,    68,    73,    78,    23,
-      29,    53,    34,     4,    31,    74,    64,    68,    32,    75,
-      79,    66,    10,    11,     9,    52,    51,    44,    45,    46,
-      47,    48,    49,    67,    42,    43,    39,    40,    41,    32,
-      63,    60,    12,    68,    17,    60,    68,    68,    73,    33,
-      33,    68,    60,    60,    65,    65,    68,    68,    68,    70,
-      70,    70,    68,    71,    19,    64,    78,    35,    33,    10,
-      31,    72,    33,    63,    71
+       0,     3,    55,    56,    57,    37,    77,     0,    56,    29,
+      14,    58,    59,    76,    77,    21,    29,    30,    31,    15,
+      58,     4,     6,    76,    58,    34,    22,    36,    78,    16,
+      35,     7,     8,    12,    13,    20,    24,    25,    28,    60,
+      61,    75,    77,     5,    62,    26,    27,    32,    43,    50,
+      64,    66,    67,    68,    70,    71,    72,    75,    77,    78,
+      66,    18,    65,    32,    70,    63,    77,    23,    29,    53,
+      34,     4,    74,    75,    66,    70,    32,    75,    78,    68,
+      10,    11,     9,    52,    51,    44,    45,    46,    47,    48,
+      49,    69,    42,    43,    39,    40,    41,    32,    65,    60,
+      12,    70,    74,    17,    60,    70,    70,    31,    33,    33,
+      70,    60,    60,    67,    67,    70,    70,    70,    72,    72,
+      72,    70,    73,    19,    66,    77,    35,    74,    33,    10,
+      31,    33,    65,    73
   };
 
   const unsigned char
@@ -1087,23 +1773,23 @@ namespace yy {
   {
        0,    54,    55,    56,    56,    57,    58,    58,    59,    59,
       60,    60,    61,    61,    61,    61,    61,    61,    61,    61,
-      61,    61,    62,    63,    64,    64,    65,    65,    66,    66,
-      66,    66,    66,    67,    67,    67,    67,    67,    67,    68,
-      68,    68,    69,    69,    69,    69,    70,    70,    70,    70,
-      70,    70,    70,    71,    71,    72,    73,    73,    74,    75,
-      75,    76,    76,    77,    78,    79
+      61,    61,    62,    63,    64,    65,    66,    66,    67,    67,
+      68,    68,    68,    68,    68,    69,    69,    69,    69,    69,
+      69,    70,    70,    70,    71,    71,    71,    71,    72,    72,
+      72,    72,    72,    72,    72,    73,    73,    74,    74,    75,
+      75,    76,    76,    77,    78
   };
 
   const unsigned char
   parser::yyr2_[] =
   {
        0,     2,     1,     2,     0,    12,     3,     0,     3,     8,
-       3,     0,     3,     3,     5,     3,     4,     5,     2,     2,
-       1,     2,     3,     3,     1,     3,     1,     3,     2,     3,
-       1,     1,     3,     1,     1,     1,     1,     1,     1,     1,
-       3,     3,     1,     3,     3,     3,     2,     1,     1,     2,
-       3,     4,     4,     1,     2,     2,     1,     2,     2,     1,
-       4,     1,     2,     2,     1,     1
+       3,     0,     3,     3,     5,     3,     4,     5,     3,     3,
+       1,     2,     0,     0,     3,     3,     1,     3,     1,     3,
+       2,     3,     1,     1,     3,     1,     1,     1,     1,     1,
+       1,     1,     3,     3,     1,     3,     3,     3,     2,     1,
+       1,     2,     3,     4,     4,     1,     3,     1,     3,     1,
+       4,     1,     3,     1,     1
   };
 
 
@@ -1122,23 +1808,23 @@ namespace yy {
   "MULT", "DIV", "MOD", "ADD", "SUB", "LT", "LTE", "GT", "GTE", "EQ",
   "NEQ", "NOT", "AND", "OR", "ASSIGN", "$accept", "prog_start",
   "functions", "function", "declarations", "declaration", "statements",
-  "statement", "ifCond", "loop", "bool_exp", "relation_and_exp",
-  "relation_exp", "comp", "expression", "multiplicative_expression",
-  "term", "expressions", "exprList", "vars", "varList", "var",
-  "identifiers", "identList", "ident", "number", YY_NULLPTR
+  "statement", "M1", "M2", "ifCond", "loop", "bool_exp",
+  "relation_and_exp", "relation_exp", "comp", "expression",
+  "multiplicative_expression", "term", "expressions", "vars", "var",
+  "identifiers", "ident", "number", YY_NULLPTR
   };
 
 #if YYDEBUG
-  const unsigned char
+  const unsigned short int
   parser::yyrline_[] =
   {
-       0,    85,    85,    87,    88,    90,    98,    99,   102,   103,
-     106,   107,   110,   111,   112,   113,   114,   115,   116,   117,
-     118,   119,   122,   125,   128,   129,   132,   133,   136,   137,
-     138,   139,   140,   143,   144,   145,   146,   147,   148,   151,
-     152,   153,   156,   157,   158,   159,   162,   173,   183,   184,
-     185,   186,   187,   190,   191,   194,   197,   198,   201,   204,
-     215,   228,   229,   232,   235,   240
+       0,    91,    91,    93,    94,    96,   100,   101,   104,   109,
+     112,   113,   116,   120,   121,   122,   123,   124,   125,   126,
+     127,   128,   131,   132,   134,   137,   140,   141,   144,   145,
+     148,   149,   150,   151,   152,   155,   156,   157,   158,   159,
+     160,   163,   167,   172,   179,   183,   188,   193,   200,   206,
+     210,   213,   218,   222,   227,   233,   237,   240,   248,   251,
+     272,   291,   295,   298,   312
   };
 
   // Print the state stack on the debug stream.
@@ -1224,8 +1910,8 @@ namespace yy {
 
 
 } // yy
-#line 1228 "y.tab.cc" // lalr1.cc:1167
-#line 245 "mini_l.y" // lalr1.cc:1168
+#line 1914 "y.tab.cc" // lalr1.cc:1167
+#line 317 "mini_l.y" // lalr1.cc:1168
 
 
 int main() {
@@ -1239,33 +1925,14 @@ void yyerror (char const *s)
   fprintf (stderr, "error at line %d:  \"%s\"\n", currLine, s);
 }
 
-// return true if string s is in list
-bool inSymTable(string s){
-    vecSym::iterator sym = find(symTable.begin(), symTable.end(), s);
-    if (sym == symTable.end()) { // symbol not in table
-        return false;
-    }
-    if (!(sym->type.compare("int"))) {
-        return true;
-    }
-    cout << "Error, invalid type\n";
-    return false; 
+string newTemp() {
+    return "__temp__" + to_string(currentTemp++);
 }
 
-// return true if string s in in list
-bool inArrayList(string s){
-    vecSym::iterator sym = find(symTable.begin(), symTable.end(), s);
-    if (sym == symTable.end()) { // symbol not in table
-        cout << "Error at line " << currLine << ", position " << currPos
-             << ". " << s << " is undeclared\n";
-        return false;
-    }
-    if (!(sym->type.compare("int"))) {
-        cout << "Error, not an array\n";
-        return false;
-    }
-    return true;
+string newLabel() {
+    return "__label__" + to_string(currentLabel++);
 }
 
-
-
+string genQuad(string op, string src1, string src2, string dest) {
+    return ". " + op + " " + dest + ", " + src1 + ", " + src2; 
+}

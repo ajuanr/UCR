@@ -104,19 +104,20 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 54 "mini_l.y" /* yacc.c:1909  */
+#line 59 "mini_l.y" /* yacc.c:1909  */
 
    int		iVal;
    string* 	strVal;
 typedef struct Attributes{
    string* name;
-   string* type;
    string* code;
+   string* type;
+   int limit; // for arrays
+   int value;
 }Attributes;
    Attributes attribute;
-   vector<Attributes> *vecA;
 
-#line 120 "y.tab.h" /* yacc.c:1909  */
+#line 121 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

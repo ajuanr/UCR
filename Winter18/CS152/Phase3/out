@@ -1,21 +1,81 @@
-identifiers sees: n
-declaration sees: n
-identifiers sees: k
-declaration sees: i
-identifiers sees: t
-IN vars
-Error at line 22, position 13t is undeclared
-Error at line 27, position 21t is undeclared
-IN vars
-Error at line 32, position 11t is undeclared
-Error at line 33, position 11t is undeclared
-Error at line 34, position 17t is undeclared
-Error at line 35, position 11t is undeclared
-Error at line 35, position 21t is undeclared
-Error at line 36, position 11t is undeclared
-IN vars
-IN vars
-Error at line 52, position 16t is undeclared
-IN vars
-Error at line 56, position 16t is undeclared
-IN vars
+ident -> _main
+ident -> _n
+declaration -> identifiers COLON INTEGER
+ident -> _i
+ident -> _j
+ident -> _k
+declaration -> identifiers COLON INTEGER
+ident -> _t
+number -> 20
+ident -> _i
+ident -> _j
+ident -> _k
+number -> 0
+ident -> _n
+number -> 20
+ident -> _t
+ident -> _k
+ident -> _k
+ident -> _k
+ident -> _k
+number -> 1
+ident -> _k
+number -> 2
+number -> 0
+ident -> _t
+ident -> _k
+number -> 1
+ident -> _k
+ident -> _n
+ident -> _i
+ident -> _j
+ident -> _j
+ident -> _n
+ident -> _i
+number -> 0
+ident -> _t
+ident -> _i
+ident -> _i
+number -> 2
+ident -> _t
+ident -> _j
+ident -> _j
+number -> 2
+ident -> _k
+ident -> _t
+ident -> _i
+ident -> _t
+ident -> _i
+ident -> _t
+ident -> _j
+ident -> _t
+ident -> _j
+ident -> _k
+ident -> _i
+ident -> _j
+ident -> _k
+number -> 1
+ident -> _i
+ident -> _j
+number -> 3
+ident -> _i
+ident -> _i
+number -> 1
+ident -> _k
+number -> 1
+ident -> _k
+ident -> _i
+ident -> _j
+ident -> _k
+ident -> _i
+ident -> _n
+ident -> _i
+number -> 0
+ident -> _t
+ident -> _i
+ident -> _j
+ident -> _n
+ident -> _j
+number -> 0
+ident -> _t
+ident -> _j

@@ -49,6 +49,11 @@
 # include "stack.hh"
 
 
+#ifndef YYASSERT
+# include <cassert>
+# define YYASSERT assert
+#endif
+
 
 #ifndef YY_ATTRIBUTE
 # if (defined __GNUC__                                               \
@@ -110,10 +115,143 @@
 
 
 namespace yy {
-#line 114 "y.tab.hh" // lalr1.cc:377
+#line 119 "y.tab.hh" // lalr1.cc:377
 
 
 
+  /// A char[S] buffer to store and retrieve objects.
+  ///
+  /// Sort of a variant, but does not keep track of the nature
+  /// of the stored data, since that knowledge is available
+  /// via the current state.
+  template <size_t S>
+  struct variant
+  {
+    /// Type of *this.
+    typedef variant<S> self_type;
+
+    /// Empty construction.
+    variant ()
+    {}
+
+    /// Construct and fill.
+    template <typename T>
+    variant (const T& t)
+    {
+      YYASSERT (sizeof (T) <= S);
+      new (yyas_<T> ()) T (t);
+    }
+
+    /// Destruction, allowed only if empty.
+    ~variant ()
+    {}
+
+    /// Instantiate an empty \a T in here.
+    template <typename T>
+    T&
+    build ()
+    {
+      return *new (yyas_<T> ()) T;
+    }
+
+    /// Instantiate a \a T in here from \a t.
+    template <typename T>
+    T&
+    build (const T& t)
+    {
+      return *new (yyas_<T> ()) T (t);
+    }
+
+    /// Accessor to a built \a T.
+    template <typename T>
+    T&
+    as ()
+    {
+      return *yyas_<T> ();
+    }
+
+    /// Const accessor to a built \a T (for %printer).
+    template <typename T>
+    const T&
+    as () const
+    {
+      return *yyas_<T> ();
+    }
+
+    /// Swap the content with \a other, of same type.
+    ///
+    /// Both variants must be built beforehand, because swapping the actual
+    /// data requires reading it (with as()), and this is not possible on
+    /// unconstructed variants: it would require some dynamic testing, which
+    /// should not be the variant's responsability.
+    /// Swapping between built and (possibly) non-built is done with
+    /// variant::move ().
+    template <typename T>
+    void
+    swap (self_type& other)
+    {
+      std::swap (as<T> (), other.as<T> ());
+    }
+
+    /// Move the content of \a other to this.
+    ///
+    /// Destroys \a other.
+    template <typename T>
+    void
+    move (self_type& other)
+    {
+      build<T> ();
+      swap<T> (other);
+      other.destroy<T> ();
+    }
+
+    /// Copy the content of \a other to this.
+    template <typename T>
+    void
+    copy (const self_type& other)
+    {
+      build<T> (other.as<T> ());
+    }
+
+    /// Destroy the stored \a T.
+    template <typename T>
+    void
+    destroy ()
+    {
+      as<T> ().~T ();
+    }
+
+  private:
+    /// Prohibit blind copies.
+    self_type& operator=(const self_type&);
+    variant (const self_type&);
+
+    /// Accessor to raw memory as \a T.
+    template <typename T>
+    T*
+    yyas_ ()
+    {
+      void *yyp = yybuffer_.yyraw;
+      return static_cast<T*> (yyp);
+     }
+
+    /// Const accessor to raw memory as \a T.
+    template <typename T>
+    const T*
+    yyas_ () const
+    {
+      const void *yyp = yybuffer_.yyraw;
+      return static_cast<const T*> (yyp);
+     }
+
+    union
+    {
+      /// Strongest alignment constraints.
+      long double yyalign_me;
+      /// A buffer large enough to store any of the semantic values.
+      char yyraw[S];
+    } yybuffer_;
+  };
 
 
   /// A Bison parser.
@@ -121,17 +259,29 @@ namespace yy {
   {
   public:
 #ifndef YYSTYPE
-    /// Symbol semantic values.
-    union semantic_type
+    /// An auxiliary type to compute the largest semantic type.
+    union union_type
     {
-    #line 54 "mini_l.y" // lalr1.cc:377
+      // expression
+      // multiplicative_expression
+      // term
+      // expressions
+      // vars
+      // var
+      char dummy1[sizeof(Attributes)];
 
-   int		iVal;
-   string* 	strVal;
+      // NUMBER
+      // number
+      char dummy2[sizeof(int)];
 
+      // IDENT
+      // identifiers
+      // ident
+      char dummy3[sizeof(string)];
+};
 
-#line 134 "y.tab.hh" // lalr1.cc:377
-    };
+    /// Symbol semantic values.
+    typedef variant<sizeof(union_type)> semantic_type;
 #else
     typedef YYSTYPE semantic_type;
 #endif
@@ -231,8 +381,16 @@ namespace yy {
       /// Copy constructor.
       basic_symbol (const basic_symbol& other);
 
-      /// Constructor for valueless symbols.
-      basic_symbol (typename Base::kind_type t);
+      /// Constructor for valueless symbols, and symbols from each type.
+
+  basic_symbol (typename Base::kind_type t);
+
+  basic_symbol (typename Base::kind_type t, const Attributes v);
+
+  basic_symbol (typename Base::kind_type t, const int v);
+
+  basic_symbol (typename Base::kind_type t, const string v);
+
 
       /// Constructor for symbols with semantic value.
       basic_symbol (typename Base::kind_type t,
@@ -294,6 +452,211 @@ namespace yy {
 
     /// "External" symbols: returned by the scanner.
     typedef basic_symbol<by_type> symbol_type;
+
+    // Symbol constructors declarations.
+    static inline
+    symbol_type
+    make_FUNCTION ();
+
+    static inline
+    symbol_type
+    make_INTEGER ();
+
+    static inline
+    symbol_type
+    make_OF ();
+
+    static inline
+    symbol_type
+    make_ARRAY ();
+
+    static inline
+    symbol_type
+    make_READ ();
+
+    static inline
+    symbol_type
+    make_IF ();
+
+    static inline
+    symbol_type
+    make_THEN ();
+
+    static inline
+    symbol_type
+    make_ENDIF ();
+
+    static inline
+    symbol_type
+    make_ELSE ();
+
+    static inline
+    symbol_type
+    make_WHILE ();
+
+    static inline
+    symbol_type
+    make_DO ();
+
+    static inline
+    symbol_type
+    make_BEGIN_PARAMS ();
+
+    static inline
+    symbol_type
+    make_BEGIN_LOCALS ();
+
+    static inline
+    symbol_type
+    make_BEGIN_BODY ();
+
+    static inline
+    symbol_type
+    make_IN ();
+
+    static inline
+    symbol_type
+    make_BEGINLOOP ();
+
+    static inline
+    symbol_type
+    make_ENDLOOP ();
+
+    static inline
+    symbol_type
+    make_RETURN ();
+
+    static inline
+    symbol_type
+    make_END_PARAMS ();
+
+    static inline
+    symbol_type
+    make_END_LOCALS ();
+
+    static inline
+    symbol_type
+    make_END_BODY ();
+
+    static inline
+    symbol_type
+    make_CONTINUE ();
+
+    static inline
+    symbol_type
+    make_WRITE ();
+
+    static inline
+    symbol_type
+    make_TRUE ();
+
+    static inline
+    symbol_type
+    make_FALSE ();
+
+    static inline
+    symbol_type
+    make_FOREACH ();
+
+    static inline
+    symbol_type
+    make_SEMICOLON ();
+
+    static inline
+    symbol_type
+    make_COLON ();
+
+    static inline
+    symbol_type
+    make_COMMA ();
+
+    static inline
+    symbol_type
+    make_L_PAREN ();
+
+    static inline
+    symbol_type
+    make_R_PAREN ();
+
+    static inline
+    symbol_type
+    make_L_SQUARE_BRACKET ();
+
+    static inline
+    symbol_type
+    make_R_SQUARE_BRACKET ();
+
+    static inline
+    symbol_type
+    make_NUMBER (const int& v);
+
+    static inline
+    symbol_type
+    make_IDENT (const string& v);
+
+    static inline
+    symbol_type
+    make_UMINUS ();
+
+    static inline
+    symbol_type
+    make_MULT ();
+
+    static inline
+    symbol_type
+    make_DIV ();
+
+    static inline
+    symbol_type
+    make_MOD ();
+
+    static inline
+    symbol_type
+    make_ADD ();
+
+    static inline
+    symbol_type
+    make_SUB ();
+
+    static inline
+    symbol_type
+    make_LT ();
+
+    static inline
+    symbol_type
+    make_LTE ();
+
+    static inline
+    symbol_type
+    make_GT ();
+
+    static inline
+    symbol_type
+    make_GTE ();
+
+    static inline
+    symbol_type
+    make_EQ ();
+
+    static inline
+    symbol_type
+    make_NEQ ();
+
+    static inline
+    symbol_type
+    make_NOT ();
+
+    static inline
+    symbol_type
+    make_AND ();
+
+    static inline
+    symbol_type
+    make_OR ();
+
+    static inline
+    symbol_type
+    make_ASSIGN ();
 
 
     /// Build a parser object.
@@ -372,7 +735,7 @@ namespace yy {
   static const short int yypgoto_[];
 
   // YYDEFGOTO[NTERM-NUM].
-  static const short int yydefgoto_[];
+  static const signed char yydefgoto_[];
 
   // YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
   // positive, shift that token.  If negative, reduce the rule whose
@@ -400,7 +763,7 @@ namespace yy {
     static const char* const yytname_[];
 #if YYDEBUG
   // YYRLINE[YYN] -- Source line where rule number YYN was defined.
-  static const unsigned char yyrline_[];
+  static const unsigned short int yyrline_[];
     /// Report on the debug stream that the rule \a r is going to be reduced.
     virtual void yy_reduce_print_ (int r);
     /// Print the state stack on the debug stream.
@@ -500,7 +863,7 @@ namespace yy {
     {
       yyeof_ = 0,
       yylast_ = 142,     ///< Last index in yytable_.
-      yynnts_ = 26,  ///< Number of nonterminal symbols.
+      yynnts_ = 25,  ///< Number of nonterminal symbols.
       yyfinal_ = 7, ///< Termination state number.
       yyterror_ = 1,
       yyerrcode_ = 256,
@@ -513,7 +876,7 @@ namespace yy {
 
 
 } // yy
-#line 517 "y.tab.hh" // lalr1.cc:377
+#line 880 "y.tab.hh" // lalr1.cc:377
 
 
 
