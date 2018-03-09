@@ -1,141 +1,246 @@
 ident -> _n
-PUSHED BACK: _n INTEGER
 ident -> _i
 ident -> _j
 ident -> _k
-identifiers -> ident
-identifiers -> ident
-PUSHED BACK: _k INTEGER
-PUSHED BACK: _j INTEGER
-PUSHED BACK: _i INTEGER
 ident -> _t
 number -> 20
 ident error: Redaclaration
 ident -> _i
 ident error: Redaclaration
 ident -> _j
+.< _i
+.< _j
 ident error: Redaclaration
 ident -> _k
 number -> 0
+term: 0
+ASSSIGNMEING 0
+= _k 0
 ident error: Redaclaration
 ident -> _n
 number -> 20
+term: 0
+ASSSIGNMEING 20
+= _n 20
 ident error: Redaclaration
 ident -> _t
 ident error: Redaclaration
 ident -> _k
+term: _k
+ident error: Redaclaration
+ident -> _k
+term: _k
+ASSSIGNMEING 0
+= TESTING 0
 ident error: Redaclaration
 ident -> _k
 ident error: Redaclaration
 ident -> _k
-ident error: Redaclaration
-ident -> _k
+term: _k
 number -> 1
+term: 0
+ADD t1
++ t1, _k, 0
+ASSSIGNMEING -1
+= _k -1
 ident error: Redaclaration
 ident -> _k
+term: _k
 number -> 2
+MODt2
+% t2, _k, 0
 number -> 0
+term: 0
 ident error: Redaclaration
 ident -> _t
 ident error: Redaclaration
 ident -> _k
+term: _k
 number -> 1
+term: 0
+SUB t3
+- t3, _k, 0
+.< _i
+.< _j
+.< _k
+.< _n
 ident error: Redaclaration
 ident -> _k
+term: _k
 ident error: Redaclaration
 ident -> _n
+term: _n
 ident error: Redaclaration
 ident -> _i
+term: _i
 ident error: Redaclaration
 ident -> _j
+term: _j
 ident error: Redaclaration
 ident -> _j
+term: _j
 ident error: Redaclaration
 ident -> _n
+term: _n
 ident error: Redaclaration
 ident -> _i
+term: _i
 number -> 0
+term: 0
 ident error: Redaclaration
 ident -> _t
 ident error: Redaclaration
 ident -> _i
+term: _i
 ident error: Redaclaration
 ident -> _i
+term: _i
 number -> 2
+MULT t4
+* t4, _i, 0
+ASSSIGNMEING 0
+= TESTING 0
 ident error: Redaclaration
 ident -> _t
 ident error: Redaclaration
 ident -> _j
+term: _j
 ident error: Redaclaration
 ident -> _j
+term: _j
 number -> 2
+MULT t5
+* t5, _j, 0
+ASSSIGNMEING 0
+= TESTING 0
 ident error: Redaclaration
 ident -> _k
 ident error: Redaclaration
 ident -> _t
 ident error: Redaclaration
 ident -> _i
+term: _i
+term: TESTING
+ASSSIGNMEING 0
+= _k 0
 ident error: Redaclaration
 ident -> _t
 ident error: Redaclaration
 ident -> _i
+term: _i
 ident error: Redaclaration
 ident -> _t
 ident error: Redaclaration
 ident -> _j
+term: _j
+term: TESTING
+ASSSIGNMEING 0
+= TESTING 0
 ident error: Redaclaration
 ident -> _t
 ident error: Redaclaration
 ident -> _j
+term: _j
 ident error: Redaclaration
 ident -> _k
+term: _k
+ASSSIGNMEING 0
+= TESTING 0
 ident error: Redaclaration
 ident -> _i
+term: _i
 ident error: Redaclaration
 ident -> _j
+term: _j
 ident error: Redaclaration
 ident -> _k
 number -> 1
+term: 0
 ident error: Redaclaration
 ident -> _i
+term: _i
+ADD t6
++ t6, 0, _i
 ident error: Redaclaration
 ident -> _j
+term: _j
+SUB t7
+- t7, t6, _j
+term: k
 number -> 3
+MODt8
+% t8, k, 0
+ASSSIGNMEING 0
+= _k 0
 ident error: Redaclaration
 ident -> _i
 ident error: Redaclaration
 ident -> _i
+term: _i
 number -> 1
+term: 0
+SUB t9
+- t9, _i, 0
+ASSSIGNMEING -1
+= _i -1
 ident error: Redaclaration
 ident -> _k
+term: _k
 number -> 1
+term: 0
 ident error: Redaclaration
 ident -> _k
+.< _i
+.< _j
+.< _k
+.< _n
 ident error: Redaclaration
 ident -> _i
 ident error: Redaclaration
 ident -> _j
 ident error: Redaclaration
 ident -> _k
+.< _i
+.< _j
+.< _k
+.< _n
 ident error: Redaclaration
 ident -> _i
+term: _i
 ident error: Redaclaration
 ident -> _n
+term: _n
 ident error: Redaclaration
 ident -> _i
+term: _i
 number -> 0
+term: 0
 ident error: Redaclaration
 ident -> _t
 ident error: Redaclaration
 ident -> _i
+term: _i
+.< _i
+.< _j
+.< _k
+.< _n
 ident error: Redaclaration
 ident -> _j
+term: _j
 ident error: Redaclaration
 ident -> _n
+term: _n
 ident error: Redaclaration
 ident -> _j
+term: _j
 number -> 0
+term: 0
 ident error: Redaclaration
 ident -> _t
 ident error: Redaclaration
 ident -> _j
+term: _j
+.< _i
+.< _j
+.< _k
+.< _n

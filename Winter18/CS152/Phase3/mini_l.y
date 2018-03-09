@@ -44,6 +44,7 @@ int currentPred = 1;    // the current predicate
 
 lstStr milCode;		// holds the code generated
 stackStr identStack;   	// holds list of identifiers seen
+lstStr varList;   	// holds list of identifiers seen
 lstStr labels;		// holds the labels
 bool isReading = false;
 
@@ -79,8 +80,8 @@ typedef struct Attributes{
 %left		OR
 %right  	ASSIGN
 
-%type<iVal> number
-%type<strVal> term expression multiplicative_expression expressions
+%type<iVal> number 
+%type<attribute> term expression multiplicative_expression expressions
 %type<attribute> ident identifiers comp var vars statement statements
 %type<attribute> bool_exp relation_exp relation_and_exp 
 
@@ -132,20 +133,37 @@ statements:       statement SEMICOLON statements
                 ;
 
 statement:        var ASSIGN expression {
+			cout << "ASSSIGNMEING " << $3.value << endl;
+			string var = *($1.name);
+			Table::iterator iter = find(symTable.begin(), symTable.end(), var);
+			if (iter != symTable.end()) {
+				iter->value = $3.value;
+			}
+			milCode.push_back("= " + var + " " + to_string($3.value));
+			cout << milCode.back() << endl;
 		}
                 | IF ifCond ENDIF
                 | IF ifCond ELSE statements ENDIF
        		| WHILE bool_exp loop
 		| DO loop WHILE bool_exp
   		| FOREACH IDENT IN IDENT loop
-		| READ M1 vars
-                | WRITE M2 vars
+		| READ vars {
+		        for (auto var: varList)	{
+				milCode.push_back(".< " + var);
+				cout << milCode.back() << endl;
+			}
+			
+		}
+                | WRITE vars {
+		        for (auto var: varList)	{
+				milCode.push_back(".< " + var);
+				cout << milCode.back() << endl;
+			}
+
+		}
                 | CONTINUE
                 | RETURN expression
                 ;
-
-M1:		/*empty*/ {isReading = true;}
-M2:		/*empty*/ {isReading = false;}
 
 ifCond:		bool_exp THEN statements
                 ;
@@ -185,36 +203,86 @@ comp:	   	  EQ  { $$.name = new string("==");}
                 ;
 
 expression:	  multiplicative_expression {
+			*($$.name) = *($1.name);
+			$$.value = $1.value;
 		}
                 | expression ADD multiplicative_expression {
+			string temp = newTemp();
+			$$.name = new string(temp);
+			cout << "ADD " << *($$.name) << endl;
+			$$.value = $1.value - $3.value;
+			milCode.push_back(genQuad("+",*($1.name), *($3.name), temp));
+			cout << milCode.back() << endl;
 		}
                 | expression SUB multiplicative_expression {
+			string temp = newTemp();
+			$$.name = new string(temp);
+			cout << "SUB " << *($$.name) << endl;
+			$$.value = $1.value - $3.value;
+			milCode.push_back(genQuad("-",*($1.name), *($3.name), temp));
+			cout << milCode.back() << endl;
 		}
 		;
 
 multiplicative_expression:	  term {
+					cout << "term: " << *($$.name) << endl;
+					*($$.name) = *($1.name);
+					$$.value = $1.value;
 				}
-				| term MULT term {
+				| multiplicative_expression MULT term {
+					string temp = newTemp();
+					$$.name = new string(temp);
+					cout << "MULT " << *($$.name) << endl;
+					$$.value = $1.value * $3.value;
+					milCode.push_back(genQuad("*",*($1.name), *($3.name), temp));
+					cout << milCode.back() << endl;
 				}
-				| term DIV term {
+				| multiplicative_expression DIV term {
+					string temp = newTemp();
+					$$.name = new string(temp);
+					cout << "DIV" << *($$.name) << endl;
+					$$.value = $1.value / $3.value;
+					milCode.push_back(genQuad("/",*($1.name), *($3.name), temp));
+					cout << milCode.back() << endl;
+					
 				}
-				| term MOD term {
+				| multiplicative_expression MOD term {
+					string temp = newTemp();
+					$$.name = new string(temp);
+					cout << "MOD" << *($$.name) << endl;
+					$$.value = $1.value % $3.value;
+					milCode.push_back(genQuad("%",*($1.name), *($3.name), temp));
+					cout << milCode.back() << endl;
 				}
                 		;
 
 term:		  SUB number %prec UMINUS {
+			$$.name = new string(newTemp());
+			$$.value = -$2;
+			milCode.push_back(genQuad("-","0",to_string($2),*($$.name)));
+			cout << milCode.back() << endl;
                   }
                 | number {
+			$$.name = new string(to_string($$.value));
+			$$.value = $1;
                  }
 		| var { 
+			$$.name = $1.name;
+			$$.value = $1.value;
 		}
 		| SUB var %prec UMINUS {
+			$$.value = -$2.value;
+			milCode.push_back(genQuad("-","0",to_string($2.value),newTemp()));	
+			cout << milCode.back() << endl;
                   }
                 | L_PAREN expression R_PAREN {
+			$$.value = 777;
 		  }
                 | SUB L_PAREN expression R_PAREN  %prec UMINUS {
+			$$.value = -777;
 		}
 		| IDENT L_PAREN expressions R_PAREN {
+			$$.value = 888;
 		}
 		;
 
@@ -226,15 +294,29 @@ expressions:	  expression {
 		;
 
 vars:		  var {
+			
 		}
                 | var COMMA vars {
 //			cout << "vars -> " << *($1.name) << " COMMA " << *($3.name) << endl;
 		}
+
                 ;
 
 var:		ident{
+			string ident = *($1.name);
+			Table::iterator iter = find(symTable.begin(),symTable.end(), ident);
+			if (iter == symTable.end()) {
+				cout << "ERROR: var not declared\n";
+			}
+			else {
+				$$.value = iter->value;
+			}
+			*($$.name) = *($1.name);	
+			if (find(varList.begin(), varList.end(), ident) == varList.end())
+				varList.push_back(ident);			
                   }
                 | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
+			$$.name = new string("TESTING");
 		   } 
 		;
 
@@ -242,7 +324,6 @@ identifiers:      ident {
 		}
                    
 		| ident COMMA identifiers{ 
-			cout << "identifiers -> ident\n";
                 }
 		;
 
