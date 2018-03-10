@@ -104,7 +104,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 67 "mini_l.y" /* yacc.c:1909  */
+#line 56 "mini_l.y" /* yacc.c:1909  */
 
    int		iVal;
    string* 	strVal;
@@ -112,7 +112,7 @@ typedef struct Attributes{
    string* name;
    string* code;
    string* type;
-   int size; // for arrays
+   int limit; // for arrays
    int value;
 }Attributes;
    Attributes attribute;

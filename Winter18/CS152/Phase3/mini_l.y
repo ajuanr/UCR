@@ -29,18 +29,23 @@ typedef list<string> lstStr;
 //typedef map<string, symbolDetails> Table;
 typedef list<Symbol> Table;
 typedef stack<string> stackStr;
+typedef deque<string> DeckStr;
 
 
 bool inTable(string);
 bool inArrayList(string);
-string genQuad(string op, string src1, string src2, string dest);
+string genQuad(string op, string dest, string srcl, string src2);
+string genQuad(string op, string dest , string src2);
 string newLabel();
 string newTemp();
 string newPred();
 Table symTable;
+DeckStr paramTable;
+DeckStr opList;
 int currentTemp = 1; 	// the current number of temporary variables
 int currentLabel = 1; 	// the current number of labels
 int currentPred = 1;    // the current predicate
+bool addParams = false;
 
 lstStr milCode;		// holds the code generated
 stackStr identStack;   	// holds list of identifiers seen
@@ -80,8 +85,8 @@ typedef struct Attributes{
 %right  	ASSIGN
 
 %type<iVal> number
-%type<strVal> term expression multiplicative_expression expressions
-%type<attribute> ident identifiers comp var vars statement statements
+%type<strVal> ident 
+%type<attribute> identifiers comp var vars statement statements term expression multiplicative_expression expressions
 %type<attribute> bool_exp relation_exp relation_and_exp 
 
 
@@ -109,6 +114,7 @@ declaration:    identifiers COLON INTEGER {
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) {
 					symTable.push_back(Symbol(ident, "INTEGER"));
+					if (addParams) paramTable.push_back(ident);
 				}
 				identStack.pop();
 			}
@@ -121,6 +127,7 @@ declaration:    identifiers COLON INTEGER {
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) {
 					symTable.push_back(Symbol(ident, "ARRAY", $5));
+					if (addParams) paramTable.push_back(ident);
 				}
 				identStack.pop();
 			}
@@ -220,48 +227,74 @@ term:		  SUB number %prec UMINUS {
 		  }
                 | SUB L_PAREN expression R_PAREN  %prec UMINUS {
 		}
-		| IDENT L_PAREN expressions R_PAREN {
+		| IDENT L_PAREN expressions R_PAREN  {
 		}
 		;
 
+		 
+
+		  
+
 expressions:	  expression {
+			paramTable.push_back(opList.back());
+			opList.pop_back();
 		 }
 		| expression COMMA expressions {
+			paramTable.push_back(opList.back());
+			opList.pop_back();
 		}
 			
 		;
 
-vars:		  var {
-		}
-                | var COMMA vars {
-//			cout << "vars -> " << *($1.name) << " COMMA " << *($3.name) << endl;
-		}
+vars:		  var {}
+                | var COMMA vars {}
                 ;
 
-var:		IDENT {
+var:		ident {
 			string ident = *($1);
-			Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
-			if (iter == symTable.end()) cout << "ERROR: var not found\n";
-			else $$.value = iter->value;
+				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
+				if (iter == symTable.end()) cout << "ERROR: var not found\n";
+				else {
+					if (iter->type != "INTEGER") cout << "ERROR: var not an int\n";
+					else {
+						opList.push_back(ident);
+						identStack.push(ident);
+						$$.value = iter->value;
+					}
+				}
 			$$.name = new string(*$1);
-			cout << *($$.name) << " " << $$.value << endl;
                   }
-                | IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
-		   } 
+                | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
+			string ident = *($1);
+				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
+				if (iter == symTable.end()) cout << "ERROR: var not found\n";
+				else {
+					if (iter->type != "ARRAY") cout << "ERROR: var not an array\n";
+					else {
+						string oldOp = opList.back();
+						opList.pop_back();
+						opList.push_back(genQuad("[]", ident, oldOp));
+						$$.value = iter->value;
+					}
+				}
+		}
+			
 		;
 
-identifiers:      ident {}
+identifiers:      ident {
+		}
                    
-		| ident COMMA identifiers{}
+		| ident COMMA identifiers{
+			
+
+		}
 		;
 
 ident:		IDENT {
-			string ident = *($1);	
-			Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
-			if (iter == symTable.end()) identStack.push(ident);
-			else cout << "ident error: Redaclaration\n";
-			$$.name = new string(ident);
-                }
+			 string ident = "_" + *($1);
+			$$ = new string(ident);
+			identStack.push(ident); // for declarations
+		}
 		
 number:		NUMBER {
 			$$ = $1;
@@ -292,6 +325,12 @@ string newPred() {
     return "p" + to_string(currentPred++);
 }
 
-string genQuad(string op, string src1, string src2, string dest) {
+
+string genQuad(string op, string dest, string src1, string src2) {
     return op + " " + dest + ", " + src1 + ", " + src2; 
 }
+
+string genQuad(string op, string dest , string src) {
+    return op + " " + dest + ", " + src;
+}
+	
