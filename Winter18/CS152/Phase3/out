@@ -4,15 +4,15 @@ func main
 	. _j
 	. _i
 	.[] _t20
-VAR IS: _k
-VAR IS: _n
-VAR IS: _t
-VAR IS: _k
-VAR IS: _t
-VAR IS: _t
-VAR IS: _k
-VAR IS: _t
-VAR IS: _t
-VAR IS: _k
-VAR IS: _i
+_k ASSIGN NUMBER 0
+_n ASSIGN NUMBER 20
+_t ASSIGN t4
+_k ASSIGN t7
+_t ASSIGN t31
+_t ASSIGN t35
+_k ASSIGN t37
+_t ASSIGN t40
+_t ASSIGN t42
+_k ASSIGN t52
+_i ASSIGN t55
 endfunc

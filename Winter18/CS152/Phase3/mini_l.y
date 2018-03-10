@@ -160,11 +160,12 @@ statements:       statement SEMICOLON statements
                 ;
 
 statement:        var ASSIGN expression {
-			cout << "VAR IS: " << *($1.name) << endl;
 			//TEMP CODE//////////
+			
 			string var = *($1.name);
+			cout << var << " ASSIGN " << *($3.name) << endl;
 			Table::iterator iter = find(symTable.begin(), symTable.end(), var);
-			if (iter != symTable.end()) iter->value = 7654321;
+			if (iter != symTable.end()) iter->value = $3.value;
 			else cout << "ERROR: var not in table, cannot assign\n";
 		}
                 | IF ifCond ENDIF
@@ -221,46 +222,103 @@ comp:	   	  EQ  { $$.name = new string("==");}
 		| GTE { $$.name = new string(">=");}
                 ;
 
-expression:	  multiplicative_expression {}
+expression:	  multiplicative_expression {
+			*($$.name) = *($1.name);
+			*($$.type) = *($1.type);
+			$$.value = $1.value;
+
+		}
                 | expression ADD multiplicative_expression {
 			string temp = newTemp();
-			string lhs = opList.back(); opList.pop_back();
-			string rhs = opList.back(); opList.pop_back();
+			$$.name = new string(temp);
+			$$.type = new string("INTEGER");
+			$$.value = $1.value + $3.value;
+			string lhs = *($1.name);
+			string rhs = *($3.name);
 			milCode.push_back(genQuad("+",temp, lhs, rhs));
+
+
+			// DELETE
+			lhs = opList.back(); opList.pop_back();
+			rhs = opList.back(); opList.pop_back();
 		}
                 | expression SUB multiplicative_expression {
 			string temp = newTemp();
-			string lhs = opList.back(); opList.pop_back();
-			string rhs = opList.back(); opList.pop_back();
+			$$.name = new string(temp);
+			$$.type = new string("INTEGER");
+			$$.value = $1.value - $3.value;
+			string lhs = *($1.name);
+			string rhs = *($3.name);
 			milCode.push_back(genQuad("-",temp, lhs, rhs));
+
+
+			// DELETE
+			lhs = opList.back(); opList.pop_back();
+			rhs = opList.back(); opList.pop_back();
 		}
 		;
 
-multiplicative_expression:	term {}
-				|multiplicative_expression  MULT  term {
+multiplicative_expression:	term {
+					*($$.name) = *($1.name);
+					*($$.type) = *($1.type);
+					$$.value = $1.value;
+				}
+				|multiplicative_expression MULT term {
 					string temp = newTemp();
-					string lhs = opList.back(); opList.pop_back();
-					string rhs = opList.back(); opList.pop_back();
+					$$.name = new string(temp);
+					$$.type = new string("INTEGER");
+					$$.value = $1.value * $3.value;
+					string lhs = *($1.name);
+					string rhs = *($3.name);
 					milCode.push_back(genQuad("*",temp, lhs, rhs));
+					
+					// delete this
+					lhs = opList.back(); opList.pop_back();
+					rhs = opList.back(); opList.pop_back();
 
 				}
-				|multiplicative_expression  DIV  term {
+				|multiplicative_expression DIV  term {
 					string temp = newTemp();
-					string lhs = opList.back(); opList.pop_back();
-					string rhs = opList.back(); opList.pop_back();
+					$$.name = new string(temp);
+					$$.type = new string("INTEGER");
+					string lhs = *($1.name);
+					string rhs = *($3.name);
 					milCode.push_back(genQuad("/",temp, lhs, rhs));
+
+					// DELETE
+					lhs = opList.back(); opList.pop_back();
+					rhs = opList.back(); opList.pop_back();
 				}
 				|multiplicative_expression  MOD term {
 					string temp = newTemp();
-					string lhs = opList.back(); opList.pop_back();
-					string rhs = opList.back(); opList.pop_back();
+					$$.name = new string(temp);
+					$$.type = new string("INTEGER");
+					string lhs = *($1.name);
+					string rhs = *($3.name);
 					milCode.push_back(genQuad("%",temp, lhs, rhs));
+					
+
+					// DELETE
+					lhs = opList.back(); opList.pop_back();
+					rhs = opList.back(); opList.pop_back();
 				}
                 		;
 
-term:		terms {}
+term:		terms {
+			*($$.name) = *($1.name);
+			*($$.type) = *($1.type);
+			$$.value = $1.value;
+		}
 		|	
-		SUB terms %prec UMINUS {}	
+		SUB terms %prec UMINUS {
+			string name = newTemp();
+			$$.name = new string(*($2.name));
+			*($$.type) = *($2.type);
+			$$.value = -($2.value);
+			milCode.push_back(genQuad("-", name, "0", *($$.name)));
+			
+
+		}	
 		| IDENT parenExpression  {
 			string temp = newTemp();
 			symTable.push_back(Symbol(temp, "INTEGER"));
@@ -275,13 +333,23 @@ term:		terms {}
 		;
 
 terms:		number {
+			//$$.name = new string(to_string($1));
+			$$.name = new string("NUMBER " +to_string($1)); // FOR TESTING DELETE LATER 
+			$$.type = new string("INTEGER");
+			$$.value = $1;
+
+			// erase this
 			string temp = newTemp();
-			$$.name = new string (temp);
 			symTable.push_back(Symbol(temp, "INTEGER"));
 			milCode.push_back(genQuad("=", temp, to_string($1)));
 			opList.push_back(temp);
 		}		 
 		| var {
+			$$.name = new string(*($1.name));	
+			$$.type = new string(*($1.type));
+			$$.value = $1.value; // fix this for array assignment stuff
+
+			// erase this
 			string temp = newTemp();
 			$$.name = new string (temp);
 			symTable.push_back(Symbol(temp, "INTEGER"));
@@ -289,17 +357,22 @@ terms:		number {
 			opList.pop_back();
 			if (oldOp[0] == '[') { // looking at an array
 				string newOp = string(oldOp,3, oldOp.size()-3);
-				milCode.push_back(genQuad("=[]", temp, newOp));
+				//milCode.push_back(genQuad("=[]", temp, newOp));
 			}
-			else milCode.push_back(genQuad("=", temp, oldOp));
+			//else milCode.push_back(genQuad("=", temp, oldOp));
 			
 		}
-		| L_PAREN expression R_PAREN {} 
+		| L_PAREN expression R_PAREN {
+			// TEMPORARY
+			$$.name = new string("(expression)");
+			$$.type = new string("INTEGER");
+			$$.value = 909;
+		} 
 		; 
 		  
 parenExpression: L_PAREN expressions R_PAREN {
 			while (!paramTable.empty()) {
-				milCode.push_back("param " + paramTable.back());
+			//	milCode.push_back("param " + paramTable.back());
 				paramTable.pop_back();
 			}
 
@@ -329,10 +402,11 @@ var:		ident {
 					else {
 						opList.push_back(ident);
 						identStack.push(ident);
+						$$.type = new string("INTEGER");
 						$$.value = iter->value;
 					}
 				}
-			$$.name = new string(*$1);
+			$$.name = new string(ident);
                   }
                 | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
 			string ident = *($1);
@@ -344,9 +418,11 @@ var:		ident {
 						string oldOp = opList.back();
 						opList.pop_back();
 						opList.push_back(genQuad("[]", ident, oldOp));
+						$$.type = new string("ARRAY");
 						$$.value = iter->value;
 					}
 				}
+			$$.name = new string(ident);
 		}
 			
 		;
