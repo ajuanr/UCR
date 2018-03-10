@@ -184,7 +184,10 @@ relation_exp:	  NOT relation_exp {
 			*($$.name) = "TESTING2\n";	
 
 		}
-		| expression comp expression
+		| expression comp expression {
+			string temp = newTemp();
+			
+		}
                 | TRUE { *($$.name) = "true";}
                 | FALSE { *($$.name) = "false";}
                 | L_PAREN bool_exp R_PAREN { *($$.name) = *($2.name);}
