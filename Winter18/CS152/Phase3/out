@@ -1,9 +1,7 @@
 func main
-here
-here2
-IDENT before: _nIDENT IS: _n	. _n
-IDENT before: _aIDENT IS: _a	.[] _a, 1000
-IDENT before: _iIDENT IS: _iIDENT before: _jIDENT IS: _j	. _j
+	. _n
+	. _k
+	. _j
 	. _i
-IDENT before: _xIDENT IS: _xIDENT before: _sqrt_nIDENT IS: _sqrt_n	. _sqrt_n
-	. _x
+	.[] _t, 20
+endfunc

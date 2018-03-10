@@ -110,8 +110,8 @@ M:		/*empty*/ {
 			cout << milCode.back() << endl;
 		}
 
-M1:		/*empty*/ { cout << "here\n";addParams = true;}
-M2:		/*empty*/ { cout << "here2\n";addParams = false;}
+M1:		/*empty*/ { addParams = true;}
+M2:		/*empty*/ { addParams = false;}
 
 
                 ;
@@ -231,7 +231,6 @@ expression:	  multiplicative_expression {
 			string lhs = *($1.name);
 			string rhs = *($3.name);
 			milCode.push_back(genQuad("+",temp, lhs, rhs));
-
 		}
                 | expression SUB multiplicative_expression {
 			string temp = newTemp();
@@ -285,11 +284,10 @@ term:		terms {
 		SUB terms %prec UMINUS {
 			string name = newTemp();
 			$$.name = new string(*($2.name));
+			$$.type = new string(*($2.type));
 			//*($$.type) = *($2.type);
 			//$$.value = -($2.value);
 			milCode.push_back(genQuad("-", name, "0", *($$.name)));
-			
-
 		}	
 		| IDENT parenExpression  {
 					// "FIX THIS LATER"
@@ -298,13 +296,12 @@ term:		terms {
 			if (iter == funcTable.end()) cout << "ERROR: " + *($1) + " not a function\n";
 			else milCode.push_back(genQuad("call", *($1), temp));
 			$$.name = new string(temp);
-			
-			
+			$$.type = new string("TEMP TYPE");
 		}
 		;
 
 terms:		number {
-			//$$.name = new string(to_string($1));
+			$$.name = new string(to_string($1));
 			$$.name = new string("NUMBER " +to_string($1)); // FOR TESTING DELETE LATER 
 			$$.type = new string("INTEGER");
 			//$$.value = $1;
@@ -328,14 +325,14 @@ parenExpression: L_PAREN expressions R_PAREN {
 			//	milCode.push_back("param " + paramTable.back());
 				paramTable.pop_back();
 			}
-
 		}
 
 expressions:	  expression {
-			paramTable.push_back(*($1.name));
+		//	paramTable.push_back(*($1.name));
 		 }
 		| expression COMMA expressions {
-			paramTable.push_back(*($1.name));
+		//	paramTable.push_back(*($1.name));
+
 		}
 			
 		;
@@ -346,30 +343,30 @@ vars:		  var {}
 
 var:		ident {
 			string ident = *($1);
+			$$.name = new string(ident);
+			$$.type = new string("INTEGER");
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) cout << "ERROR: var not found\n";
 				else {
 					if (iter->type != "INTEGER") cout << "ERROR: var not an int\n";
 					else {
 						identStack.push(ident);
-						$$.type = new string("INTEGER");
 						//$$.value = iter->value;
 					}
 				}
-			$$.name = new string(ident);
                   }
                 | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
 			string ident = *($1);
+			$$.name = new string(ident);
+			$$.type = new string("ARRAY");
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) cout << "ERROR: var not found\n";
 				else {
 					if (iter->type != "ARRAY") cout << "ERROR: var not an array\n";
 					else {
-						$$.type = new string("ARRAY");
 						//$$.value = iter->value;
 					}
 				}
-			$$.name = new string(ident);
 		}
 			
 		;
