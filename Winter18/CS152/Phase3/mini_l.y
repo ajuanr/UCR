@@ -14,14 +14,14 @@ void yyerror(char const*);
 int yylex(void);
 
 struct Symbol{
-   Symbol():value(777){}
+   Symbol():value("NO VALUE"){}
    Symbol(string n):name(n) {}
    Symbol(string n, string t): name(n), type(t){}
    Symbol(string n, string t, int l):name(n), type(t),size(l) {}
    string name;
    string type;
    int size;  // for arrays
-   int value;
+   string value;
    bool operator==(const string &rhs) { return !(this->name.compare(rhs));}
 };
 
@@ -140,6 +140,7 @@ declaration:    identifiers COLON INTEGER {
 			}
                 }
 		| identifiers COLON ARRAY L_SQUARE_BRACKET number R_SQUARE_BRACKET OF INTEGER {
+			if ($5 < 0) cout << "ERROR: negative size\n";
 			while (!identStack.empty()) {
 				string ident = identStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
@@ -163,9 +164,11 @@ statement:        var ASSIGN expression {
 			//TEMP CODE//////////
 			
 			string var = *($1.name);
-			cout << var << " ASSIGN " << *($3.name) << endl;
 			Table::iterator iter = find(symTable.begin(), symTable.end(), var);
-			if (iter != symTable.end()) iter->value = $3.value;
+			if (iter != symTable.end()) {
+				iter->value = *($3.name);
+				milCode.push_back(genQuad("=", var, *($3.name)));
+			}
 			else cout << "ERROR: var not in table, cannot assign\n";
 		}
                 | IF ifCond ENDIF
@@ -225,14 +228,14 @@ comp:	   	  EQ  { $$.name = new string("==");}
 expression:	  multiplicative_expression {
 			*($$.name) = *($1.name);
 			*($$.type) = *($1.type);
-			$$.value = $1.value;
+			//$$.value = $1.value;
 
 		}
                 | expression ADD multiplicative_expression {
 			string temp = newTemp();
 			$$.name = new string(temp);
 			$$.type = new string("INTEGER");
-			$$.value = $1.value + $3.value;
+			//$$.value = $1.value + $3.value;
 			string lhs = *($1.name);
 			string rhs = *($3.name);
 			milCode.push_back(genQuad("+",temp, lhs, rhs));
@@ -246,7 +249,7 @@ expression:	  multiplicative_expression {
 			string temp = newTemp();
 			$$.name = new string(temp);
 			$$.type = new string("INTEGER");
-			$$.value = $1.value - $3.value;
+			//$$.value = $1.value - $3.value;
 			string lhs = *($1.name);
 			string rhs = *($3.name);
 			milCode.push_back(genQuad("-",temp, lhs, rhs));
@@ -261,13 +264,13 @@ expression:	  multiplicative_expression {
 multiplicative_expression:	term {
 					*($$.name) = *($1.name);
 					*($$.type) = *($1.type);
-					$$.value = $1.value;
+					//$$.value = $1.value;
 				}
 				|multiplicative_expression MULT term {
 					string temp = newTemp();
 					$$.name = new string(temp);
 					$$.type = new string("INTEGER");
-					$$.value = $1.value * $3.value;
+					//$$.value = $1.value * $3.value;
 					string lhs = *($1.name);
 					string rhs = *($3.name);
 					milCode.push_back(genQuad("*",temp, lhs, rhs));
@@ -307,14 +310,14 @@ multiplicative_expression:	term {
 term:		terms {
 			*($$.name) = *($1.name);
 			*($$.type) = *($1.type);
-			$$.value = $1.value;
+			//$$.value = $1.value;
 		}
 		|	
 		SUB terms %prec UMINUS {
 			string name = newTemp();
 			$$.name = new string(*($2.name));
-			*($$.type) = *($2.type);
-			$$.value = -($2.value);
+			//*($$.type) = *($2.type);
+			//$$.value = -($2.value);
 			milCode.push_back(genQuad("-", name, "0", *($$.name)));
 			
 
@@ -336,7 +339,7 @@ terms:		number {
 			//$$.name = new string(to_string($1));
 			$$.name = new string("NUMBER " +to_string($1)); // FOR TESTING DELETE LATER 
 			$$.type = new string("INTEGER");
-			$$.value = $1;
+			//$$.value = $1;
 
 			// erase this
 			string temp = newTemp();
@@ -347,7 +350,7 @@ terms:		number {
 		| var {
 			$$.name = new string(*($1.name));	
 			$$.type = new string(*($1.type));
-			$$.value = $1.value; // fix this for array assignment stuff
+			//$$.value = $1.value; // fix this for array assignment stuff
 
 			// erase this
 			string temp = newTemp();
@@ -364,9 +367,9 @@ terms:		number {
 		}
 		| L_PAREN expression R_PAREN {
 			// TEMPORARY
-			$$.name = new string("(expression)");
-			$$.type = new string("INTEGER");
-			$$.value = 909;
+			*($$.name) = *($2.name);
+			$$.type = new string(*($2.type));
+			//$$.value = 909;
 		} 
 		; 
 		  
@@ -400,10 +403,10 @@ var:		ident {
 				else {
 					if (iter->type != "INTEGER") cout << "ERROR: var not an int\n";
 					else {
-						opList.push_back(ident);
+						opList.push_back(ident); // DELETE
 						identStack.push(ident);
 						$$.type = new string("INTEGER");
-						$$.value = iter->value;
+						//$$.value = iter->value;
 					}
 				}
 			$$.name = new string(ident);
@@ -416,10 +419,10 @@ var:		ident {
 					if (iter->type != "ARRAY") cout << "ERROR: var not an array\n";
 					else {
 						string oldOp = opList.back();
-						opList.pop_back();
+						opList.pop_back();  // DELETE
 						opList.push_back(genQuad("[]", ident, oldOp));
 						$$.type = new string("ARRAY");
-						$$.value = iter->value;
+						//$$.value = iter->value;
 					}
 				}
 			$$.name = new string(ident);
