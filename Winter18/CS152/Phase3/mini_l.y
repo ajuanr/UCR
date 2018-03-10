@@ -151,7 +151,6 @@ declaration:    identifiers COLON INTEGER {
                 ;
 
 statements:       statement SEMICOLON statements
-			
                 | /*empty*/
                 ;
 
@@ -187,26 +186,54 @@ loop:		BEGINLOOP statements ENDLOOP
                 ;
 
 bool_exp:	  relation_and_exp {
-			
+			$$.name = new string(*($1.name));
 		}
                 | relation_and_exp OR relation_and_exp {
+			string pred = newPred();
+			$$.name = new string(pred);
+			string lhs = *($1.name);
+			string rhs = *($3.name);
+			milCode.push_back(genQuad("||", pred, lhs, rhs));
+                        cout << milCode.back() << endl;
 		}
 		
 		; 
 
 relation_and_exp: relation_exp {
+			$$.name = new string(*($1.name));
 		}
                 | relation_exp AND relation_and_exp {
+			string pred = newPred();
+			$$.name = new string(pred);
+			string lhs = *($1.name);
+			string rhs = *($3.name);
+			milCode.push_back(genQuad("&&", pred, lhs, rhs));
+                        cout << milCode.back() << endl;
 		}
                 ;
 
 relation_exp:	  NOT relation_exp {
+			string pred = newPred();
+                        $$.name = new string(pred);
+                        milCode.push_back(genQuad("!", pred, *($2.name)));
 		}
 		| expression comp expression {
+			string pred = newPred();
+                        $$.name = new string(pred);
+                        string lhs = *($1.name);
+                        string rhs = *($3.name);
+                        milCode.push_back(genQuad(*($2), pred, lhs, rhs));
 		}
-                | TRUE {}
-                | FALSE {}
-                | L_PAREN bool_exp R_PAREN {} 
+                | TRUE {
+			$$.name = new string("true");
+		}
+                | FALSE {
+			$$.name = new string("false");
+		}
+                | L_PAREN bool_exp R_PAREN {
+			$$.name = $2.name;
+			$$.type = $2.type;
+		} 
                 ;
 
 comp:	   	  EQ  { $$ = new string("==");}

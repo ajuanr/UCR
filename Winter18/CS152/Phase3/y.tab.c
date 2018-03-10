@@ -539,12 +539,12 @@ static const yytype_uint8 yytranslate[] =
 static const yytype_uint16 yyrline[] =
 {
        0,    91,    91,    95,    96,    98,   102,   108,   113,   114,
-     118,   120,   123,   137,   153,   155,   158,   169,   170,   171,
-     172,   173,   174,   175,   176,   177,   180,   181,   183,   186,
-     189,   192,   197,   199,   203,   205,   207,   208,   209,   212,
-     213,   214,   215,   216,   217,   220,   226,   235,   246,   251,
-     260,   268,   278,   284,   292,   303,   309,   315,   323,   330,
-     333,   340,   341,   344,   358,   374,   375,   378,   384
+     118,   120,   123,   137,   153,   154,   157,   168,   169,   170,
+     171,   172,   173,   174,   175,   176,   179,   180,   182,   185,
+     188,   191,   202,   205,   215,   220,   227,   230,   233,   239,
+     240,   241,   242,   243,   244,   247,   253,   262,   273,   278,
+     287,   295,   305,   311,   319,   330,   336,   342,   350,   357,
+     360,   367,   368,   371,   385,   401,   402,   405,   411
 };
 #endif
 
@@ -1496,7 +1496,7 @@ yyreduce:
     break;
 
   case 16:
-#line 158 "mini_l.y" /* yacc.c:1646  */
+#line 157 "mini_l.y" /* yacc.c:1646  */
     {
 			//TEMP CODE//////////
 			
@@ -1512,127 +1512,155 @@ yyreduce:
     break;
 
   case 26:
-#line 180 "mini_l.y" /* yacc.c:1646  */
+#line 179 "mini_l.y" /* yacc.c:1646  */
     {isReading = true;}
 #line 1518 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 181 "mini_l.y" /* yacc.c:1646  */
+#line 180 "mini_l.y" /* yacc.c:1646  */
     {isReading = false;}
 #line 1524 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 30:
-#line 189 "mini_l.y" /* yacc.c:1646  */
+#line 188 "mini_l.y" /* yacc.c:1646  */
     {
-			
+			(yyval.attribute).name = new string(*((yyvsp[0].attribute).name));
 		}
 #line 1532 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 31:
-#line 192 "mini_l.y" /* yacc.c:1646  */
+#line 191 "mini_l.y" /* yacc.c:1646  */
     {
+			string pred = newPred();
+			(yyval.attribute).name = new string(pred);
+			string lhs = *((yyvsp[-2].attribute).name);
+			string rhs = *((yyvsp[0].attribute).name);
+			milCode.push_back(genQuad("||", pred, lhs, rhs));
+                        cout << milCode.back() << endl;
 		}
-#line 1539 "y.tab.c" /* yacc.c:1646  */
+#line 1545 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 32:
-#line 197 "mini_l.y" /* yacc.c:1646  */
+#line 202 "mini_l.y" /* yacc.c:1646  */
     {
-		}
-#line 1546 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 33:
-#line 199 "mini_l.y" /* yacc.c:1646  */
-    {
+			(yyval.attribute).name = new string(*((yyvsp[0].attribute).name));
 		}
 #line 1553 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 34:
-#line 203 "mini_l.y" /* yacc.c:1646  */
+  case 33:
+#line 205 "mini_l.y" /* yacc.c:1646  */
     {
+			string pred = newPred();
+			(yyval.attribute).name = new string(pred);
+			string lhs = *((yyvsp[-2].attribute).name);
+			string rhs = *((yyvsp[0].attribute).name);
+			milCode.push_back(genQuad("&&", pred, lhs, rhs));
+                        cout << milCode.back() << endl;
 		}
-#line 1560 "y.tab.c" /* yacc.c:1646  */
+#line 1566 "y.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 34:
+#line 215 "mini_l.y" /* yacc.c:1646  */
+    {
+			string pred = newPred();
+                        (yyval.attribute).name = new string(pred);
+                        milCode.push_back(genQuad("!", pred, *((yyvsp[0].attribute).name)));
+		}
+#line 1576 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 35:
-#line 205 "mini_l.y" /* yacc.c:1646  */
+#line 220 "mini_l.y" /* yacc.c:1646  */
     {
+			string pred = newPred();
+                        (yyval.attribute).name = new string(pred);
+                        string lhs = *((yyvsp[-2].attribute).name);
+                        string rhs = *((yyvsp[0].attribute).name);
+                        milCode.push_back(genQuad(*((yyvsp[-1].strVal)), pred, lhs, rhs));
 		}
-#line 1567 "y.tab.c" /* yacc.c:1646  */
+#line 1588 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 36:
-#line 207 "mini_l.y" /* yacc.c:1646  */
-    {}
-#line 1573 "y.tab.c" /* yacc.c:1646  */
+#line 227 "mini_l.y" /* yacc.c:1646  */
+    {
+			(yyval.attribute).name = new string("true");
+		}
+#line 1596 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 37:
-#line 208 "mini_l.y" /* yacc.c:1646  */
-    {}
-#line 1579 "y.tab.c" /* yacc.c:1646  */
+#line 230 "mini_l.y" /* yacc.c:1646  */
+    {
+			(yyval.attribute).name = new string("false");
+		}
+#line 1604 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 38:
-#line 209 "mini_l.y" /* yacc.c:1646  */
-    {}
-#line 1585 "y.tab.c" /* yacc.c:1646  */
+#line 233 "mini_l.y" /* yacc.c:1646  */
+    {
+			(yyval.attribute).name = (yyvsp[-1].attribute).name;
+			(yyval.attribute).type = (yyvsp[-1].attribute).type;
+		}
+#line 1613 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 39:
-#line 212 "mini_l.y" /* yacc.c:1646  */
+#line 239 "mini_l.y" /* yacc.c:1646  */
     { (yyval.strVal) = new string("==");}
-#line 1591 "y.tab.c" /* yacc.c:1646  */
+#line 1619 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 40:
-#line 213 "mini_l.y" /* yacc.c:1646  */
+#line 240 "mini_l.y" /* yacc.c:1646  */
     { (yyval.strVal) = new string("<>");}
-#line 1597 "y.tab.c" /* yacc.c:1646  */
+#line 1625 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 41:
-#line 214 "mini_l.y" /* yacc.c:1646  */
+#line 241 "mini_l.y" /* yacc.c:1646  */
     { (yyval.strVal) = new string("<");}
-#line 1603 "y.tab.c" /* yacc.c:1646  */
+#line 1631 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 215 "mini_l.y" /* yacc.c:1646  */
+#line 242 "mini_l.y" /* yacc.c:1646  */
     { (yyval.strVal) = new string(">");}
-#line 1609 "y.tab.c" /* yacc.c:1646  */
+#line 1637 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 43:
-#line 216 "mini_l.y" /* yacc.c:1646  */
+#line 243 "mini_l.y" /* yacc.c:1646  */
     { (yyval.strVal) = new string("<=");}
-#line 1615 "y.tab.c" /* yacc.c:1646  */
+#line 1643 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 44:
-#line 217 "mini_l.y" /* yacc.c:1646  */
+#line 244 "mini_l.y" /* yacc.c:1646  */
     { (yyval.strVal) = new string(">=");}
-#line 1621 "y.tab.c" /* yacc.c:1646  */
+#line 1649 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 45:
-#line 220 "mini_l.y" /* yacc.c:1646  */
+#line 247 "mini_l.y" /* yacc.c:1646  */
     {
 			(yyval.attribute).name = new string(*((yyvsp[0].attribute).name));
 			(yyval.attribute).type= new string(*((yyvsp[0].attribute).type));
 			//$$.value = $1.value;
 
 		}
-#line 1632 "y.tab.c" /* yacc.c:1646  */
+#line 1660 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 46:
-#line 226 "mini_l.y" /* yacc.c:1646  */
+#line 253 "mini_l.y" /* yacc.c:1646  */
     {
 			string temp = newTemp();
 			(yyval.attribute).name = new string(temp);
@@ -1642,11 +1670,11 @@ yyreduce:
 			string rhs = *((yyvsp[0].attribute).name);
 			milCode.push_back(genQuad("+",temp, lhs, rhs));
 		}
-#line 1646 "y.tab.c" /* yacc.c:1646  */
+#line 1674 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 47:
-#line 235 "mini_l.y" /* yacc.c:1646  */
+#line 262 "mini_l.y" /* yacc.c:1646  */
     {
 			string temp = newTemp();
 			(yyval.attribute).name = new string(temp);
@@ -1656,21 +1684,21 @@ yyreduce:
 			string rhs = *((yyvsp[0].attribute).name);
 			milCode.push_back(genQuad("-",temp, lhs, rhs));
 		}
-#line 1660 "y.tab.c" /* yacc.c:1646  */
+#line 1688 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 48:
-#line 246 "mini_l.y" /* yacc.c:1646  */
+#line 273 "mini_l.y" /* yacc.c:1646  */
     {
 					(yyval.attribute).name = new string(*((yyvsp[0].attribute).name));
 					(yyval.attribute).type = new string(*((yyvsp[0].attribute).type));
 					//$$.value = $1.value;
 				}
-#line 1670 "y.tab.c" /* yacc.c:1646  */
+#line 1698 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 49:
-#line 251 "mini_l.y" /* yacc.c:1646  */
+#line 278 "mini_l.y" /* yacc.c:1646  */
     {
 					string temp = newTemp();
 					(yyval.attribute).name = new string(temp);
@@ -1680,11 +1708,11 @@ yyreduce:
 					string rhs = *((yyvsp[0].attribute).name);
 					milCode.push_back(genQuad("*",temp, lhs, rhs));
 				}
-#line 1684 "y.tab.c" /* yacc.c:1646  */
+#line 1712 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 50:
-#line 260 "mini_l.y" /* yacc.c:1646  */
+#line 287 "mini_l.y" /* yacc.c:1646  */
     {
 					string temp = newTemp();
 					(yyval.attribute).name = new string(temp);
@@ -1693,11 +1721,11 @@ yyreduce:
 					string rhs = *((yyvsp[0].attribute).name);
 					milCode.push_back(genQuad("/",temp, lhs, rhs));
 				}
-#line 1697 "y.tab.c" /* yacc.c:1646  */
+#line 1725 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 51:
-#line 268 "mini_l.y" /* yacc.c:1646  */
+#line 295 "mini_l.y" /* yacc.c:1646  */
     {
 					string temp = newTemp();
 					(yyval.attribute).name = new string(temp);
@@ -1706,21 +1734,21 @@ yyreduce:
 					string rhs = *((yyvsp[0].attribute).name);
 					milCode.push_back(genQuad("%",temp, lhs, rhs));
 				}
-#line 1710 "y.tab.c" /* yacc.c:1646  */
+#line 1738 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 52:
-#line 278 "mini_l.y" /* yacc.c:1646  */
+#line 305 "mini_l.y" /* yacc.c:1646  */
     {
 			(yyval.attribute).name = new string(*((yyvsp[0].attribute).name));
 			(yyval.attribute).type = new string (*((yyvsp[0].attribute).type));
 			//$$.value = $1.value;
 		}
-#line 1720 "y.tab.c" /* yacc.c:1646  */
+#line 1748 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 53:
-#line 284 "mini_l.y" /* yacc.c:1646  */
+#line 311 "mini_l.y" /* yacc.c:1646  */
     {
 			string name = newTemp();
 			(yyval.attribute).name = new string(*((yyvsp[0].attribute).name));
@@ -1729,11 +1757,11 @@ yyreduce:
 			//$$.value = -($2.value);
 			milCode.push_back(genQuad("-", name, "0", *((yyval.attribute).name)));
 		}
-#line 1733 "y.tab.c" /* yacc.c:1646  */
+#line 1761 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 54:
-#line 292 "mini_l.y" /* yacc.c:1646  */
+#line 319 "mini_l.y" /* yacc.c:1646  */
     {
 					// "FIX THIS LATER"
 			string temp = *((yyvsp[-1].strVal));
@@ -1743,84 +1771,84 @@ yyreduce:
 			(yyval.attribute).name = new string(temp);
 			(yyval.attribute).type = new string("TEMP TYPE");
 		}
-#line 1747 "y.tab.c" /* yacc.c:1646  */
+#line 1775 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 55:
-#line 303 "mini_l.y" /* yacc.c:1646  */
+#line 330 "mini_l.y" /* yacc.c:1646  */
     {
 			(yyval.attribute).name = new string(to_string((yyvsp[0].iVal)));
 			(yyval.attribute).name = new string("NUMBER " +to_string((yyvsp[0].iVal))); // FOR TESTING DELETE LATER 
 			(yyval.attribute).type = new string("INTEGER");
 			//$$.value = $1;
 		}
-#line 1758 "y.tab.c" /* yacc.c:1646  */
+#line 1786 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 56:
-#line 309 "mini_l.y" /* yacc.c:1646  */
+#line 336 "mini_l.y" /* yacc.c:1646  */
     {
 			(yyval.attribute).name = new string(*((yyvsp[0].attribute).name));	
 			(yyval.attribute).type = new string(*((yyvsp[0].attribute).type));
 			//$$.value = $1.value; // fix this for array assignment stuff
 		// NEED TO CHECK ARRAY STUFF	
 		}
-#line 1769 "y.tab.c" /* yacc.c:1646  */
+#line 1797 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 57:
-#line 315 "mini_l.y" /* yacc.c:1646  */
+#line 342 "mini_l.y" /* yacc.c:1646  */
     {
 			// TEMPORARY
 			(yyval.attribute).name = new string(*((yyvsp[-1].attribute).name));
 			(yyval.attribute).type = new string(*((yyvsp[-1].attribute).type));
 			//$$.value = 909;
 		}
-#line 1780 "y.tab.c" /* yacc.c:1646  */
+#line 1808 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 58:
-#line 323 "mini_l.y" /* yacc.c:1646  */
+#line 350 "mini_l.y" /* yacc.c:1646  */
     {
 			while (!paramTable.empty()) {
 			//	milCode.push_back("param " + paramTable.back());
 				paramTable.pop_back();
 			}
 		}
-#line 1791 "y.tab.c" /* yacc.c:1646  */
+#line 1819 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 59:
-#line 330 "mini_l.y" /* yacc.c:1646  */
+#line 357 "mini_l.y" /* yacc.c:1646  */
     {
 		//	paramTable.push_back(*($1.name));
 		 }
-#line 1799 "y.tab.c" /* yacc.c:1646  */
+#line 1827 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 60:
-#line 333 "mini_l.y" /* yacc.c:1646  */
+#line 360 "mini_l.y" /* yacc.c:1646  */
     {
 		//	paramTable.push_back(*($1.name));
 
 		}
-#line 1808 "y.tab.c" /* yacc.c:1646  */
+#line 1836 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 61:
-#line 340 "mini_l.y" /* yacc.c:1646  */
+#line 367 "mini_l.y" /* yacc.c:1646  */
     {}
-#line 1814 "y.tab.c" /* yacc.c:1646  */
+#line 1842 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 62:
-#line 341 "mini_l.y" /* yacc.c:1646  */
+#line 368 "mini_l.y" /* yacc.c:1646  */
     {}
-#line 1820 "y.tab.c" /* yacc.c:1646  */
+#line 1848 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 63:
-#line 344 "mini_l.y" /* yacc.c:1646  */
+#line 371 "mini_l.y" /* yacc.c:1646  */
     {
 			string ident = *((yyvsp[0].strVal));
 			(yyval.attribute).name = new string(ident);
@@ -1835,11 +1863,11 @@ yyreduce:
 					}
 				}
                   }
-#line 1839 "y.tab.c" /* yacc.c:1646  */
+#line 1867 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 64:
-#line 358 "mini_l.y" /* yacc.c:1646  */
+#line 385 "mini_l.y" /* yacc.c:1646  */
     {
 			string ident = *((yyvsp[-3].strVal));
 			(yyval.attribute).name = new string(ident);
@@ -1853,41 +1881,41 @@ yyreduce:
 					}
 				}
 		}
-#line 1857 "y.tab.c" /* yacc.c:1646  */
+#line 1885 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 65:
-#line 374 "mini_l.y" /* yacc.c:1646  */
+#line 401 "mini_l.y" /* yacc.c:1646  */
     {}
-#line 1863 "y.tab.c" /* yacc.c:1646  */
+#line 1891 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 66:
-#line 375 "mini_l.y" /* yacc.c:1646  */
+#line 402 "mini_l.y" /* yacc.c:1646  */
     {}
-#line 1869 "y.tab.c" /* yacc.c:1646  */
+#line 1897 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 67:
-#line 378 "mini_l.y" /* yacc.c:1646  */
+#line 405 "mini_l.y" /* yacc.c:1646  */
     {
 			 string ident = "_" + *((yyvsp[0].strVal));
 			(yyval.strVal) = new string(ident);
 			identStack.push(ident); // for declarations
 		}
-#line 1879 "y.tab.c" /* yacc.c:1646  */
+#line 1907 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 68:
-#line 384 "mini_l.y" /* yacc.c:1646  */
+#line 411 "mini_l.y" /* yacc.c:1646  */
     {
 			(yyval.iVal) = (yyvsp[0].iVal);
 		}
-#line 1887 "y.tab.c" /* yacc.c:1646  */
+#line 1915 "y.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 1891 "y.tab.c" /* yacc.c:1646  */
+#line 1919 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2115,7 +2143,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 388 "mini_l.y" /* yacc.c:1906  */
+#line 415 "mini_l.y" /* yacc.c:1906  */
 
 
 int main() {

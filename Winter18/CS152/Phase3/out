@@ -4,4 +4,9 @@ func main
 	. _j
 	. _i
 	.[] _t, 20
+&& p6, p4, p5
+&& p7, p3, p6
+|| p9, p8, false
+&& p13, p11, p12
+&& p16, p14, p15
 endfunc
