@@ -215,23 +215,18 @@ multiplicative_expression:	  term {
 				}
                 		;
 
-term:		  SUB number %prec UMINUS {
-                  }
-                | number {
-                 }
-		| var { 
-		}
-		| SUB var %prec UMINUS {
-                  }
-                | L_PAREN expression R_PAREN {
-		  }
-                | SUB L_PAREN expression R_PAREN  %prec UMINUS {
-		}
+term:		terms {}
+		|	
+		SUB terms %prec UMINUS {}	
 		| IDENT L_PAREN expressions R_PAREN  {
 		}
 		;
 
-		 
+terms:		number {}		 
+		| var {}
+		| L_PAREN expression R_PAREN {}
+		; 
+
 
 		  
 
