@@ -41,6 +41,7 @@ string newTemp();
 string newPred();
 Table symTable;
 DeckStr paramTable;
+lstStr funcTable;
 DeckStr opList;
 int currentTemp = 1; 	// the current number of temporary variables
 int currentLabel = 1; 	// the current number of labels
@@ -197,38 +198,85 @@ comp:	   	  EQ  { $$.name = new string("==");}
 		| GTE { $$.name = new string(">=");}
                 ;
 
-expression:	  multiplicative_expression {
-		}
+expression:	  multiplicative_expression {}
                 | expression ADD multiplicative_expression {
+			string temp = newTemp();
+			string lhs = opList.back(); opList.pop_back();
+			string rhs = opList.back(); opList.pop_back();
+			milCode.push_back(genQuad("+",temp, lhs, rhs));
 		}
                 | expression SUB multiplicative_expression {
+			string temp = newTemp();
+			string lhs = opList.back(); opList.pop_back();
+			string rhs = opList.back(); opList.pop_back();
+			milCode.push_back(genQuad("-",temp, lhs, rhs));
 		}
 		;
 
-multiplicative_expression:	  term {
+multiplicative_expression:	term {}
+				|multiplicative_expression  MULT  term {
+					string temp = newTemp();
+					string lhs = opList.back(); opList.pop_back();
+					string rhs = opList.back(); opList.pop_back();
+					milCode.push_back(genQuad("*",temp, lhs, rhs));
+
 				}
-				| term MULT term {
+				|multiplicative_expression  DIV  term {
+					string temp = newTemp();
+					string lhs = opList.back(); opList.pop_back();
+					string rhs = opList.back(); opList.pop_back();
+					milCode.push_back(genQuad("/",temp, lhs, rhs));
 				}
-				| term DIV term {
-				}
-				| term MOD term {
+				|multiplicative_expression  MOD term {
+					string temp = newTemp();
+					string lhs = opList.back(); opList.pop_back();
+					string rhs = opList.back(); opList.pop_back();
+					milCode.push_back(genQuad("%",temp, lhs, rhs));
 				}
                 		;
 
 term:		terms {}
 		|	
 		SUB terms %prec UMINUS {}	
-		| IDENT L_PAREN expressions R_PAREN  {
+		| IDENT parenExpression  {
+			string temp = newTemp();
+			symTable.push_back(Symbol(temp, "INTEGER"));
+			lstStr::iterator iter = find(funcTable.begin(), funcTable.end(), *($1));
+			if (iter == funcTable.end()) cout << "ERROR: " + *($1) + " not a function\n";
+			else milCode.push_back(genQuad("call", *($1), temp));
+			opList.push_back(temp);
+			
 		}
 		;
 
-terms:		number {}		 
-		| var {}
+terms:		number {
+			string temp = newTemp();
+			symTable.push_back(Symbol(temp, "INTEGER"));
+			milCode.push_back(genQuad("=", temp, to_string($1)));
+			opList.push_back(temp);
+		}		 
+		| var {
+			string temp = newTemp();
+			symTable.push_back(Symbol(temp, "INTEGER"));
+			string oldOp = opList.back();
+			opList.pop_back();
+			if (oldOp[0] == '[') { // looking at an array
+				string newOp = string(oldOp,3, oldOp.size()-3);
+				milCode.push_back(genQuad("=[]", temp, newOp));
+			}
+			else milCode.push_back(genQuad("=", temp, oldOp));
+			
+		}
 		| L_PAREN expression R_PAREN {}
 		; 
-
-
 		  
+parenExpression: L_PAREN expressions R_PAREN {
+			while (!paramTable.empty()) {
+				milCode.push_back("param " + paramTable.back());
+				paramTable.pop_back();
+			}
+
+		}
 
 expressions:	  expression {
 			paramTable.push_back(opList.back());
