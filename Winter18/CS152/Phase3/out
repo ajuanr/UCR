@@ -1,11 +1,18 @@
-COMPARISON IS: ==
-COMPARISON IS: <
-COMPARISON IS: <
-COMPARISON IS: <
-COMPARISON IS: >=
-COMPARISON IS: >=
-COMPARISON IS: >
-COMPARISON IS: <
-COMPARISON IS: >=
-COMPARISON IS: <
-COMPARISON IS: >=
+func main
+	. _n
+	. _k
+	. _j
+	. _i
+	.[] _t20
+VAR IS: _k
+VAR IS: _n
+VAR IS: _t
+VAR IS: _k
+VAR IS: _t
+VAR IS: _t
+VAR IS: _k
+VAR IS: _t
+VAR IS: _t
+VAR IS: _k
+VAR IS: _i
+endfunc

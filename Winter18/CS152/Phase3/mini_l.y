@@ -17,10 +17,10 @@ struct Symbol{
    Symbol():value(777){}
    Symbol(string n):name(n) {}
    Symbol(string n, string t): name(n), type(t){}
-   Symbol(string n, string t, int l):name(n), type(t),limit(l) {}
+   Symbol(string n, string t, int l):name(n), type(t),size(l) {}
    string name;
    string type;
-   int limit;  // for arrays
+   int size;  // for arrays
    int value;
    bool operator==(const string &rhs) { return !(this->name.compare(rhs));}
 };
@@ -43,6 +43,7 @@ Table symTable;
 DeckStr paramTable;
 lstStr funcTable;
 DeckStr opList;
+stackStr varStack;
 int currentTemp = 1; 	// the current number of temporary variables
 int currentLabel = 1; 	// the current number of labels
 int currentPred = 1;    // the current predicate
@@ -61,7 +62,7 @@ typedef struct Attributes{
    string* name;
    string* code;
    string* type;
-   int limit; // for arrays
+   int size; // for arrays
    int value;
 }Attributes;
    Attributes attribute;
@@ -87,7 +88,7 @@ typedef struct Attributes{
 
 %type<iVal> number
 %type<strVal> ident 
-%type<attribute> identifiers comp var vars statement statements term expression multiplicative_expression expressions
+%type<attribute> identifiers comp var vars statement statements term terms expression multiplicative_expression expressions
 %type<attribute> bool_exp relation_exp relation_and_exp 
 
 
@@ -99,9 +100,25 @@ prog_start:	functions {
 functions:	function functions
                 | /*empty*/
                 ;
-function: 	FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
+function: 	funcName SEMICOLON BEGIN_PARAMS M1 declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M {
 
                 }
+
+funcName:	FUNCTION IDENT {
+			milCode.push_back("func " + *($2));
+			cout << milCode.back() << endl;
+			
+		}
+
+M:		/*empty*/ {
+			milCode.push_back("endfunc");
+			cout << milCode.back() << endl;
+		}
+
+M1:		/*empty*/ {addParams = true;}
+M2:		/*empty*/ {addParams = false;}
+
+
                 ;
 declarations:	declaration SEMICOLON declarations
 
@@ -109,24 +126,26 @@ declarations:	declaration SEMICOLON declarations
                 ;
 
 declaration:    identifiers COLON INTEGER {
-			$1.type = new string("INTEGER");
 			while (!identStack.empty()) {
 				string ident = identStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) {
 					symTable.push_back(Symbol(ident, "INTEGER"));
+					milCode.push_back("\t. " + ident);
+					cout << milCode.back() << endl;
 					if (addParams) paramTable.push_back(ident);
+					
 				}
 				identStack.pop();
 			}
                 }
 		| identifiers COLON ARRAY L_SQUARE_BRACKET number R_SQUARE_BRACKET OF INTEGER {
-			$1.type = new string("ARRAY");
-			$1.limit = $5;
 			while (!identStack.empty()) {
 				string ident = identStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) {
+					milCode.push_back("\t.[] " + ident + to_string($5));
+					cout << milCode.back() << endl;
 					symTable.push_back(Symbol(ident, "ARRAY", $5));
 					if (addParams) paramTable.push_back(ident);
 				}
@@ -141,6 +160,7 @@ statements:       statement SEMICOLON statements
                 ;
 
 statement:        var ASSIGN expression {
+			cout << "VAR IS: " << *($1.name) << endl;
 			//TEMP CODE//////////
 			string var = *($1.name);
 			Table::iterator iter = find(symTable.begin(), symTable.end(), var);
@@ -152,14 +172,14 @@ statement:        var ASSIGN expression {
        		| WHILE bool_exp loop
 		| DO loop WHILE bool_exp
   		| FOREACH IDENT IN IDENT loop
-		| READ M1 vars
-                | WRITE M2 vars
+		| READ M8 vars
+                | WRITE M9 vars
                 | CONTINUE
                 | RETURN expression
                 ;
 
-M1:		/*empty*/ {isReading = true;}
-M2:		/*empty*/ {isReading = false;}
+M8:		/*empty*/ {isReading = true;}
+M9:		/*empty*/ {isReading = false;}
 
 ifCond:		bool_exp THEN statements
                 ;
@@ -248,18 +268,22 @@ term:		terms {}
 			if (iter == funcTable.end()) cout << "ERROR: " + *($1) + " not a function\n";
 			else milCode.push_back(genQuad("call", *($1), temp));
 			opList.push_back(temp);
+			$$.name = new string(temp);
+			
 			
 		}
 		;
 
 terms:		number {
 			string temp = newTemp();
+			$$.name = new string (temp);
 			symTable.push_back(Symbol(temp, "INTEGER"));
 			milCode.push_back(genQuad("=", temp, to_string($1)));
 			opList.push_back(temp);
 		}		 
 		| var {
 			string temp = newTemp();
+			$$.name = new string (temp);
 			symTable.push_back(Symbol(temp, "INTEGER"));
 			string oldOp = opList.back();
 			opList.pop_back();
@@ -270,7 +294,7 @@ terms:		number {
 			else milCode.push_back(genQuad("=", temp, oldOp));
 			
 		}
-		| L_PAREN expression R_PAREN {}
+		| L_PAREN expression R_PAREN {} 
 		; 
 		  
 parenExpression: L_PAREN expressions R_PAREN {
@@ -327,13 +351,8 @@ var:		ident {
 			
 		;
 
-identifiers:      ident {
-		}
-                   
-		| ident COMMA identifiers{
-			
-
-		}
+identifiers:      ident {}
+		| ident COMMA identifiers{}
 		;
 
 ident:		IDENT {
