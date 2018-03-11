@@ -1,35 +1,7 @@
-func fibonacci
-	. k
-	= k, $0
-<= p1, _k, NUMBER 1
-- t1, _k, NUMBER 1
-param _k
-call fibonacci, fibonacci
-- t2, _k, NUMBER 2
-call fibonacci, fibonacci
-+ t3, fibonacci, fibonacci
-endfunc
-func fibonacci
-	. k
-	= k, $0
-<= p1, _k, NUMBER 1
-- t1, _k, NUMBER 1
-param _k
-call fibonacci, fibonacci
-- t2, _k, NUMBER 2
-call fibonacci, fibonacci
-+ t3, fibonacci, fibonacci
-endfunc
-func main
-	. _n
-	. _fib_n
-.<_n
-.<_k
-.<_k
-.<_k
-call fibonacci, fibonacci
-= _fib_n, fibonacci
-.>_fib_n
-.>_n
-.>_fib_n
-endfunc
+: L1
+ifCond p1
+ifCond p7
+: L2
+ifCond p10
+ifCond p13
+ifCond p16

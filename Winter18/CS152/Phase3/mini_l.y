@@ -26,6 +26,7 @@ struct Symbol{
 };
 
 typedef list<string> lstStr;
+typedef vector<string> vecStr;
 typedef list<Symbol> Table;
 typedef stack<string> stackStr;
 typedef deque<string> DeckStr;
@@ -40,6 +41,7 @@ Table symTable;
 DeckStr paramTable;
 lstStr funcTable;
 stackStr varStack;
+vecStr labels;
 int currentTemp = 1; 	// the current number of temporary variables
 int currentLabel = 1; 	// the current number of labels
 int currentPred = 1;    // the current predicate
@@ -107,7 +109,7 @@ funcName:	FUNCTION IDENT {
 M:		/*empty*/ { // print out everything
 			milCode.push_back("endfunc");
 			for (auto code : milCode) {
-				cout << code << endl;
+//				cout << code << endl;
 			}
 		}
 
@@ -170,7 +172,9 @@ statement:        var ASSIGN expression {
                 | IF ifCond ELSE statements ENDIF
        		| WHILE bool_exp loop
 		| DO loop WHILE bool_exp
-  		| FOREACH IDENT IN IDENT loop
+  		| FOREACH ident IN IDENT loop {
+			cout << "ident is: " << *($2) << " " << *($4) << endl;
+		}
 		| READ M8 vars {
 			while (!varStack.empty()) {
 				string var = varStack.top();
@@ -213,11 +217,19 @@ statement:        var ASSIGN expression {
 M8:		/*empty*/ {isReading = true;}
 M9:		/*empty*/ {isReading = false;}
 
-ifCond:		bool_exp THEN statements
+ifCond:		bool_exp THEN statements {
+			cout << "ifCond " << *($1.name) << endl;
+		}
                 ;
 
-loop:		BEGINLOOP statements ENDLOOP
+loop:		BEGINLOOP M3 statements ENDLOOP
                 ;
+
+M3:		/*empty*/ {
+			string label = newLabel();
+			milCode.push_back(": " + label);
+			cout << milCode.back() << endl;
+		}
 
 bool_exp:	  relation_and_exp {
 			$$.name = new string(*($1.name));
@@ -396,8 +408,7 @@ expressions:	  expression {
 			
 		;
 
-vars:		  var {
-			}
+vars:		  var {}
                 | var COMMA vars {}
                 ;
 
