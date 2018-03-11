@@ -100,13 +100,14 @@ function: 	funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_L
                 }
 
 funcName:	FUNCTION IDENT {
+			funcTable.push_back(*($2));
 			milCode.push_back("func " + *($2));
 		}
 
 M:		/*empty*/ { // print out everything
 			milCode.push_back("endfunc");
 			for (auto code : milCode) {
-//				cout << code << endl;
+				cout << code << endl;
 			}
 		}
 
@@ -125,7 +126,12 @@ declaration:    identifiers COLON INTEGER {
 				if (iter == symTable.end()) {
 					symTable.push_back(Symbol(ident, "INTEGER"));
 					milCode.push_back("\t. " + ident);
-					if (addParams) paramTable.push_back(ident);
+					if (addParams) {
+						milCode.pop_back();  // param not declaration
+						milCode.push_back("\t. " + string(ident,1));
+						paramTable.push_back(ident);
+						milCode.push_back(genQuad("\t=", string(ident,1), "$0"));
+					}
 				}
 				identStack.pop();
 			}
