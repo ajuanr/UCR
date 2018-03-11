@@ -115,7 +115,13 @@ M:		/*empty*/ { // print out everything
 		}
 
 M1:		/*empty*/ { addParams = true; }
-M2:		/*empty*/ { addParams = false; }
+M2:		/*empty*/ { addParams = false; 
+			while (!paramTable.empty()) {
+				milCode.push_back(genQuad("=", string(paramTable.front(),1), "$0"));
+				paramTable.pop_front();
+			}
+
+		}
                 ;
 declarations:	declaration SEMICOLON declarations
 
@@ -132,7 +138,6 @@ declaration:    identifiers COLON INTEGER {
 					if (addParams) {
 						milCode.pop_back();  // param not declaration
 						milCode.push_back("\t. " + string(ident,1));
-						paramTable.push_back(ident);
 						milCode.push_back(genQuad("\t=", string(ident,1), "$0"));
 					}
 				}
@@ -147,7 +152,6 @@ declaration:    identifiers COLON INTEGER {
 				if (iter == symTable.end()) {
 					milCode.push_back(genQuad("\t.[]", ident, to_string($5)));
 					symTable.push_back(Symbol(ident, "ARRAY", $5));
-					if (addParams) paramTable.push_back(ident);
 				}
 				identStack.pop();
 			}
@@ -414,7 +418,7 @@ term:		terms {
 			string temp = *($1);
 			lstStr::iterator iter = find(funcTable.begin(), funcTable.end(), *($1));
 			if (iter == funcTable.end()) cout << "ERROR: " + *($1) + " not a function\n";
-			else milCode.push_back(genQuad("call", *($1), temp));
+			else milCode.push_back(genQuad("call", *($1), newTemp()));
 			$$.name = new string(temp);
 			$$.type = new string("TEMP TYPE");
 		}
@@ -422,7 +426,7 @@ term:		terms {
 
 terms:		number {
 			$$.name = new string(to_string($1));
-			$$.name = new string("NUMBER " +to_string($1)); // FOR TESTING DELETE LATER 
+			$$.name = new string(to_string($1)); // FOR TESTING DELETE LATER 
 			$$.type = new string("INTEGER");
 			//$$.value = $1;
 		}		 
@@ -442,16 +446,16 @@ terms:		number {
 		  
 parenExpression: L_PAREN expressions R_PAREN {
 			while (!paramTable.empty()) {
-				milCode.push_back("param " + paramTable.back());
+			//	milCode.push_back(genQuad(,"param", paramTable.back(), *($1.name)));
 				paramTable.pop_back();
 			}
 		}
 
 expressions:	  expression {
-//			paramTable.push_back(*($1.name));
+			$$.name = new string( *($1.name));
 		 }
 		| expression COMMA expressions {
-//			paramTable.push_back(*($1.name));
+			$$.name = new string(*($1.name));	
 
 		}
 			
@@ -503,6 +507,7 @@ ident:		IDENT {
 			 string ident = "_" + *($1);
 			$$ = new string(ident);
 			identStack.push(ident); // for declarations
+			if (addParams) paramTable.push_back(ident);
 		}
 		
 number:		NUMBER {
