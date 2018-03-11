@@ -1,7 +1,115 @@
 : L1
-ifCond p1
-ifCond p7
+?:= L1, p1: L2
+?:= L2, p7: L3
+?:= L3, p10: L4
+?:= L4, p13: L5
+?:= L5, p16func main
+	. _n
+	. _k
+	. _j
+	. _i
+	.[] _t, 20
+.<_j
+.<_i
+= _k, NUMBER 0
+= _n, NUMBER 20
+= _t, _k
++ t1, _k, NUMBER 1
+= _k, t1
+% t2, _k, NUMBER 2
+== p1, t2, NUMBER 0
+: L1
+?:= L1, p1
+- t3, _k, NUMBER 1
+.[]>_t, INDEX
+.>_k
+.>_k
+.>_k
+.>_k
+.>_k
+.[]>_t, INDEX
+.>_k
+.>_n
+.>_k
+< p2, _k, _n
+< p3, _i, _j
+< p4, _j, _n
+>= p5, _i, NUMBER 0
+&& p6, p4, p5
+&& p7, p3, p6
 : L2
-ifCond p10
-ifCond p13
-ifCond p16
+?:= L2, p7
+* t4, _i, NUMBER 2
+= _t, t4
+* t5, _j, NUMBER 2
+= _t, t5
+= _k, _t
+= _t, _t
+= _t, _k
+>= p8, _i, _j
+|| p9, p8, false
++ t6, NUMBER 1, _i
+- t7, t6, _j
+% t8, t7, NUMBER 3
+= _k, t8
+- t9, _i, NUMBER 1
+= _i, t9
+> p10, _k, NUMBER 1
+: L3
+?:= L3, p10
+.>_k
+.>_k
+.>_i
+.>_i
+.>_j
+.>_i
+.>_k
+.>_j
+.>_i
+.>_k
+.[]>_t, INDEX
+.>_j
+.[]>_t, INDEX
+.>_j
+.[]>_t, INDEX
+.>_i
+.[]>_t, INDEX
+.>_i
+.>_k
+.>_j
+.[]>_t, INDEX
+.>_j
+.>_i
+.[]>_t, INDEX
+.>_i
+.>_i
+.>_n
+.>_j
+.>_j
+.>_i
+.>_n
+.>_k
+.>_k
+.>_j
+.>_i
+< p11, _i, _n
+>= p12, _i, NUMBER 0
+&& p13, p11, p12
+: L4
+?:= L4, p13
+.[]>_t, INDEX
+.>_i
+.>_i
+.>_n
+.>_i
+< p14, _j, _n
+>= p15, _j, NUMBER 0
+&& p16, p14, p15
+: L5
+?:= L5, p16
+.[]>_t, INDEX
+.>_j
+.>_j
+.>_n
+.>_j
+endfunc

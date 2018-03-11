@@ -41,7 +41,7 @@ Table symTable;
 DeckStr paramTable;
 lstStr funcTable;
 stackStr varStack;
-vecStr labels;
+stackStr labelStack;
 int currentTemp = 1; 	// the current number of temporary variables
 int currentLabel = 1; 	// the current number of labels
 int currentPred = 1;    // the current predicate
@@ -109,7 +109,7 @@ funcName:	FUNCTION IDENT {
 M:		/*empty*/ { // print out everything
 			milCode.push_back("endfunc");
 			for (auto code : milCode) {
-//				cout << code << endl;
+				cout << code << endl;
 			}
 		}
 
@@ -168,8 +168,8 @@ statement:        var ASSIGN expression {
 			}
 			else cout << "ERROR: var not in table, cannot assign\n";
 		}
-                | IF ifCond ENDIF
-                | IF ifCond ELSE statements ENDIF
+                | ifCond statements ENDIF
+                | ifCond statements ELSE statements ENDIF
        		| WHILE bool_exp loop
 		| DO loop WHILE bool_exp
   		| FOREACH ident IN IDENT loop {
@@ -217,16 +217,18 @@ statement:        var ASSIGN expression {
 M8:		/*empty*/ {isReading = true;}
 M9:		/*empty*/ {isReading = false;}
 
-ifCond:		bool_exp THEN statements {
-			cout << "ifCond " << *($1.name) << endl;
+ifCond:		IF bool_exp THEN M3 {
+			milCode.push_back(genQuad("?:=", labelStack.top(), *($2.name)));
+			cout << milCode.back();
+			labelStack.pop();
 		}
-                ;
 
-loop:		BEGINLOOP M3 statements ENDLOOP
+loop:		BEGINLOOP statements ENDLOOP
                 ;
 
 M3:		/*empty*/ {
 			string label = newLabel();
+			labelStack.push(label);
 			milCode.push_back(": " + label);
 			cout << milCode.back() << endl;
 		}
