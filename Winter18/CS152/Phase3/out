@@ -1,37 +1,43 @@
-PARAMS ARE: _k
 func fibonacci
 	. k
-		= k, $0
 	= k, $0
 	<= p0, _k, 1
 	?:= L0, p0
+	ret 1
 : L0
 	- t0, _k, 1
+	param t0
 	call fibonacci, t1
 	- t2, _k, 2
+	param t2
 	call fibonacci, t3
 	+ t4, fibonacci, fibonacci
+	ret t4
 endfunc
 func fibonacci
 	. k
-		= k, $0
 	= k, $0
 	<= p0, _k, 1
 	?:= L0, p0
+	ret 1
 : L0
 	- t0, _k, 1
+	param t0
 	call fibonacci, t1
 	- t2, _k, 2
+	param t2
 	call fibonacci, t3
 	+ t4, fibonacci, fibonacci
+	ret t4
 endfunc
 func main
-	. _n
-	. _fib_n
+	. n
+	. fib_n
 	.<_n
 	.<_k
 	.<_k
 	.<_k
+	param _n
 	call fibonacci, t5
 	= _fib_n, fibonacci
 .>_fib_n

@@ -39,6 +39,7 @@ string newTemp();
 string newPred();
 Table symTable;
 DeckStr paramTable; 	// keep track of parameters
+DeckStr funcParams;		// keep track of parameters in functions
 lstStr funcTable;	// keep track of functions;
 stackStr varStack;	// keep track of vars
 stackStr labelStack;	// keep track of labels
@@ -98,20 +99,17 @@ prog_start:	functions {
 functions:	function functions
                 | /*empty*/
                 ;
-function: 	funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M {
+function: 	funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
+			milCode.push_back("endfunc");
+			for (auto code : milCode) {
+				cout << code << endl;
+			}
 
                 }
 
 funcName:	FUNCTION IDENT {
 			funcTable.push_back(*($2));
 			milCode.push_back("func " + *($2));
-		}
-
-M:		/*empty*/ { // print out everything
-			milCode.push_back("endfunc");
-			for (auto code : milCode) {
-				cout << code << endl;
-			}
 		}
 
 M1:		/*empty*/ { addParams = true; }
@@ -134,12 +132,8 @@ declaration:    identifiers COLON INTEGER {
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) {
 					symTable.push_back(Symbol(ident, "INTEGER"));
-					milCode.push_back("\t. " + ident);
-					if (addParams) {
-						milCode.pop_back();  // param not declaration
-						milCode.push_back("\t. " + string(ident,1));
-						milCode.push_back(genQuad("\t=", string(ident,1), "$0"));
-					}
+					//milCode.push_back("\t. " + ident);
+					milCode.push_back("\t. " + string(ident,1));
 				}
 				identStack.pop();
 			}
@@ -150,7 +144,7 @@ declaration:    identifiers COLON INTEGER {
 				string ident = identStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) {
-					milCode.push_back(genQuad("\t.[]", ident, to_string($5)));
+					milCode.push_back(genQuad(".[]", ident, to_string($5)));
 					symTable.push_back(Symbol(ident, "ARRAY", $5));
 				}
 				identStack.pop();
@@ -225,8 +219,14 @@ statement:        var ASSIGN expression {
 				varStack.pop();
 			}
 		}
-                | CONTINUE
-                | RETURN expression
+                | CONTINUE  {
+			if(!loopStack.empty()) 
+				milCode.push_back("\t:= " + loopStack.top());
+			else "ERROR. USING continue outside of loop\n";
+  		}	
+                | RETURN expression {
+			milCode.push_back("\tret " + *($2.name));	
+		}
                 ;
 
 M8:		/*empty*/ {isReading = true;}
@@ -445,17 +445,17 @@ terms:		number {
 		; 
 		  
 parenExpression: L_PAREN expressions R_PAREN {
-			while (!paramTable.empty()) {
-			//	milCode.push_back(genQuad(,"param", paramTable.back(), *($1.name)));
-				paramTable.pop_back();
+			while (!funcParams.empty()) {
+				milCode.push_back("\tparam " + funcParams.back());
+				funcParams.pop_back();
 			}
 		}
 
 expressions:	  expression {
-			$$.name = new string( *($1.name));
+			funcParams.push_back(*($1.name));
 		 }
 		| expression COMMA expressions {
-			$$.name = new string(*($1.name));	
+			funcParams.push_back(*($1.name));
 
 		}
 			
