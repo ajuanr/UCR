@@ -104,9 +104,9 @@ DeckStr paramTable;
 lstStr funcTable;
 stackStr varStack;
 stackStr labelStack;
-int currentTemp = 1; 	// the current number of temporary variables
-int currentLabel = 1; 	// the current number of labels
-int currentPred = 1;    // the current predicate
+int currentTemp = 0; 	// the current number of temporary variables
+int currentLabel = 0; 	// the current number of labels
+int currentPred = 0;    // the current predicate
 bool addParams = false;
 
 lstStr milCode;		// holds the code generated
