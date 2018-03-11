@@ -102,9 +102,8 @@ functions:	function functions
 function: 	funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations M END_LOCALS BEGIN_BODY statements END_BODY {
 			milCode.push_back("endfunc");
 			for (auto code : milCode) {
-				cout << code << endl;
+		//		cout << code << endl;
 			}
-
                 }
 
 funcName:	FUNCTION IDENT {
@@ -160,14 +159,54 @@ statements:       statement SEMICOLON statements
                 ;
 
 statement:        var ASSIGN expression {
+
 			//TEMP CODE//////////
 			string var = *($1.name);
-			Table::iterator iter = find(symTable.begin(), symTable.end(), var);
-			if (iter != symTable.end()) {
-				iter->value = *($3.name);
-				milCode.push_back(genQuad("=", var, *($3.name)));
+			string expression = *($3.name);
+//			cout << var << " = " << expression << endl;
+	
+			Table::iterator lhs = find(symTable.begin(), symTable.end(), var);
+			Table::iterator rhs= find(symTable.begin(), symTable.end(), expression);
+			if ( lhs != symTable.end() ) {
+				if (lhs->type == "ARRAY") {
+					// check rhs type
+					if (rhs != symTable.end()) { // rhs in table
+						if (rhs->type == "INTEGER") {
+							// ARRAY = INTEGER
+							milCode.push_back(genQuad("[]=", var, "INDEX", expression));
+							cout << milCode.back() << endl;
+							
+						}
+						else { // ARRAY = ARRAY
+							//cout << "array = array\n";
+						}
+					}				
+					else {// rhs not in table, must be temp or constant
+						// ARRAY[] = temp
+						milCode.push_back(genQuad("[]=", var, "INDEX", expression));
+						cout << milCode.back() << endl;
+					}
+				}
+				else { // lhs is INTEGER
+					// check rhs type
+					if (rhs != symTable.end()) { // rhs in table
+						if (rhs->type == "INTEGER") { // INTEGER = INTEGER
+							milCode.push_back(genQuad("=", var, expression));
+							cout << milCode.back();
+						}
+						else { // int = array[]
+							milCode.push_back(genQuad("=[]", var, expression, "INDEX"));
+							cout << milCode.back() << endl;
+						}
+					}				
+					else {// rhs not in table, must be temp or constant
+						// INTEGER = temp
+						milCode.push_back(genQuad("=", var, expression));
+						cout << milCode.back() << endl;
+					}
+				}
 			}
-			else cout << "ERROR: var not in table, cannot assign\n";
+			else cout << "ERROR: assigninging to constant\n";
 		}
                 | ifCond statements M4 ENDIF
                 | ifCond statements M3 ELSE statements M4 ENDIF
