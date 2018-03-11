@@ -95,7 +95,7 @@ prog_start:	functions {
 functions:	function functions
                 | /*empty*/
                 ;
-function: 	funcName SEMICOLON BEGIN_PARAMS M1 declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M {
+function: 	funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M {
 
                 }
 
@@ -110,10 +110,8 @@ M:		/*empty*/ { // print out everything
 			}
 		}
 
-M1:		/*empty*/ { addParams = true;}
-M2:		/*empty*/ { addParams = false;}
-
-
+M1:		/*empty*/ { addParams = true; }
+M2:		/*empty*/ { addParams = false; }
                 ;
 declarations:	declaration SEMICOLON declarations
 
@@ -184,17 +182,17 @@ statement:        var ASSIGN expression {
 			}
 		}
                 | WRITE M9 vars {
-			cout << "stack size: " << varStack.size();
+//			cout << "stack size: " << varStack.size() << endl;
 			while (!varStack.empty()) {
 				string var = varStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), var);
 				if (iter != symTable.end()) {
 					if (iter->type == "INTEGER") {
-						cout << ".>" + var << endl;
+						//cout << ".>" + var << endl;
 						milCode.push_back(".>" + var);
 					}
 					else {
-						cout << ".[]>" + var +", INDEX" << endl;
+						//cout << ".[]>" + var +", INDEX" << endl;
 						milCode.push_back(".[]>" + var +", INDEX");
 					}
 					
@@ -377,16 +375,16 @@ terms:		number {
 		  
 parenExpression: L_PAREN expressions R_PAREN {
 			while (!paramTable.empty()) {
-			//	milCode.push_back("param " + paramTable.back());
+				milCode.push_back("param " + paramTable.back());
 				paramTable.pop_back();
 			}
 		}
 
 expressions:	  expression {
-		//	paramTable.push_back(*($1.name));
+//			paramTable.push_back(*($1.name));
 		 }
 		| expression COMMA expressions {
-		//	paramTable.push_back(*($1.name));
+//			paramTable.push_back(*($1.name));
 
 		}
 			
@@ -402,7 +400,7 @@ var:		ident {
 			$$.name = new string(ident);
 			$$.type = new string("INTEGER");
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
-				if (iter == symTable.end()) cout << "ERROR: var not found\n";
+				if (iter == symTable.end()) cout << "ERROR: var " +ident +" not found\n";
 				else {
 					if (iter->type != "INTEGER") cout << "ERROR: var not an int\n";
 					else {

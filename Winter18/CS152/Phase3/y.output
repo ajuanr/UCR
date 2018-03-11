@@ -7,7 +7,7 @@ Grammar
     2 functions: function functions
     3          | %empty
 
-    4 function: funcName SEMICOLON BEGIN_PARAMS M1 declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M
+    4 function: funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M
 
     5 funcName: FUNCTION IDENT
 
@@ -273,7 +273,7 @@ State 4
 
 State 5
 
-    4 function: funcName . SEMICOLON BEGIN_PARAMS M1 declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M
+    4 function: funcName . SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M
 
     SEMICOLON  shift, and go to state 9
 
@@ -301,23 +301,23 @@ State 8
 
 State 9
 
-    4 function: funcName SEMICOLON . BEGIN_PARAMS M1 declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M
+    4 function: funcName SEMICOLON . M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M
 
-    BEGIN_PARAMS  shift, and go to state 10
+    $default  reduce using rule 7 (M1)
+
+    M1  go to state 10
 
 
 State 10
 
-    4 function: funcName SEMICOLON BEGIN_PARAMS . M1 declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M
+    4 function: funcName SEMICOLON M1 . BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M
 
-    $default  reduce using rule 7 (M1)
-
-    M1  go to state 11
+    BEGIN_PARAMS  shift, and go to state 11
 
 
 State 11
 
-    4 function: funcName SEMICOLON BEGIN_PARAMS M1 . declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M
+    4 function: funcName SEMICOLON M1 BEGIN_PARAMS . declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M
 
     IDENT  shift, and go to state 12
 
@@ -338,7 +338,7 @@ State 12
 
 State 13
 
-    4 function: funcName SEMICOLON BEGIN_PARAMS M1 declarations . END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M
+    4 function: funcName SEMICOLON M1 BEGIN_PARAMS declarations . END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M
 
     END_PARAMS  shift, and go to state 17
 
@@ -370,7 +370,7 @@ State 16
 
 State 17
 
-    4 function: funcName SEMICOLON BEGIN_PARAMS M1 declarations END_PARAMS . M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M
+    4 function: funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS . M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M
 
     $default  reduce using rule 8 (M2)
 
@@ -412,7 +412,7 @@ State 20
 
 State 21
 
-    4 function: funcName SEMICOLON BEGIN_PARAMS M1 declarations END_PARAMS M2 . BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M
+    4 function: funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 . BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M
 
     BEGIN_LOCALS  shift, and go to state 26
 
@@ -447,7 +447,7 @@ State 25
 
 State 26
 
-    4 function: funcName SEMICOLON BEGIN_PARAMS M1 declarations END_PARAMS M2 BEGIN_LOCALS . declarations END_LOCALS BEGIN_BODY statements END_BODY M
+    4 function: funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS . declarations END_LOCALS BEGIN_BODY statements END_BODY M
 
     IDENT  shift, and go to state 12
 
@@ -470,7 +470,7 @@ State 27
 
 State 28
 
-    4 function: funcName SEMICOLON BEGIN_PARAMS M1 declarations END_PARAMS M2 BEGIN_LOCALS declarations . END_LOCALS BEGIN_BODY statements END_BODY M
+    4 function: funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations . END_LOCALS BEGIN_BODY statements END_BODY M
 
     END_LOCALS  shift, and go to state 31
 
@@ -491,7 +491,7 @@ State 30
 
 State 31
 
-    4 function: funcName SEMICOLON BEGIN_PARAMS M1 declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS . BEGIN_BODY statements END_BODY M
+    4 function: funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS . BEGIN_BODY statements END_BODY M
 
     BEGIN_BODY  shift, and go to state 33
 
@@ -505,7 +505,7 @@ State 32
 
 State 33
 
-    4 function: funcName SEMICOLON BEGIN_PARAMS M1 declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY . statements END_BODY M
+    4 function: funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY . statements END_BODY M
 
     READ      shift, and go to state 35
     IF        shift, and go to state 36
@@ -643,7 +643,7 @@ State 42
 
 State 43
 
-    4 function: funcName SEMICOLON BEGIN_PARAMS M1 declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements . END_BODY M
+    4 function: funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements . END_BODY M
 
     END_BODY  shift, and go to state 72
 
@@ -961,7 +961,7 @@ State 71
 
 State 72
 
-    4 function: funcName SEMICOLON BEGIN_PARAMS M1 declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY . M
+    4 function: funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY . M
 
     $default  reduce using rule 6 (M)
 
@@ -1414,7 +1414,7 @@ State 106
 
 State 107
 
-    4 function: funcName SEMICOLON BEGIN_PARAMS M1 declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M .
+    4 function: funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY M .
 
     $default  reduce using rule 4 (function)
 
