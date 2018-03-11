@@ -99,7 +99,7 @@ prog_start:	functions {
 functions:	function functions
                 | /*empty*/
                 ;
-function: 	funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
+function: 	funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations M END_LOCALS BEGIN_BODY statements END_BODY {
 			milCode.push_back("endfunc");
 			for (auto code : milCode) {
 				cout << code << endl;
@@ -112,6 +112,7 @@ funcName:	FUNCTION IDENT {
 			milCode.push_back("func " + *($2));
 		}
 
+M:		/*empty*/ { milCode.push_back(": " + string("START"));}
 M1:		/*empty*/ { addParams = true; }
 M2:		/*empty*/ { addParams = false; 
 			while (!paramTable.empty()) {
@@ -131,9 +132,11 @@ declaration:    identifiers COLON INTEGER {
 				string ident = identStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) {
+					if(addParams) milCode.push_back("\t. " + string(ident,1));
+					else milCode.push_back("\t. " + ident);
 					symTable.push_back(Symbol(ident, "INTEGER"));
-					//milCode.push_back("\t. " + ident);
-					milCode.push_back("\t. " + string(ident,1));
+					
+					
 				}
 				identStack.pop();
 			}
@@ -171,7 +174,7 @@ statement:        var ASSIGN expression {
        		| WHILE M6 bool_exp loop M7{
 			string label = newLabel();
 			labelStack.push(label);
-			milCode.push_back(genQuad("?=", labelStack.top(), *($3.name)));
+			milCode.push_back(genQuad("?:=", labelStack.top(), *($3.name)));
 		}
 			
 		| DO M10 BEGINLOOP statements ENDLOOP M11 WHILE bool_exp {
@@ -186,11 +189,12 @@ statement:        var ASSIGN expression {
 		}
 		| READ M8 vars {
 			while (!varStack.empty()) {
+				
 				string var = varStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), var);
 				if (iter != symTable.end()) {
 					if (iter->type == "INTEGER") {
-						milCode.push_back("\t.<" + var);
+						milCode.push_back("\t.< " + var);
 					}
 					else {
 						milCode.push_back("\t.[]<" + var +", INDEX");
@@ -201,7 +205,7 @@ statement:        var ASSIGN expression {
 			}
 		}
                 | WRITE M9 vars {
-//			cout << "stack size: " << varStack.size() << endl;
+			/*
 			while (!varStack.empty()) {
 				string var = varStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), var);
@@ -218,6 +222,7 @@ statement:        var ASSIGN expression {
 				}
 				varStack.pop();
 			}
+			*/
 		}
                 | CONTINUE  {
 			if(!loopStack.empty()) 
@@ -252,7 +257,6 @@ M3:		/*empty*/ {
 M4:		/*empty*/ {
 			milCode.push_back(": " + labelStack.top());
 			labelStack.pop();	
-			
 		}
 
 M6:		/*empty*/ {
@@ -273,7 +277,7 @@ M7:		/*empty*/ {
 
 M10:		/*empty*/ {
 			string label = newLabel();
-			milCode.push_back(label);
+			milCode.push_back(": " + label);
 			labelStack.push(label);
 			loopStack.push(newLabel());	
 		}
@@ -461,7 +465,9 @@ expressions:	  expression {
 			
 		;
 
-vars:		  var {}
+vars:		  var {
+			if (!isReading) milCode.push_back("\t.> " + *($1.name));
+		}
                 | var COMMA vars {}
                 ;
 
@@ -476,9 +482,9 @@ var:		ident {
 					else {
 						identStack.push(ident);
 						//$$.value = iter->value;
+						varStack.push(ident);
 					}
 				}
-			varStack.push(ident);
 			
                   }
                 | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
@@ -491,9 +497,9 @@ var:		ident {
 					if (iter->type != "ARRAY") cout << "ERROR: var not an array\n";
 					else {
 						//$$.value = iter->value;
+						varStack.push(ident);
 					}
 				}
-			varStack.push(ident);
 	
 		}
 			
