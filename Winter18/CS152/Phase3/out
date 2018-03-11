@@ -1,39 +1,120 @@
-func fibonacci
-	. k
-		= k, $0
-	<= p0, _k, NUMBER 1
-	?:= L0, p0
-: L0
-	- t0, _k, NUMBER 1
-param _k
-	call fibonacci, fibonacci
-	- t1, _k, NUMBER 2
-	call fibonacci, fibonacci
-	+ t2, fibonacci, fibonacci
-endfunc
-func fibonacci
-	. k
-		= k, $0
-	<= p0, _k, NUMBER 1
-	?:= L0, p0
-: L0
-	- t0, _k, NUMBER 1
-param _k
-	call fibonacci, fibonacci
-	- t1, _k, NUMBER 2
-	call fibonacci, fibonacci
-	+ t2, fibonacci, fibonacci
-endfunc
 func main
 	. _n
-	. _fib_n
-	.<_n
-	.<_k
-	.<_k
-	.<_k
-	call fibonacci, fibonacci
-	= _fib_n, fibonacci
-.>_fib_n
+	. _k
+	. _j
+	. _i
+		.[] _t, 20
+	.<_j
+	.<_i
+	= _k, NUMBER 0
+	= _n, NUMBER 20
+L0
+	= _t, _k
+	+ t0, _k, NUMBER 1
+	= _k, t0
+	% t1, _k, NUMBER 2
+	== p0, t1, NUMBER 0
+	?:= L2, p0
+: L2
+	- t2, _k, NUMBER 1
+.[]>_t, INDEX
+.>_k
+.>_k
+.>_k
+.>_k
+.>_k
+.[]>_t, INDEX
+.>_k
 .>_n
-.>_fib_n
+.>_k
+: L1
+	< p1, _k, _n
+	== p2, p1, 0
+	?:= L0, p3
+	< p4, _i, _j
+	< p5, _j, _n
+	>= p6, _i, NUMBER 0
+	&& p7, p5, p6
+	&& p8, p4, p7
+	?:= L3, p8
+	* t3, _i, NUMBER 2
+	= _t, t3
+	* t4, _j, NUMBER 2
+	= _t, t4
+	= _k, _t
+	= _t, _t
+	= _t, _k
+	:= L4
+: L3
+: L5
+	>= p9, _i, _j
+	|| p10, p9, false
+	+ t5, NUMBER 1, _i
+	- t6, t5, _j
+	% t7, t6, NUMBER 3
+	= _k, t7
+	- t8, _i, NUMBER 1
+	= _i, t8
+	> p11, _k, NUMBER 1
+	?:= L6, p11
+: L6
+.>_k
+.>_k
+.>_i
+.>_i
+.>_j
+.>_i
+.>_k
+.>_j
+.>_i
+.>_k
+.[]>_t, INDEX
+.>_j
+.[]>_t, INDEX
+.>_j
+.[]>_t, INDEX
+.>_i
+.[]>_t, INDEX
+.>_i
+.>_k
+.>_j
+.[]>_t, INDEX
+.>_j
+.>_i
+.[]>_t, INDEX
+.>_i
+.>_i
+.>_n
+.>_j
+.>_j
+.>_i
+.>_n
+.>_k
+	:= L5
+	:= L4
+	?= L7, p10
+: L7
+.>_k
+.>_j
+.>_i
+	< p12, _i, _n
+	>= p13, _i, NUMBER 0
+	&& p14, p12, p13
+	?:= L8, p14
+.[]>_t, INDEX
+.>_i
+.>_i
+.>_n
+.>_i
+: L8
+	< p15, _j, _n
+	>= p16, _j, NUMBER 0
+	&& p17, p15, p16
+	?:= L9, p17
+.[]>_t, INDEX
+.>_j
+.>_j
+.>_n
+.>_j
+: L9
 endfunc

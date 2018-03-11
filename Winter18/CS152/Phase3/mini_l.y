@@ -38,10 +38,11 @@ string newLabel();
 string newTemp();
 string newPred();
 Table symTable;
-DeckStr paramTable;
-lstStr funcTable;
-stackStr varStack;
-stackStr labelStack;
+DeckStr paramTable; 	// keep track of parameters
+lstStr funcTable;	// keep track of functions;
+stackStr varStack;	// keep track of vars
+stackStr labelStack;	// keep track of labels
+stackStr loopStack;	// keep track of which loop you're in
 int currentTemp = 0; 	// the current number of temporary variables
 int currentLabel = 0; 	// the current number of labels
 int currentPred = 0;    // the current predicate
@@ -159,7 +160,6 @@ statements:       statement SEMICOLON statements
 
 statement:        var ASSIGN expression {
 			//TEMP CODE//////////
-			
 			string var = *($1.name);
 			Table::iterator iter = find(symTable.begin(), symTable.end(), var);
 			if (iter != symTable.end()) {
@@ -170,8 +170,19 @@ statement:        var ASSIGN expression {
 		}
                 | ifCond statements M4 ENDIF
                 | ifCond statements M3 ELSE statements M4 ENDIF
-       		| WHILE bool_exp loop
-		| DO loop WHILE bool_exp
+       		| WHILE M6 bool_exp loop M7{
+			string label = newLabel();
+			labelStack.push(label);
+			milCode.push_back(genQuad("?=", labelStack.top(), *($3.name)));
+		}
+			
+		| DO M10 BEGINLOOP statements ENDLOOP M11 WHILE bool_exp {
+			string label =  labelStack.top();
+			labelStack.pop();
+			milCode.push_back(genQuad("==", newPred(), *($8.name), "0"));
+			milCode.push_back(genQuad("?:=", label, newPred()));
+			
+		}
   		| FOREACH ident IN IDENT loop {
 			cout << "ident is: " << *($2) << " " << *($4) << endl;
 		}
@@ -238,6 +249,35 @@ M4:		/*empty*/ {
 			milCode.push_back(": " + labelStack.top());
 			labelStack.pop();	
 			
+		}
+
+M6:		/*empty*/ {
+			string label = newLabel();
+			labelStack.push(label);
+			loopStack.push(label);
+			milCode.push_back(": " + label);
+		}
+
+M7:		/*empty*/ {
+			string l1 = labelStack.top(); labelStack.pop();	
+			string l2 = labelStack.top(); labelStack.pop();	
+			milCode.push_back("\t:= " + l1);
+			milCode.push_back("\t:= " + l2);
+			loopStack.pop();
+
+		}	
+
+M10:		/*empty*/ {
+			string label = newLabel();
+			milCode.push_back(label);
+			labelStack.push(label);
+			loopStack.push(newLabel());	
+		}
+
+M11:		/*empty*/ {
+			string label = loopStack.top();
+			milCode.push_back(": " + label);
+			loopStack.pop();
 		}
 
 bool_exp:	  relation_and_exp {
