@@ -5,6 +5,7 @@
 	[]= _t, INDEX, t3
 	[]= _t, INDEX, t4
 	=[] _k, _t, INDEX
+	[]= _t, INDEX, 	[] _t, INDEX
 	[]= _t, INDEX, _k
 	= _k, t7
 	= _i, t8

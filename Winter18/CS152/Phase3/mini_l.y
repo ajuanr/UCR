@@ -178,6 +178,10 @@ statement:        var ASSIGN expression {
 							
 						}
 						else { // ARRAY = ARRAY
+							string src = genQuad("[]", expression, "INDEX");
+							milCode.push_back(genQuad("[]=", var, "INDEX", src));
+							cout << milCode.back() << endl;
+		
 							//cout << "array = array\n";
 						}
 					}				
