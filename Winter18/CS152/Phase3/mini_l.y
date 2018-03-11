@@ -42,9 +42,9 @@ DeckStr paramTable;
 lstStr funcTable;
 stackStr varStack;
 stackStr labelStack;
-int currentTemp = 1; 	// the current number of temporary variables
-int currentLabel = 1; 	// the current number of labels
-int currentPred = 1;    // the current predicate
+int currentTemp = 0; 	// the current number of temporary variables
+int currentLabel = 0; 	// the current number of labels
+int currentPred = 0;    // the current predicate
 bool addParams = false;
 
 lstStr milCode;		// holds the code generated
@@ -168,8 +168,8 @@ statement:        var ASSIGN expression {
 			}
 			else cout << "ERROR: var not in table, cannot assign\n";
 		}
-                | ifCond statements ENDIF
-                | ifCond statements ELSE statements ENDIF
+                | ifCond statements M4 ENDIF
+                | ifCond statements M3 ELSE statements M4 ENDIF
        		| WHILE bool_exp loop
 		| DO loop WHILE bool_exp
   		| FOREACH ident IN IDENT loop {
@@ -181,10 +181,10 @@ statement:        var ASSIGN expression {
 				Table::iterator iter = find(symTable.begin(), symTable.end(), var);
 				if (iter != symTable.end()) {
 					if (iter->type == "INTEGER") {
-						milCode.push_back(".<" + var);
+						milCode.push_back("\t.<" + var);
 					}
 					else {
-						milCode.push_back(".[]<" + var +", INDEX");
+						milCode.push_back("\t.[]<" + var +", INDEX");
 					}
 					
 				}
@@ -217,10 +217,10 @@ statement:        var ASSIGN expression {
 M8:		/*empty*/ {isReading = true;}
 M9:		/*empty*/ {isReading = false;}
 
-ifCond:		IF bool_exp THEN M3 {
-			milCode.push_back(genQuad("?:=", labelStack.top(), *($2.name)));
-			cout << milCode.back();
-			labelStack.pop();
+ifCond:		IF bool_exp THEN  {
+			string label = newLabel();
+			milCode.push_back(genQuad("?:=", label, *($2.name)));
+			labelStack.push(label);
 		}
 
 loop:		BEGINLOOP statements ENDLOOP
@@ -228,9 +228,16 @@ loop:		BEGINLOOP statements ENDLOOP
 
 M3:		/*empty*/ {
 			string label = newLabel();
+			milCode.push_back("\t:= " + label);
+			milCode.push_back(": " + labelStack.top());
+			labelStack.pop();				
 			labelStack.push(label);
-			milCode.push_back(": " + label);
-			cout << milCode.back() << endl;
+		}
+
+M4:		/*empty*/ {
+			milCode.push_back(": " + labelStack.top());
+			labelStack.pop();	
+			
 		}
 
 bool_exp:	  relation_and_exp {
@@ -489,10 +496,10 @@ string newPred() {
 
 
 string genQuad(string op, string dest, string src1, string src2) {
-    return op + " " + dest + ", " + src1 + ", " + src2; 
+    return "\t" + op + " " + dest + ", " + src1 + ", " + src2; 
 }
 
 string genQuad(string op, string dest , string src) {
-    return op + " " + dest + ", " + src;
+    return "\t" + op + " " + dest + ", " + src;
 }
 	
