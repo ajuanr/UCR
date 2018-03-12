@@ -45,6 +45,7 @@ lstStr funcTable;	// keep track of functions;
 stackStr varStack;	// keep track of vars
 stackStr labelStack;	// keep track of labels
 stackStr loopStack;	// keep track of which loop you're in
+stackStr rwStack;
 int currentTemp = 0; 	// the current number of temporary variables
 int currentLabel = 0; 	// the current number of labels
 int currentPred = 0;    // the current predicate
@@ -52,7 +53,6 @@ bool addParams = false;
 
 lstStr milCode;		// holds the code generated
 stackStr identStack;   	// holds list of identifiers seen
-bool isReading = false;
 
 %}
 %union{
@@ -103,7 +103,7 @@ functions:	function functions
 function: 	funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations M END_LOCALS BEGIN_BODY statements END_BODY {
 			milCode.push_back("endfunc");
 			for (auto code : milCode) {
-				cout << code << endl;
+		//		cout << code << endl;
 			}
                 }
 
@@ -152,8 +152,8 @@ declaration:    identifiers COLON INTEGER {
 		}
                 ;
 
-statements:       statement SEMICOLON statements
-                | /*empty*/
+statements:       statement SEMICOLON statements {}
+                | /*empty*/ {}
                 ;
 
 statement:        var ASSIGN expression {
@@ -222,42 +222,39 @@ statement:        var ASSIGN expression {
   		| FOREACH ident IN IDENT loop {
 			cout << "ident is: " << *($2) << " " << *($4) << endl;
 		}
-		| READ M8 vars {
-			while (!varStack.empty()) {
-				
-				string var = varStack.top();
+		| READ vars {
+			while (!rwStack.empty()) {
+				string var = rwStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), var);
 				if (iter != symTable.end()) {
 					if (iter->type == "INTEGER") {
 						milCode.push_back("\t.< " + var);
 					}
 					else {
-						milCode.push_back("\t.[]<" + var +", INDEX");
+						milCode.push_back("\t.[]<" + var +", " + indexStack.top() );
+						indexStack.pop();
 					}
 					
 				}
-				varStack.pop();
+				rwStack.pop();
 			}
 		}
-                | WRITE M9 vars {
-			/*
-			while (!varStack.empty()) {
-				string var = varStack.top();
+                | WRITE vars {
+		//while (!rwStack.empty()) rwStack.pop();	
+			while (!rwStack.empty()) {
+				string var = rwStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), var);
 				if (iter != symTable.end()) {
 					if (iter->type == "INTEGER") {
-						//cout << ".>" + var << endl;
-						milCode.push_back(".>" + var);
+						milCode.push_back("\t.>" + var);
 					}
 					else {
-						//cout << ".[]>" + var +", INDEX" << endl;
-						milCode.push_back(".[]>" + var +", INDEX");
+						milCode.push_back("\t.[]>" + var +", " + indexStack.top());
+						indexStack.pop();
 					}
-					
 				}
-				varStack.pop();
+				rwStack.pop();
 			}
-			*/
 		}
                 | CONTINUE  {
 			if(!loopStack.empty()) 
@@ -268,9 +265,6 @@ statement:        var ASSIGN expression {
 			milCode.push_back("\tret " + *($2.name));	
 		}
                 ;
-
-M8:		/*empty*/ {isReading = true;}
-M9:		/*empty*/ {isReading = false;}
 
 ifCond:		IF bool_exp THEN  {
 			string label = newLabel();
@@ -501,14 +495,12 @@ expressions:	  expression {
 		;
 
 vars:		  var {
-			string var = *($1.name);
-			Table::iterator iter = find(symTable.begin(), symTable.end(), var);
-			if (!isReading) {
-				if (iter->type == "ARRAY") milCode.push_back("\t.[]> " + *($1.name));
-				else milCode.push_back("\t.> " + *($1.name));
-			}
+			rwStack.push(*($1.name));
 		}
-                | var COMMA vars {}
+                | var COMMA vars {
+			rwStack.push(*($1.name));
+		}
+
                 ;
 
 var:		ident {
@@ -553,7 +545,7 @@ identifiers:      ident {}
 ident:		IDENT {
 			 string ident = "_" + *($1);
 			$$ = new string(ident);
-			identStack.push(ident); // for declarations
+			identStack.push(ident);
 			if (addParams) paramTable.push_back(ident);
 		}
 		
