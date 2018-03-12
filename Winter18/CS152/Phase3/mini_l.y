@@ -102,16 +102,22 @@ functions:	function functions
                 ;
 function: 	funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
 			milCode.push_back("endfunc");
-			cout << "symbolTAble.size " << symTable.size() << endl;
-			for (auto symbol : symTable) cout << symbol.name << endl;
+//			cout << "symbolTAble.size " << symTable.size() << endl;
+			for (auto symbol : symTable) {
+				if (symbol.type == "INTEGER" || symbol.type == "BOOLEAN")
+				 	cout << "\t. " << symbol.name << endl;
+				else cout << "\t.[] " << symbol.name << ", " << symbol.size << endl;	
+
+			}
 			for (auto code : milCode) {
-			//	cout << code << endl;
+				cout << code << endl;
 			}
                 }
 
 funcName:	FUNCTION IDENT {
 			funcTable.push_back(*($2));
-			milCode.push_back("func " + *($2));
+			cout << "func " << *($2) << endl;
+			//milCode.push_back("func " + *($2));
 		}
 
 M1:		/*empty*/ { addParams = true; }
@@ -132,7 +138,6 @@ declaration:    identifiers COLON INTEGER {
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) {
 					if(addParams) milCode.push_back("\t. " + string(ident,1));
-					else milCode.push_back("\t. " + ident);
 					symTable.push_back(Symbol(ident, "INTEGER"));
 				}
 				identStack.pop();
@@ -144,7 +149,6 @@ declaration:    identifiers COLON INTEGER {
 				string ident = identStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) {
-					milCode.push_back(genQuad(".[]", ident, to_string($5)));
 					symTable.push_back(Symbol(ident, "ARRAY", $5));
 				}
 				identStack.pop();
@@ -175,8 +179,9 @@ statement:        var ASSIGN expression {
 						else { // ARRAY = ARRAY
 							string rIndex = indexStack.top();
 							indexStack.pop();
-							string src = "[]" + expression +", " + rIndex;
-							milCode.push_back(genQuad("[]=", var, index, src));
+							//string src = "[] " + expression +", " + rIndex;
+							//milCode.push_back(genQuad("[]=", var, index, src));
+							milCode.push_back(genQuad("[]=", var, index, expression));
 						}
 					}				
 					else {// rhs not in table, must be temp or constant
@@ -245,10 +250,10 @@ statement:        var ASSIGN expression {
 				Table::iterator iter = find(symTable.begin(), symTable.end(), var);
 				if (iter != symTable.end()) {
 					if (iter->type == "INTEGER") {
-						milCode.push_back("\t.>" + var);
+						milCode.push_back("\t.> " + var);
 					}
 					else {
-						milCode.push_back("\t.[]>" + var +", " + indexStack.top());
+						milCode.push_back("\t.[]> " + var +", " + indexStack.top());
 						indexStack.pop();
 					}
 				}
@@ -564,7 +569,9 @@ void yyerror (char const *s)
 }
 
 string newTemp() {
-    return "t" + to_string(currentTemp++);
+    string temp = "t" + to_string(currentTemp++);
+    symTable.push_back(Symbol(temp, "INTEGER"));
+    return temp;
 }
 
 string newLabel() {
@@ -572,7 +579,9 @@ string newLabel() {
 }
 
 string newPred() {
-    return "p" + to_string(currentPred++);
+    string pred = "p" + to_string(currentPred++);
+    symTable.push_back(Symbol(pred, "BOOLEAN"));
+    return pred;
 }
 
 
