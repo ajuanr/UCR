@@ -119,7 +119,6 @@ M2:		/*empty*/ { addParams = false;
 				milCode.push_back(genQuad("=", string(paramTable.front(),1), "$0"));
 				paramTable.pop_front();
 			}
-
 		}
                 ;
 declarations:	declaration SEMICOLON declarations
@@ -135,8 +134,6 @@ declaration:    identifiers COLON INTEGER {
 					if(addParams) milCode.push_back("\t. " + string(ident,1));
 					else milCode.push_back("\t. " + ident);
 					symTable.push_back(Symbol(ident, "INTEGER"));
-					
-					
 				}
 				identStack.pop();
 			}
@@ -504,7 +501,12 @@ expressions:	  expression {
 		;
 
 vars:		  var {
-			if (!isReading) milCode.push_back("\t.> " + *($1.name));
+			string var = *($1.name);
+			Table::iterator iter = find(symTable.begin(), symTable.end(), var);
+			if (!isReading) {
+				if (iter->type == "ARRAY") milCode.push_back("\t.[]> " + *($1.name));
+				else milCode.push_back("\t.> " + *($1.name));
+			}
 		}
                 | var COMMA vars {}
                 ;
