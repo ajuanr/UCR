@@ -1,9 +1,6 @@
-	.< _i
-	.< _j
-.[]>_t, t2
-.>_k
-.>_i
-.>_j
-.>_k
-.[]>_t, _i
-.[]>_t, _j
+symbolTAble.size 5
+_n
+_k
+_j
+_i
+_t

@@ -100,10 +100,12 @@ prog_start:	functions {
 functions:	function functions
                 | /*empty*/
                 ;
-function: 	funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations M END_LOCALS BEGIN_BODY statements END_BODY {
+function: 	funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
 			milCode.push_back("endfunc");
+			cout << "symbolTAble.size " << symTable.size() << endl;
+			for (auto symbol : symTable) cout << symbol.name << endl;
 			for (auto code : milCode) {
-		//		cout << code << endl;
+			//	cout << code << endl;
 			}
                 }
 
@@ -112,7 +114,6 @@ funcName:	FUNCTION IDENT {
 			milCode.push_back("func " + *($2));
 		}
 
-M:		/*empty*/ { milCode.push_back(": " + string("START"));}
 M1:		/*empty*/ { addParams = true; }
 M2:		/*empty*/ { addParams = false; 
 			while (!paramTable.empty()) {
@@ -121,9 +122,8 @@ M2:		/*empty*/ { addParams = false;
 			}
 		}
                 ;
-declarations:	declaration SEMICOLON declarations
-
-                | /*empty*/
+declarations:	declaration SEMICOLON declarations {}
+                | /*empty*/ {}
                 ;
 
 declaration:    identifiers COLON INTEGER {
@@ -234,7 +234,6 @@ statement:        var ASSIGN expression {
 						milCode.push_back("\t.[]<" + var +", " + indexStack.top() );
 						indexStack.pop();
 					}
-					
 				}
 				rwStack.pop();
 			}
@@ -453,7 +452,7 @@ term:		terms {
 			if (iter == funcTable.end()) cout << "ERROR: " + *($1) + " not a function\n";
 			else milCode.push_back(genQuad("call", *($1), newTemp()));
 			$$.name = new string(temp);
-			$$.type = new string("TEMP TYPE");
+			$$.type = new string("INTEGER");
 		}
 		;
 
@@ -470,10 +469,8 @@ terms:		number {
 		// NEED TO CHECK ARRAY STUFF	
 		}
 		| L_PAREN expression R_PAREN {
-			// TEMPORARY
 			$$.name = new string(*($2.name));
 			$$.type = new string(*($2.type));
-			//$$.value = 909;
 		} 
 		; 
 		  
