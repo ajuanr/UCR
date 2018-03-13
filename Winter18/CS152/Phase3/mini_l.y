@@ -212,7 +212,6 @@ statement:        var ASSIGN expression {
                 | ifCond statements M4 ENDIF {}
                 | ifCond statements M3 ELSE statements M4 ENDIF { }
        		|  while BEGINLOOP statements M6 ENDLOOP{
-			cout << "WHILE BEGINLOOP HAS " << loopStack.front() << endl;
 			milCode.push_back("\t:= " + loopStack.front());
 			loopStack.pop_front();	
 		}
@@ -221,7 +220,7 @@ statement:        var ASSIGN expression {
 			milCode.push_back(genQuad("?:=", loopStack.front(), *($7.name)));
 			loopStack.pop_back();
 		}
-  		| FOREACH ident IN IDENT loop {}
+  		| FOREACH ident IN IDENT BEGINLOOP statements ENDLOOP{}
 		| READ vars {
 			while (!rwStack.empty()) {
 				string var = rwStack.top();
@@ -239,7 +238,6 @@ statement:        var ASSIGN expression {
 			}
 		}
                 | WRITE vars {
-		//while (!rwStack.empty()) rwStack.pop();	
 			while (!rwStack.empty()) {
 				string var = rwStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), var);
@@ -267,11 +265,8 @@ statement:        var ASSIGN expression {
 
 while:		WHILE bool_exp {
 			string l0 = newLabel();
-			cout << "WHILE GENERATED: " << l0 << endl;
 			string l1 = newLabel();
-			cout << "WHILE GENERATED: " << l1 << endl;
 			string l2 = newLabel();
-			cout << "WHILE GENERATED: " << l2 << endl;
 			milCode.push_back(": " + l0);
 			milCode.push_back(genQuad("?:=", l1, *($2.name)));
 			milCode.push_back("\t:= " + l2);
@@ -282,9 +277,7 @@ while:		WHILE bool_exp {
 
 ifCond:		IF bool_exp THEN  {
 			string ifTrue = newLabel();
-			cout << "IFCOND GENERATED: " << ifTrue << endl;
 			string ifFalse = newLabel();
-			cout << "IFCOND GENERATED: " << ifFalse<< endl;
 			milCode.push_back(genQuad("?:= ", ifTrue, *($2.name)));
 			milCode.push_back("\t:= " + ifFalse);
 			milCode.push_back(": " + ifTrue);
@@ -292,12 +285,8 @@ ifCond:		IF bool_exp THEN  {
 			
 		}
 
-loop:		BEGINLOOP statements ENDLOOP
-                ;
-
 M3:		/*empty*/ {
 			string label = newLabel();
-			cout << "M3 GENERATED: " << label << endl;
 			milCode.push_back("\t:= " + label);
 			milCode.push_back(": " + labelStack.front());
 			labelStack.pop_front();
@@ -310,17 +299,14 @@ M4:		/*empty*/ {
 		}
 
 M6:		/*empty*/ {
-			cout << "M6 HAS: " << loopStack.front() << endl;
 			milCode.push_back("\t:= " + loopStack.front());
 			loopStack.pop_front();
 		}
 
 M10:		/*empty*/ {
 			string label = newLabel();
-			cout << "DO GENERATED: " << label << endl;
 			milCode.push_back(": " + label);
-			//labelStack.push(label);
-			loopStack.push_back(newLabel());	
+			loopStack.push_back(label);	
 		}
 bool_exp:	  relation_and_exp {
 			$$.name = new string(*($1.name));
