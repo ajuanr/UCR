@@ -1,28 +1,78 @@
 func main
+DO GENERATED: L0
+IFCOND GENERATED: L2
+IFCOND GENERATED: L3
+IFCOND GENERATED: L4
+IFCOND GENERATED: L5
+M3 GENERATED: L6
+WHILE GENERATED: L7
+WHILE GENERATED: L8
+WHILE GENERATED: L9
+IFCOND GENERATED: L10
+IFCOND GENERATED: L11
+M6 HAS: L7
+WHILE BEGINLOOP HAS L9
+IFCOND GENERATED: L12
+IFCOND GENERATED: L13
+IFCOND GENERATED: L14
+IFCOND GENERATED: L15
+	. _n
+	. _k
+	. _j
+	. _i
+	.[] _t, 20
+	. t0
+	. t1
+	. p0
+	. t2
+	. p1
+	. p2
+	. p3
+	. p4
+	. p5
+	. p6
+	. t3
+	. t4
+	. p7
+	. p8
+	. t5
+	. t6
+	. t7
+	. t8
+	. p9
+	. p10
+	. p11
+	. p12
+	. p13
+	. p14
+	. p15
 	.< _i
 	.< _j
 	= _k, 0
 	= _n, 20
+: L0
 	[]= _t, _k, _k
 	+ t0, _k, 1
 	= _k, t0
 	% t1, _k, 2
 	== p0, t1, 0
-	?:=  L0, p0
+	?:=  L2, p0
+	:= L3
+: L2
 	:= L1
-: L0
-: L1
+: L3
 	- t2, _k, 1
 	.[]> _t, t2
 	< p1, _k, _n
+	?:= L1, p1
 	< p2, _i, _j
 	< p3, _j, _n
 	>= p4, _i, 0
 	&& p5, p3, p4
 	&& p6, p2, p5
-	?:=  L2, p6
-	:= L3
-: L2
+	?:=  L4, p6
+	:= L5
+: L4
 	* t3, _i, 2
 	[]= _t, _i, t3
 	* t4, _j, 2
@@ -30,10 +80,14 @@ func main
 	=[] _k, _t, _i
 	[]= _t, _j, _t
 	[]= _t, _j, _k
-	:= L4
-: L3
+	:= L6
+: L5
 	>= p7, _i, _j
 	|| p8, p7, false
+: L7
+	?:= L8, p8
+	:= L9
+: L8
 	+ t5, 1, _i
 	- t6, t5, _j
 	% t7, t6, 3
@@ -41,29 +95,32 @@ func main
 	- t8, _i, 1
 	= _i, t8
 	> p9, _k, 1
-	?:=  L5, p9
-	:= L6
-: L5
-: L6
+	?:=  L10, p9
+	:= L11
+: L10
+	:= L7
+: L11
 	.> _k
-: L6
+	:= L7
+	:= L9
+: L11
 	.> _i
 	.> _j
 	.> _k
 	< p10, _i, _n
 	>= p11, _i, 0
 	&& p12, p10, p11
-	?:=  L7, p12
-	:= L8
-: L7
+	?:=  L12, p12
+	:= L13
+: L12
 	.[]> _t, _i
-: L8
+: L13
 	< p13, _j, _n
 	>= p14, _j, 0
 	&& p15, p13, p14
-	?:=  L9, p15
-	:= L10
-: L9
+	?:=  L14, p15
+	:= L15
+: L14
 	.[]> _t, _j
-: L10
+: L15
 endfunc
