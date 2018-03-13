@@ -102,7 +102,6 @@ functions:	function functions
                 ;
 function: 	funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
 			milCode.push_back("endfunc");
-//			cout << "symbolTAble.size " << symTable.size() << endl;
 			for (auto symbol : symTable) {
 				if (symbol.type == "INTEGER" || symbol.type == "BOOLEAN")
 				 	cout << "\t. " << symbol.name << endl;
@@ -110,7 +109,7 @@ function: 	funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_L
 
 			}
 			for (auto code : milCode) {
-				cout << code << endl;
+			//	cout << code << endl;
 			}
                 }
 
@@ -123,7 +122,9 @@ funcName:	FUNCTION IDENT {
 M1:		/*empty*/ { addParams = true; }
 M2:		/*empty*/ { addParams = false; 
 			while (!paramTable.empty()) {
-				milCode.push_back(genQuad("=", string(paramTable.front(),1), "$0"));
+				cout << "\t. " +string(paramTable.front(), 1) << endl;
+				cout << genQuad("=", string(paramTable.front(),1), "$0") << endl;
+				//milCode.push_back(genQuad("=", string(paramTable.front(),1), "$0"));
 				paramTable.pop_front();
 			}
 		}
@@ -137,7 +138,7 @@ declaration:    identifiers COLON INTEGER {
 				string ident = identStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) {
-					if(addParams) milCode.push_back("\t. " + string(ident,1));
+//					if(addParams) milCode.push_back("\t. " + string(ident,1));
 					symTable.push_back(Symbol(ident, "INTEGER"));
 				}
 				identStack.pop();
@@ -536,6 +537,7 @@ ident:		IDENT {
 			$$ = new string(ident);
 			identStack.push(ident);
 			if (addParams) paramTable.push_back(ident);
+			
 		}
 		
 number:		NUMBER {
