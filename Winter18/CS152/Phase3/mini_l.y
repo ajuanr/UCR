@@ -32,6 +32,7 @@ typedef stack<string> stackStr;
 typedef deque<string> DeckStr;
 
 
+string errorString(string, int);
 string genQuad(string op, string dest, string srcl, string src2);
 string genQuad(string op, string dest , string src2);
 string newLabel();
@@ -109,7 +110,7 @@ function: 	funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_L
 
 			}
 			for (auto code : milCode) {
-			//	cout << code << endl;
+				cout << code << endl;
 			}
                 }
 
@@ -145,7 +146,7 @@ declaration:    identifiers COLON INTEGER {
 			}
                 }
 		| identifiers COLON ARRAY L_SQUARE_BRACKET number R_SQUARE_BRACKET OF INTEGER {
-			if ($5 < 0) cout << "ERROR: negative size\n";
+			if ($5 <= 0) yyerror("negative size for array\n");
 			while (!identStack.empty()) {
 				string ident = identStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
@@ -208,7 +209,7 @@ statement:        var ASSIGN expression {
 					}
 				}
 			}
-			else cout << "ERROR: assigninging to constant\n";
+			else cout << "assigning to constant\n";
 		}
                 | ifCond statements M4 ENDIF {}
                 | ifCond statements M3 ELSE statements M4 ENDIF { }
@@ -257,7 +258,7 @@ statement:        var ASSIGN expression {
                 | CONTINUE  {
 			if(!loopStack.empty()) 
 				milCode.push_back("\t:= " + loopStack.front());
-			else "ERROR. USING continue outside of loop\n";
+			else yyerror("Using continue outside of loop\n");
   		}	
                 | RETURN expression {
 			milCode.push_back("\tret " + *($2.name));	
@@ -439,10 +440,10 @@ term:		terms {
 			milCode.push_back(genQuad("-", name, "0", *($$.name)));
 		}	
 		| IDENT parenExpression  {
-					// "FIX THIS LATER"
 			string temp = *($1);
 			lstStr::iterator iter = find(funcTable.begin(), funcTable.end(), *($1));
-			if (iter == funcTable.end()) cout << "ERROR: " + *($1) + " not a function\n";
+			string errorString = *($1) + " not a function\n";
+			if (iter == funcTable.end()) yyerror(errorString.c_str());
 			else milCode.push_back(genQuad("call", *($1), newTemp()));
 			$$.name = new string(temp);
 			$$.type = new string("INTEGER");
@@ -451,15 +452,12 @@ term:		terms {
 
 terms:		number {
 			$$.name = new string(to_string($1));
-			$$.name = new string(to_string($1)); // FOR TESTING DELETE LATER 
 			$$.type = new string("INTEGER");
 			//$$.value = $1;
 		}		 
 		| var {
 			$$.name = new string(*($1.name));	
 			$$.type = new string(*($1.type));
-			//$$.value = $1.value; // fix this for array assignment stuff
-		// NEED TO CHECK ARRAY STUFF	
 		}
 		| L_PAREN expression R_PAREN {
 			$$.name = new string(*($2.name));
@@ -498,9 +496,10 @@ var:		ident {
 			$$.name = new string(ident);
 			$$.type = new string("INTEGER");
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
-				if (iter == symTable.end()) cout << "ERROR: var " +ident +" not found\n";
+				string error = string(ident,1) +" not previously declared";
+				if (iter == symTable.end()) yyerror(errorString(error, currLine).c_str());
 				else {
-					if (iter->type != "INTEGER") cout << "ERROR: var not an int\n";
+					if (iter->type != "INTEGER") yyerror(errorString(ident +" not an int", currLine).c_str());
 					else {
 						identStack.push(ident);
 						//$$.value = iter->value;
@@ -515,11 +514,10 @@ var:		ident {
 			$$.type = new string("ARRAY");
 			indexStack.push(*($3.name));
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
-				if (iter == symTable.end()) cout << "ERROR: var not found\n";
+				if (iter == symTable.end()) yyerror(errorString(ident+" not previously declared", currLine).c_str());
 				else {
-					if (iter->type != "ARRAY") cout << "ERROR: var not an array\n";
+					if (iter->type != "ARRAY") yyerror(errorString(ident+" not an array", currLine).c_str());
 					else {
-						//$$.value = iter->value;
 						varStack.push(ident);
 					}
 				}
@@ -580,5 +578,9 @@ string genQuad(string op, string dest, string src1, string src2) {
 
 string genQuad(string op, string dest , string src) {
     return "\t" + op + " " + dest + ", " + src;
+}
+
+string errorString(string s, int line) {
+	return  s +"\n";
 }
 	

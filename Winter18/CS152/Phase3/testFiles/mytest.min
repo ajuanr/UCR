@@ -16,7 +16,7 @@ beginbody	## main program
 
   k := 0;
   n := 20;
-  
+
   do 
     beginloop
        t[k] := k;
