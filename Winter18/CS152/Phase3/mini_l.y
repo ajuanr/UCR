@@ -43,7 +43,7 @@ DeckStr funcParams;		// keep track of parameters in functions
 stackStr indexStack;
 lstStr funcTable;	// keep track of functions;
 stackStr varStack;	// keep track of vars
-stackStr labelStack;	// keep track of labels
+DeckStr labelStack;	// keep track of labels
 stackStr loopStack;	// keep track of which loop you're in
 stackStr rwStack;
 int currentTemp = 0; 	// the current number of temporary variables
@@ -103,12 +103,14 @@ functions:	function functions
 function: 	funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
 			milCode.push_back("endfunc");
 //			cout << "symbolTAble.size " << symTable.size() << endl;
+			/*
 			for (auto symbol : symTable) {
 				if (symbol.type == "INTEGER" || symbol.type == "BOOLEAN")
 				 	cout << "\t. " << symbol.name << endl;
 				else cout << "\t.[] " << symbol.name << ", " << symbol.size << endl;	
 
 			}
+			*/
 			for (auto code : milCode) {
 				cout << code << endl;
 			}
@@ -209,23 +211,26 @@ statement:        var ASSIGN expression {
 			}
 			else cout << "ERROR: assigninging to constant\n";
 		}
-                | ifCond statements M4 ENDIF
-                | ifCond statements M3 ELSE statements M4 ENDIF
+                | ifCond statements M4 ENDIF {}
+                | ifCond statements M3 ELSE statements M4 ENDIF { }
        		| WHILE M6 bool_exp loop M7{
+			/*
 			string label = newLabel();
 			labelStack.push(label);
 			milCode.push_back(genQuad("?:=", labelStack.top(), *($3.name)));
+			*/
 		}
 			
 		| DO M10 BEGINLOOP statements ENDLOOP M11 WHILE bool_exp {
+			/*
 			string label =  labelStack.top();
 			labelStack.pop();
 			milCode.push_back(genQuad("==", newPred(), *($8.name), "0"));
 			milCode.push_back(genQuad("?:=", label, newPred()));
-			
+			*/	
 		}
   		| FOREACH ident IN IDENT loop {
-			cout << "ident is: " << *($2) << " " << *($4) << endl;
+		//	cout << "ident is: " << *($2) << " " << *($4) << endl;
 		}
 		| READ vars {
 			while (!rwStack.empty()) {
@@ -271,9 +276,13 @@ statement:        var ASSIGN expression {
                 ;
 
 ifCond:		IF bool_exp THEN  {
-			string label = newLabel();
-			milCode.push_back(genQuad("?:=", label, *($2.name)));
-			labelStack.push(label);
+			string ifTrue = newLabel();
+			string ifFalse = newLabel();
+			milCode.push_back(genQuad("?:= ", ifTrue, *($2.name)));
+			milCode.push_back("\t:= " + ifFalse);
+			milCode.push_back(": " + ifTrue);
+			labelStack.push_back(ifFalse);
+			
 		}
 
 loop:		BEGINLOOP statements ENDLOOP
@@ -282,43 +291,50 @@ loop:		BEGINLOOP statements ENDLOOP
 M3:		/*empty*/ {
 			string label = newLabel();
 			milCode.push_back("\t:= " + label);
-			milCode.push_back(": " + labelStack.top());
-			labelStack.pop();				
-			labelStack.push(label);
+			milCode.push_back(": " + labelStack.front());
+			labelStack.pop_front();
+			labelStack.push_back(label);
 		}
 
 M4:		/*empty*/ {
-			milCode.push_back(": " + labelStack.top());
-			labelStack.pop();	
+			milCode.push_back(": " + labelStack.back());
+			labelStack.pop_front();	
 		}
 
 M6:		/*empty*/ {
+			/*
 			string label = newLabel();
 			labelStack.push(label);
 			loopStack.push(label);
 			milCode.push_back(": " + label);
+			*/
 		}
 
 M7:		/*empty*/ {
+			/*
 			string l1 = labelStack.top(); labelStack.pop();	
 			string l2 = labelStack.top(); labelStack.pop();	
 			milCode.push_back("\t:= " + l1);
 			milCode.push_back("\t:= " + l2);
 			loopStack.pop();
-
+			*/
 		}	
 
 M10:		/*empty*/ {
+			/*
 			string label = newLabel();
 			milCode.push_back(": " + label);
 			labelStack.push(label);
 			loopStack.push(newLabel());	
+			*/
 		}
 
 M11:		/*empty*/ {
+			/*
 			string label = loopStack.top();
 			milCode.push_back(": " + label);
 			loopStack.pop();
+			*/
 		}
 
 bool_exp:	  relation_and_exp {
