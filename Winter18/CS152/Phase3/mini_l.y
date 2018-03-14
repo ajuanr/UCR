@@ -215,21 +215,18 @@ statement:        var ASSIGN expression {
 			}
 			else cout << "assigning to constant\n";
 		}
-                | ifCond statements M4 ENDIF {}
-                | ifCond statements M3 ELSE statements M4 ENDIF { }
+                | ifCond statements ENDIF M4 {}
+                | ifCond statements M3 ELSE statements ENDIF M4{ }
        		|  M11 while BEGINLOOP statements M6 ENDLOOP{
 			milCode.push_back(": " + loopStack.front());
 			loopStack.pop_front();	
 		}
 			
-		| DO M7 BEGINLOOP statements ENDLOOP WHILE bool_exp {
-			milCode.push_back(genQuad("?:=", loopStack.front(), *($7.name)));
-			loopStack.pop_back();
+		| DO M7 BEGINLOOP statements ENDLOOP M8 WHILE bool_exp {
+			milCode.push_back(genQuad("?:=", loopStack.front(), *($8.name)));
+			loopStack.pop_front();
 		}
-  		| foreach IN ident M5 BEGINLOOP statements ENDLOOP{
-			cout << "foreach count is: " << foreachCount;
-			cout << "FOREACH IDENT IS: " << *($3) << endl;
-		}
+  		| foreach IN ident M5 BEGINLOOP statements ENDLOOP{}
 		| READ vars {
 			while (!rwStack.empty()) {
 				string var = rwStack.top();
@@ -263,8 +260,9 @@ statement:        var ASSIGN expression {
 			}
 		}
                 | CONTINUE  {
-			if(!loopStack.empty()) 
-				milCode.push_back("\t:= " + loopStack.front());
+			if(!loopStack.empty()) {
+				milCode.push_back("\t:= " + loopStack.back());
+			}
 			else yyerror("Using continue outside of loop\n");
   		}	
                 | RETURN expression {
@@ -285,25 +283,21 @@ M11:		{
 		}
 
 while:		WHILE bool_exp {
-			//string l0 = newLabel();
+			string l0 = newLabel();
 			string l1 = newLabel();
-			string l2 = newLabel();
-			//milCode.push_back(": " + l0);
-			milCode.push_back(genQuad("?:=", l1, *($2.name)));
-			milCode.push_back("\t:= " + l2);
-			milCode.push_back(": " + l1);
-			//loopStack.push_back(l0);
-			loopStack.push_back(l2);
+			milCode.push_back(genQuad("?:=", l0, *($2.name)));
+			milCode.push_back("\t:= " + l1);
+			milCode.push_back(": " + l0);
+			loopStack.push_back(l1);
 		}
 
 ifCond:		IF bool_exp THEN  {
-			string ifTrue = newLabel();
-			string ifFalse = newLabel();
-			milCode.push_back(genQuad("?:= ", ifTrue, *($2.name)));
-			milCode.push_back("\t:= " + ifFalse);
-			milCode.push_back(": " + ifTrue);
-			labelStack.push_back(ifFalse);
-			
+			string l0 = newLabel();
+			string l1 = newLabel();
+			milCode.push_back(genQuad("?:= ", l0, *($2.name)));
+			milCode.push_back("\t:= " + l1);
+			milCode.push_back(": " + l0);
+			labelStack.push_back(l1);
 		}
 
 M3:		/*empty*/ {
@@ -315,7 +309,7 @@ M3:		/*empty*/ {
 		}
 
 M4:		/*empty*/ {
-			milCode.push_back(": " + labelStack.back());
+			milCode.push_back(": " + labelStack.front());
 			labelStack.pop_front();	
 		}
 
@@ -328,10 +322,21 @@ M6:		/*empty*/ {
 		}
 
 M7:		/*empty*/ {
-			string label = newLabel();
-			milCode.push_back(": " + label);
-			loopStack.push_back(label);	
+			string l0 = newLabel();
+			string l1 = newLabel();
+			milCode.push_back(": " + l0);
+			loopStack.push_back(l0);	
+//			cout << "M7 PUSHED BACK \n" << loopStack.back() << endl;
+			loopStack.push_back(l1);	
+//			cout << "M7 PUSHED BACK \n" << loopStack.back() << endl;
 		}
+
+M8:		/*empty*/ {
+//			cout << "M8 removed: " << loopStack.back() << endl;
+			milCode.push_back(": " + loopStack.back());
+			loopStack.pop_back();
+		}
+
 bool_exp:	  relation_and_exp {
 			$$.name = new string(*($1.name));
 		}
@@ -370,10 +375,14 @@ relation_exp:	  NOT relation_exp {
                         milCode.push_back(genQuad(*($2), pred, lhs, rhs));
 		}
                 | TRUE {
-			$$.name = new string("true");
+			string pred = newPred();
+			$$.name = new string(pred);
+			milCode.push_back(genQuad("==", pred, "1", "1"));
 		}
                 | FALSE {
-			$$.name = new string("false");
+			string pred = newPred();
+			$$.name = new string(pred);
+			milCode.push_back(genQuad("==", pred, "1", "0"));
 		}
                 | L_PAREN bool_exp R_PAREN {
 			$$.name = $2.name;
