@@ -65,9 +65,9 @@ func main
 	[]= _t, _j, _k
 	:= L5
 : L4
+: L6
 	>= p7, _i, _j
 	|| p8, p7, false
-: L6
 	?:= L7, p8
 	:= L8
 : L7
@@ -85,7 +85,7 @@ func main
 : L10
 	.> _k
 	:= L6
-	:= L8
+: L8
 : L10
 	.> _i
 	.> _j

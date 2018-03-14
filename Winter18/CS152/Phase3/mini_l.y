@@ -14,14 +14,14 @@ void yyerror(char const*);
 int yylex(void);
 
 struct Symbol{
-   Symbol():value("NO VALUE"){}
+   Symbol():value(0){}
    Symbol(string n):name(n) {}
    Symbol(string n, string t): name(n), type(t){}
    Symbol(string n, string t, int l):name(n), type(t),size(l) {}
    string name;
    string type;
    int size;  // for arrays
-   string value;
+   int value;
    bool operator==(const string &rhs) { return !(this->name.compare(rhs));}
 };
 
@@ -31,8 +31,6 @@ typedef list<Symbol> Table;
 typedef stack<string> stackStr;
 typedef deque<string> DeckStr;
 
-
-string errorString(string, int);
 string genQuad(string op, string dest, string srcl, string src2);
 string genQuad(string op, string dest , string src2);
 string newLabel();
@@ -46,10 +44,12 @@ lstStr funcTable;	// keep track of functions;
 stackStr varStack;	// keep track of vars
 DeckStr labelStack;	// keep track of labels
 DeckStr loopStack;	// keep track of which loop you're in
+DeckStr foreachStack;	
 stackStr rwStack;
 int currentTemp = 0; 	// the current number of temporary variables
 int currentLabel = 0; 	// the current number of labels
 int currentPred = 0;    // the current predicate
+int foreachCount=0;
 bool addParams = false;
 
 lstStr milCode;		// holds the code generated
@@ -138,10 +138,12 @@ declaration:    identifiers COLON INTEGER {
 			while (!identStack.empty()) {
 				string ident = identStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
+				string errorString = string(ident,1) + " has already been declared\n";
 				if (iter == symTable.end()) {
 //					if(addParams) milCode.push_back("\t. " + string(ident,1));
 					symTable.push_back(Symbol(ident, "INTEGER"));
 				}
+				else yyerror(errorString.c_str());
 				identStack.pop();
 			}
                 }
@@ -149,10 +151,12 @@ declaration:    identifiers COLON INTEGER {
 			if ($5 <= 0) yyerror("negative size for array\n");
 			while (!identStack.empty()) {
 				string ident = identStack.top();
+				string errorString = string(ident,1) + " has already been declared\n";
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) {
 					symTable.push_back(Symbol(ident, "ARRAY", $5));
 				}
+				else yyerror(errorString.c_str());
 				identStack.pop();
 			}
 		}
@@ -213,16 +217,19 @@ statement:        var ASSIGN expression {
 		}
                 | ifCond statements M4 ENDIF {}
                 | ifCond statements M3 ELSE statements M4 ENDIF { }
-       		|  while BEGINLOOP statements M6 ENDLOOP{
-			milCode.push_back("\t:= " + loopStack.front());
+       		|  M11 while BEGINLOOP statements M6 ENDLOOP{
+			milCode.push_back(": " + loopStack.front());
 			loopStack.pop_front();	
 		}
 			
-		| DO M10 BEGINLOOP statements ENDLOOP WHILE bool_exp {
+		| DO M7 BEGINLOOP statements ENDLOOP WHILE bool_exp {
 			milCode.push_back(genQuad("?:=", loopStack.front(), *($7.name)));
 			loopStack.pop_back();
 		}
-  		| FOREACH ident IN IDENT BEGINLOOP statements ENDLOOP{}
+  		| foreach IN ident M5 BEGINLOOP statements ENDLOOP{
+			cout << "foreach count is: " << foreachCount;
+			cout << "FOREACH IDENT IS: " << *($3) << endl;
+		}
 		| READ vars {
 			while (!rwStack.empty()) {
 				string var = rwStack.top();
@@ -265,15 +272,27 @@ statement:        var ASSIGN expression {
 		}
                 ;
 
-while:		WHILE bool_exp {
+foreach:	FOREACH ident {
+			Symbol ident = Symbol(*($2), "INTEGER");
+			symTable.push_back(ident);
+		}
+
+M11:		{	
 			string l0 = newLabel();
+			milCode.push_back(": " + l0);
+			loopStack.push_back(l0);
+		
+		}
+
+while:		WHILE bool_exp {
+			//string l0 = newLabel();
 			string l1 = newLabel();
 			string l2 = newLabel();
-			milCode.push_back(": " + l0);
+			//milCode.push_back(": " + l0);
 			milCode.push_back(genQuad("?:=", l1, *($2.name)));
 			milCode.push_back("\t:= " + l2);
 			milCode.push_back(": " + l1);
-			loopStack.push_back(l0);
+			//loopStack.push_back(l0);
 			loopStack.push_back(l2);
 		}
 
@@ -300,12 +319,15 @@ M4:		/*empty*/ {
 			labelStack.pop_front();	
 		}
 
+M5:		/*empty*/ {
+		}
+
 M6:		/*empty*/ {
 			milCode.push_back("\t:= " + loopStack.front());
 			loopStack.pop_front();
 		}
 
-M10:		/*empty*/ {
+M7:		/*empty*/ {
 			string label = newLabel();
 			milCode.push_back(": " + label);
 			loopStack.push_back(label);	
@@ -496,10 +518,12 @@ var:		ident {
 			$$.name = new string(ident);
 			$$.type = new string("INTEGER");
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
-				string error = string(ident,1) +" not previously declared";
-				if (iter == symTable.end()) yyerror(errorString(error, currLine).c_str());
+				string errorString = string(ident,1) +" not previously declared\n";
+				if (iter == symTable.end()) {
+					yyerror(errorString.c_str());
+				}
 				else {
-					if (iter->type != "INTEGER") yyerror(errorString(ident +" not an int", currLine).c_str());
+					if (iter->type != "INTEGER") yyerror(errorString.c_str());
 					else {
 						identStack.push(ident);
 						//$$.value = iter->value;
@@ -513,15 +537,15 @@ var:		ident {
 			$$.name = new string(ident);
 			$$.type = new string("ARRAY");
 			indexStack.push(*($3.name));
-				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
-				if (iter == symTable.end()) yyerror(errorString(ident+" not previously declared", currLine).c_str());
+			string errorString = string(ident,1) +" not previously declared\n";
+			Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
+			if (iter == symTable.end()) yyerror(errorString.c_str());
+			else {
+				if (iter->type != "ARRAY") yyerror(errorString.c_str());
 				else {
-					if (iter->type != "ARRAY") yyerror(errorString(ident+" not an array", currLine).c_str());
-					else {
-						varStack.push(ident);
-					}
+					varStack.push(ident);
 				}
-	
+			}
 		}
 			
 		;
@@ -578,9 +602,5 @@ string genQuad(string op, string dest, string src1, string src2) {
 
 string genQuad(string op, string dest , string src) {
     return "\t" + op + " " + dest + ", " + src;
-}
-
-string errorString(string s, int line) {
-	return  s +"\n";
 }
 	
