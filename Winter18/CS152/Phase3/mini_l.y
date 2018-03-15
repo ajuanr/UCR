@@ -176,6 +176,7 @@ statement:        var ASSIGN expression {
 				if (lhs->type == "ARRAY") {
 					string index = indexStack.top();
 					indexStack.pop();
+					string temp = newTemp();
 					// check rhs type
 					if (rhs != symTable.end()) { // rhs in table
 						if (rhs->type == "INTEGER") {
@@ -186,7 +187,6 @@ statement:        var ASSIGN expression {
 							string rIndex = indexStack.top();
 							indexStack.pop();
 							//string src = "[] " + expression +", " + rIndex;
-							//milCode.push_back(genQuad("[]=", var, index, src));
 							milCode.push_back(genQuad("[]=", var, index, expression));
 						}
 					}				
@@ -224,8 +224,10 @@ statement:        var ASSIGN expression {
 			loopStack.pop_front();	
 		}
 			
-		| DO M7 BEGINLOOP statements ENDLOOP M8 WHILE bool_exp {
-			milCode.push_back(genQuad("?:=", loopStack.front(), *($8.name)));
+		| DO M7 BEGINLOOP statements ENDLOOP WHILE bool_exp {
+			milCode.push_back(genQuad("?:=", loopStack.front(), *($7.name)));
+			loopStack.pop_front();
+			milCode.push_back(": " + loopStack.front());
 			loopStack.pop_front();
 		}
   		| foreach IN ident M5 BEGINLOOP statements ENDLOOP{}
@@ -263,7 +265,7 @@ statement:        var ASSIGN expression {
 		}
                 | CONTINUE  {
 			if(!loopStack.empty()) {
-				milCode.push_back("\t:= " + loopStack.front());
+				milCode.push_back("\t:= " + loopStack.back());
 			}
 			else yyerror("Using continue outside of loop\n");
   		}	
@@ -323,12 +325,7 @@ M7:		/*empty*/ {
 			string l1 = newLabel();
 			milCode.push_back(": " + l0);
 			loopStack.push_back(l0);	
-			loopStack.push_back(l1);	
-		}
-
-M8:		/*empty*/ {
-			milCode.push_back(": " + loopStack.front());
-			loopStack.pop_front();
+			loopStack.push_back(l1);
 		}
 
 bool_exp:	  relation_and_exp {
@@ -365,7 +362,7 @@ relation_exp:	  NOT relation_exp {
 			string pred = newPred();
                         $$.name = new string(pred);
                         string lhs = *($1.name);
-			if (*($1.type) == "ARRAY") lhs = lhs + "[]";
+			//if (*($1.type) == "ARRAY") lhs = lhs + "[]";
                         string rhs = *($3.name);
                         milCode.push_back(genQuad(*($2), pred, lhs, rhs));
 		}
