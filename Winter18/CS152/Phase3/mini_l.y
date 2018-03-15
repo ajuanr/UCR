@@ -227,10 +227,8 @@ statement:        var ASSIGN expression {
 			loopStack.pop_front();	
 		}
 			
-		| DO M7 BEGINLOOP statements ENDLOOP WHILE bool_exp {
-			milCode.push_back(genQuad("?:=", loopStack.front(), *($7.name)));
-			loopStack.pop_front();
-			milCode.push_back(": " + loopStack.front());
+		| DO M7 BEGINLOOP statements ENDLOOP M8 WHILE bool_exp {
+			milCode.push_back(genQuad("?:=", loopStack.front(), *($8.name)));
 			loopStack.pop_front();
 		}
   		| foreach IN ident M5 BEGINLOOP statements ENDLOOP{}
@@ -268,7 +266,7 @@ statement:        var ASSIGN expression {
 		}
                 | CONTINUE  {
 			if(!loopStack.empty()) {
-				milCode.push_back("\t:= " + loopStack.back());
+				milCode.push_back("\t:= " + loopStack.front());
 			}
 			else yyerror("Using continue outside of loop\n");
   		}	
@@ -327,8 +325,13 @@ M7:		/*empty*/ {
 			string l0 = newLabel();
 			string l1 = newLabel();
 			milCode.push_back(": " + l0);
-			loopStack.push_back(l0);	
 			loopStack.push_back(l1);
+			loopStack.push_back(l0);	
+		}
+
+M8:		{
+			milCode.push_back(": " + loopStack.front());
+			loopStack.pop_front();
 		}
 
 bool_exp:	  relation_and_exp {
