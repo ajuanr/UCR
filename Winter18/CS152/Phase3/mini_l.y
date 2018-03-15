@@ -217,7 +217,9 @@ statement:        var ASSIGN expression {
 		}
                 | ifCond statements ENDIF M4 {}
                 | ifCond statements M3 ELSE statements ENDIF M4{ }
-       		|  M11 while BEGINLOOP statements M6 ENDLOOP{
+       		|  M9 while BEGINLOOP statements ENDLOOP{
+			milCode.push_back(":= " + loopStack.front());
+			loopStack.pop_front();
 			milCode.push_back(": " + loopStack.front());
 			loopStack.pop_front();	
 		}
@@ -261,7 +263,7 @@ statement:        var ASSIGN expression {
 		}
                 | CONTINUE  {
 			if(!loopStack.empty()) {
-				milCode.push_back("\t:= " + loopStack.back());
+				milCode.push_back("\t:= " + loopStack.front());
 			}
 			else yyerror("Using continue outside of loop\n");
   		}	
@@ -275,7 +277,7 @@ foreach:	FOREACH ident {
 			symTable.push_back(ident);
 		}
 
-M11:		{	
+M9:		{	
 			string l0 = newLabel();
 			milCode.push_back(": " + l0);
 			loopStack.push_back(l0);
@@ -283,12 +285,12 @@ M11:		{
 		}
 
 while:		WHILE bool_exp {
-			string l0 = newLabel();
 			string l1 = newLabel();
-			milCode.push_back(genQuad("?:=", l0, *($2.name)));
-			milCode.push_back("\t:= " + l1);
-			milCode.push_back(": " + l0);
-			loopStack.push_back(l1);
+			string l2 = newLabel();
+			milCode.push_back(genQuad("?:=", l1, *($2.name)));
+			milCode.push_back("\t:= " + l2);
+			milCode.push_back(": " + l1);
+			loopStack.push_back(l2);
 		}
 
 ifCond:		IF bool_exp THEN  {
@@ -316,25 +318,17 @@ M4:		/*empty*/ {
 M5:		/*empty*/ {
 		}
 
-M6:		/*empty*/ {
-			milCode.push_back("\t:= " + loopStack.front());
-			loopStack.pop_front();
-		}
-
 M7:		/*empty*/ {
 			string l0 = newLabel();
 			string l1 = newLabel();
 			milCode.push_back(": " + l0);
 			loopStack.push_back(l0);	
-//			cout << "M7 PUSHED BACK \n" << loopStack.back() << endl;
 			loopStack.push_back(l1);	
-//			cout << "M7 PUSHED BACK \n" << loopStack.back() << endl;
 		}
 
 M8:		/*empty*/ {
-//			cout << "M8 removed: " << loopStack.back() << endl;
-			milCode.push_back(": " + loopStack.back());
-			loopStack.pop_back();
+			milCode.push_back(": " + loopStack.front());
+			loopStack.pop_front();
 		}
 
 bool_exp:	  relation_and_exp {
@@ -371,6 +365,7 @@ relation_exp:	  NOT relation_exp {
 			string pred = newPred();
                         $$.name = new string(pred);
                         string lhs = *($1.name);
+			if (*($1.type) == "ARRAY") lhs = lhs + "[]";
                         string rhs = *($3.name);
                         milCode.push_back(genQuad(*($2), pred, lhs, rhs));
 		}
@@ -385,8 +380,9 @@ relation_exp:	  NOT relation_exp {
 			milCode.push_back(genQuad("==", pred, "1", "0"));
 		}
                 | L_PAREN bool_exp R_PAREN {
-			$$.name = $2.name;
-			$$.type = $2.type;
+			string pred = newPred();
+			$$.name = new string(pred);
+			milCode.push_back(genQuad("=", pred, *($2.name)));
 		} 
                 ;
 
@@ -401,14 +397,12 @@ comp:	   	  EQ  { $$ = new string("==");}
 expression:	  multiplicative_expression {
 			$$.name = new string(*($1.name));
 			$$.type= new string(*($1.type));
-			//$$.value = $1.value;
 
 		}
                 | expression ADD multiplicative_expression {
 			string temp = newTemp();
 			$$.name = new string(temp);
 			$$.type = new string("INTEGER");
-			//$$.value = $1.value + $3.value;
 			string lhs = *($1.name);
 			string rhs = *($3.name);
 			milCode.push_back(genQuad("+",temp, lhs, rhs));
@@ -417,7 +411,6 @@ expression:	  multiplicative_expression {
 			string temp = newTemp();
 			$$.name = new string(temp);
 			$$.type = new string("INTEGER");
-			//$$.value = $1.value - $3.value;
 			string lhs = *($1.name);
 			string rhs = *($3.name);
 			milCode.push_back(genQuad("-",temp, lhs, rhs));
@@ -427,13 +420,11 @@ expression:	  multiplicative_expression {
 multiplicative_expression:	term {
 					$$.name = new string(*($1.name));
 					$$.type = new string(*($1.type));
-					//$$.value = $1.value;
 				}
 				|multiplicative_expression MULT term {
 					string temp = newTemp();
 					$$.name = new string(temp);
 					$$.type = new string("INTEGER");
-					//$$.value = $1.value * $3.value;
 					string lhs = *($1.name);
 					string rhs = *($3.name);
 					milCode.push_back(genQuad("*",temp, lhs, rhs));
@@ -459,15 +450,12 @@ multiplicative_expression:	term {
 term:		terms {
 			$$.name = new string(*($1.name));
 			$$.type = new string (*($1.type));
-			//$$.value = $1.value;
 		}
 		|	
 		SUB terms %prec UMINUS {
 			string name = newTemp();
 			$$.name = new string(*($2.name));
 			$$.type = new string(*($2.type));
-			//*($$.type) = *($2.type);
-			//$$.value = -($2.value);
 			milCode.push_back(genQuad("-", name, "0", *($$.name)));
 		}	
 		| IDENT parenExpression  {

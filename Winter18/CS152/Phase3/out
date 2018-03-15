@@ -1,9 +1,4 @@
 func main
-M7 PUSHED BACK 
-L0
-M7 PUSHED BACK 
-L1
-M8 removed: L1
 	. _n
 	. _k
 	. _j
@@ -23,17 +18,18 @@ M8 removed: L1
 	. t4
 	. p7
 	. p8
+	. p9
 	. t5
 	. t6
 	. t7
 	. t8
-	. p9
 	. p10
 	. p11
 	. p12
 	. p13
 	. p14
 	. p15
+	. p16
 	.< _i
 	.< _j
 	= _k, 0
@@ -47,13 +43,13 @@ M8 removed: L1
 	?:=  L2, p0
 	:= L3
 : L2
-	:=CONTINUE L1
+	:= CONTINUE L0
 : L3
 	- t2, _k, 1
 	.[]> _t, t2
-: L1
+: L0
 	< p1, _k, _n
-	?:= L0, p1
+	?:= L1, p1
 	< p2, _i, _j
 	< p3, _j, _n
 	>= p4, _i, 0
@@ -73,8 +69,9 @@ M8 removed: L1
 : L5
 : L7
 	>= p7, _i, _j
-	|| p8, p7, false
-	?:= L8, p8
+	== p8, 1, 0
+	|| p9, p7, p8
+	?:= L8, p9
 	:= L9
 : L8
 	+ t5, 1, _i
@@ -83,31 +80,31 @@ M8 removed: L1
 	= _k, t7
 	- t8, _i, 1
 	= _i, t8
-	> p9, _k, 1
-	?:=  L10, p9
+	> p10, _k, 1
+	?:=  L10, p10
 	:= L11
 : L10
-	:=CONTINUE L9
+	:= CONTINUE L7
 : L6
 	.> _k
-	:= L7
+:= L7
 : L9
 : L11
 	.> _i
 	.> _j
 	.> _k
-	< p10, _i, _n
-	>= p11, _i, 0
-	&& p12, p10, p11
-	?:=  L12, p12
+	< p11, _i, _n
+	>= p12, _i, 0
+	&& p13, p11, p12
+	?:=  L12, p13
 	:= L13
 : L12
 	.[]> _t, _i
 : L13
-	< p13, _j, _n
-	>= p14, _j, 0
-	&& p15, p13, p14
-	?:=  L14, p15
+	< p14, _j, _n
+	>= p15, _j, 0
+	&& p16, p14, p15
+	?:=  L14, p16
 	:= L15
 : L14
 	.[]> _t, _j
