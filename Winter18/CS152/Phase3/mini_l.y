@@ -176,7 +176,6 @@ statement:        var ASSIGN expression {
 				if (lhs->type == "ARRAY") {
 					string index = indexStack.top();
 					indexStack.pop();
-					string temp = newTemp();
 					// check rhs type
 					if (rhs != symTable.end()) { // rhs in table
 						if (rhs->type == "INTEGER") {
@@ -186,8 +185,10 @@ statement:        var ASSIGN expression {
 						else { // ARRAY = ARRAY
 							string rIndex = indexStack.top();
 							indexStack.pop();
+							string temp = newTemp();
+							milCode.push_back(genQuad("=", temp, expression, index));
 							//string src = "[] " + expression +", " + rIndex;
-							milCode.push_back(genQuad("[]=", var, index, expression));
+							milCode.push_back(genQuad("[]=", var, index, temp));
 						}
 					}				
 					else {// rhs not in table, must be temp or constant
@@ -204,7 +205,9 @@ statement:        var ASSIGN expression {
 						else { // int = array[]
 							string index = indexStack.top();
 							indexStack.pop();
-							milCode.push_back(genQuad("=[]", var, expression, index));
+							string temp = newTemp();
+							milCode.push_back(genQuad("=[]", temp, expression, index));
+							milCode.push_back(genQuad("=",var, temp)); 
 						}
 					}				
 					else {// rhs not in table, must be temp or constant
@@ -218,7 +221,7 @@ statement:        var ASSIGN expression {
                 | ifCond statements ENDIF M4 {}
                 | ifCond statements M3 ELSE statements ENDIF M4{ }
        		|  M9 while BEGINLOOP statements ENDLOOP{
-			milCode.push_back(":= " + loopStack.front());
+			milCode.push_back("\t:= " + loopStack.front());
 			loopStack.pop_front();
 			milCode.push_back(": " + loopStack.front());
 			loopStack.pop_front();	
