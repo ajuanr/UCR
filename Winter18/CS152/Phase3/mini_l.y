@@ -334,18 +334,18 @@ M8:		{
 
 bool_exp:	  relation_and_exp {
 			string pred = newPred();
-//			$$.name = new string(*($1.name));
 			$$.name = new string(pred);
 			milCode.push_back(genQuad("==", pred, *($1.name), "0"));
 		}
                 | relation_and_exp OR relation_and_exp {
 			string pred = newPred();
-			$$.name = new string(pred);
 			string lhs = *($1.name);
 			string rhs = *($3.name);
 			milCode.push_back(genQuad("||", pred, lhs, rhs));
+			string pred2 = newPred();
+			milCode.push_back(genQuad("==", pred2, pred, "0"));
+			$$.name = new string(pred2);
 		}
-		
 		; 
 
 relation_and_exp: relation_exp {
@@ -375,12 +375,12 @@ relation_exp:	  NOT relation_exp {
                 | TRUE {
 			string pred = newPred();
 			$$.name = new string(pred);
-			milCode.push_back(genQuad("==", pred, "1", "1"));
+			milCode.push_back(genQuad("=", pred, "1"));
 		}
                 | FALSE {
 			string pred = newPred();
 			$$.name = new string(pred);
-			milCode.push_back(genQuad("==", pred, "1", "0"));
+			milCode.push_back(genQuad("=", pred, "0"));
 		}
                 | L_PAREN bool_exp R_PAREN {
 			string pred = newPred();
@@ -499,9 +499,7 @@ expressions:	  expression {
 		 }
 		| expression COMMA expressions {
 			funcParams.push_back(*($1.name));
-
 		}
-			
 		;
 
 vars:		  var {
@@ -529,7 +527,6 @@ var:		ident {
 						varStack.push(ident);
 					}
 				}
-			
                   }
                 | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
 			string ident = *($1);
