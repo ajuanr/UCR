@@ -187,7 +187,6 @@ statement:        var ASSIGN expression {
 							indexStack.pop();
 							string temp = newTemp();
 							milCode.push_back(genQuad("=", temp, expression, index));
-							//string src = "[] " + expression +", " + rIndex;
 							milCode.push_back(genQuad("[]=", var, index, temp));
 						}
 					}				
@@ -284,7 +283,6 @@ M9:		{
 			string l0 = newLabel();
 			milCode.push_back(": " + l0);
 			loopStack.push_back(l0);
-		
 		}
 
 while:		WHILE bool_exp {
@@ -335,7 +333,10 @@ M8:		{
 		}
 
 bool_exp:	  relation_and_exp {
-			$$.name = new string(*($1.name));
+			string pred = newPred();
+//			$$.name = new string(*($1.name));
+			$$.name = new string(pred);
+			milCode.push_back(genQuad("==", pred, *($1.name), "0"));
 		}
                 | relation_and_exp OR relation_and_exp {
 			string pred = newPred();
@@ -368,7 +369,6 @@ relation_exp:	  NOT relation_exp {
 			string pred = newPred();
                         $$.name = new string(pred);
                         string lhs = *($1.name);
-			//if (*($1.type) == "ARRAY") lhs = lhs + "[]";
                         string rhs = *($3.name);
                         milCode.push_back(genQuad(*($2), pred, lhs, rhs));
 		}
@@ -526,7 +526,6 @@ var:		ident {
 					if (iter->type != "INTEGER") yyerror(errorString.c_str());
 					else {
 						identStack.push(ident);
-						//$$.value = iter->value;
 						varStack.push(ident);
 					}
 				}
@@ -559,7 +558,6 @@ ident:		IDENT {
 			$$ = new string(ident);
 			identStack.push(ident);
 			if (addParams) paramTable.push_back(ident);
-			
 		}
 		
 number:		NUMBER {
