@@ -219,7 +219,7 @@ statement:        var ASSIGN expression {
 		}
                 | ifCond statements endif {}
                 | ifCond statements else statements endif{ }
-       		|  M9 while BEGINLOOP statements ENDLOOP{
+       		|  while BEGINLOOP statements ENDLOOP{
 			milCode.push_back("\t:= " + loopStack.front());
 			loopStack.pop_front();
 			milCode.push_back(": " + loopStack.front());
@@ -279,18 +279,15 @@ foreach:	FOREACH ident {
 			symTable.push_back(ident);
 		}
 
-M9:		{	
-			string l0 = newLabel();
-			milCode.push_back(": " + l0);
-			loopStack.push_back(l0);
-		}
-
 while:		WHILE bool_exp {
+			string l0 = newLabel();
 			string l1 = newLabel();
 			string l2 = newLabel();
+			milCode.push_back(": " + l0);
 			milCode.push_back(genQuad("?:=", l1, *($2.name)));
 			milCode.push_back("\t:= " + l2);
 			milCode.push_back(": " + l1);
+			loopStack.push_back(l0);
 			loopStack.push_back(l2);
 		}
 
