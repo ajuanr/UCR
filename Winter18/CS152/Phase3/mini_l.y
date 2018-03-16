@@ -44,14 +44,12 @@ lstStr funcTable;	// keep track of functions;
 stackStr varStack;	// keep track of vars
 DeckStr labelStack;	// keep track of labels
 DeckStr loopStack;	// keep track of which loop you're in
-DeckStr foreachStack;	
 stackStr rwStack;
 int currentTemp = 0; 	// the current number of temporary variables
 int currentLabel = 0; 	// the current number of labels
 int currentPred = 0;    // the current predicate
-int foreachCount=0;
 bool addParams = false;
-
+bool error = false;
 lstStr milCode;		// holds the code generated
 stackStr identStack;   	// holds list of identifiers seen
 
@@ -101,33 +99,36 @@ prog_start:	functions {
 functions:	function functions
                 | /*empty*/
                 ;
-function: 	funcName SEMICOLON M1 BEGIN_PARAMS declarations END_PARAMS M2 BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
+function: 	funcName SEMICOLON begin_params declarations end_params BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
 			milCode.push_back("endfunc");
+			if (!error) {
 			for (auto symbol : symTable) {
 				if (symbol.type == "INTEGER" || symbol.type == "BOOLEAN")
 				 	cout << "\t. " << symbol.name << endl;
 				else cout << "\t.[] " << symbol.name << ", " << symbol.size << endl;	
 
 			}
+			while (!paramTable.empty()) {
+				cout <<  "\t" + paramTable.front() << ", $" << 0 << endl;
+				paramTable.pop_front();
+			}
 			for (auto code : milCode) {
 				cout << code << endl;
 			}
+			}
+			currentTemp = 0;
+			currentPred = 0;
+			currentLabel = 0;
+			symTable.clear();
                 }
 
 funcName:	FUNCTION IDENT {
 			funcTable.push_back(*($2));
 			cout << "func " << *($2) << endl;
-			//milCode.push_back("func " + *($2));
 		}
 
-M1:		/*empty*/ { addParams = true; }
-M2:		/*empty*/ { addParams = false; 
-			while (!paramTable.empty()) {
-				cout << "\t. " +string(paramTable.front(), 1) << endl;
-				cout << genQuad("=", string(paramTable.front(),1), "$0") << endl;
-				//milCode.push_back(genQuad("=", string(paramTable.front(),1), "$0"));
-				paramTable.pop_front();
-			}
+begin_params:	BEGIN_PARAMS { addParams = true; }
+end_params:	END_PARAMS{ addParams = false; 
 		}
                 ;
 declarations:	declaration SEMICOLON declarations {}
@@ -137,13 +138,16 @@ declarations:	declaration SEMICOLON declarations {}
 declaration:    identifiers COLON INTEGER {
 			while (!identStack.empty()) {
 				string ident = identStack.top();
+				cout << "DECLARATION IS " << ident << endl;
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				string errorString = string(ident,1) + " has already been declared\n";
 				if (iter == symTable.end()) {
-//					if(addParams) milCode.push_back("\t. " + string(ident,1));
 					symTable.push_back(Symbol(ident, "INTEGER"));
 				}
-				else yyerror(errorString.c_str());
+				else {
+					error = true;
+					yyerror(errorString.c_str());
+				}
 				identStack.pop();
 			}
                 }
@@ -160,6 +164,7 @@ declaration:    identifiers COLON INTEGER {
 				identStack.pop();
 			}
 		}
+		| identifiers COLON ARRAY L_SQUARE_BRACKET error R_SQUARE_BRACKET OF INTEGER {yyerrok;}
                 ;
 
 statements:       statement SEMICOLON statements {}
@@ -215,7 +220,10 @@ statement:        var ASSIGN expression {
 					}
 				}
 			}
-			else cout << "assigning to constant\n";
+			else {
+				error = true;
+				cout << "assigning to constant\n";
+			}
 		}
                 | ifCond statements endif {}
                 | ifCond statements else statements endif{ }
@@ -267,8 +275,12 @@ statement:        var ASSIGN expression {
 			if(!loopStack.empty()) {
 				milCode.push_back("\t:= " + loopStack.front());
 			}
-			else yyerror("Using continue outside of loop\n");
-  		}	
+			else {
+				error = true;
+				 yyerror("Using continue outside of loop\n");
+			}
+  		}
+		| error { yyerrok;}	
                 | RETURN expression {
 			milCode.push_back("\tret " + *($2.name));	
 		}
@@ -276,7 +288,6 @@ statement:        var ASSIGN expression {
 
 foreach:	FOREACH ident {
 			Symbol ident = Symbol(*($2), "INTEGER");
-			symTable.push_back(ident);
 		}
 
 while:		WHILE bool_exp {
@@ -460,11 +471,15 @@ term:		terms {
 			string temp = *($1);
 			lstStr::iterator iter = find(funcTable.begin(), funcTable.end(), *($1));
 			string errorString = *($1) + " not a function\n";
-			if (iter == funcTable.end()) yyerror(errorString.c_str());
+			if (iter == funcTable.end()) { 
+				error = true;
+				yyerror(errorString.c_str());
+			}
 			else milCode.push_back(genQuad("call", *($1), newTemp()));
 			$$.name = new string(temp);
 			$$.type = new string("INTEGER");
 		}
+		| IDENT error {yyerrok;}
 		;
 
 terms:		number {
@@ -508,11 +523,13 @@ vars:		  var {
 
 var:		ident {
 			string ident = *($1);
+			cout << "var is searching for "  << ident << endl;
 			$$.name = new string(ident);
 			$$.type = new string("INTEGER");
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				string errorString = string(ident,1) +" not previously declared\n";
 				if (iter == symTable.end()) {
+					error = true;
 					yyerror(errorString.c_str());
 				}
 				else {
@@ -530,7 +547,10 @@ var:		ident {
 			indexStack.push(*($3.name));
 			string errorString = string(ident,1) +" not previously declared\n";
 			Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
-			if (iter == symTable.end()) yyerror(errorString.c_str());
+			if (iter == symTable.end()) {
+				error = true;
+				 yyerror(errorString.c_str());
+			}
 			else {
 				if (iter->type != "ARRAY") yyerror(errorString.c_str());
 				else {
@@ -538,7 +558,7 @@ var:		ident {
 				}
 			}
 		}
-			
+		| error L_SQUARE_BRACKET expression R_SQUARE_BRACKET {yyerrok;}	
 		;
 
 identifiers:      ident {}
