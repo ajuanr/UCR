@@ -217,8 +217,8 @@ statement:        var ASSIGN expression {
 			}
 			else cout << "assigning to constant\n";
 		}
-                | ifCond statements ENDIF M4 {}
-                | ifCond statements M3 ELSE statements ENDIF M4{ }
+                | ifCond statements endif {}
+                | ifCond statements else statements endif{ }
        		|  M9 while BEGINLOOP statements ENDLOOP{
 			milCode.push_back("\t:= " + loopStack.front());
 			loopStack.pop_front();
@@ -226,8 +226,8 @@ statement:        var ASSIGN expression {
 			loopStack.pop_front();	
 		}
 			
-		| DO M7 BEGINLOOP statements ENDLOOP M8 WHILE bool_exp {
-			milCode.push_back(genQuad("?:=", loopStack.front(), *($8.name)));
+		| do BEGINLOOP statements ENDLOOP M8 WHILE bool_exp {
+			milCode.push_back(genQuad("?:=", loopStack.front(), *($7.name)));
 			loopStack.pop_front();
 		}
   		| foreach IN ident M5 BEGINLOOP statements ENDLOOP{}
@@ -303,23 +303,21 @@ ifCond:		IF bool_exp THEN  {
 			labelStack.push_back(l1);
 		}
 
-M3:		/*empty*/ {
-			string label = newLabel();
-			milCode.push_back("\t:= " + label);
+else:		ELSE {
 			milCode.push_back(": " + labelStack.front());
+			string l2 = newLabel();
 			labelStack.pop_front();
-			labelStack.push_back(label);
+			labelStack.push_back(l2);
 		}
 
-M4:		/*empty*/ {
+endif:		ENDIF {
 			milCode.push_back(": " + labelStack.front());
 			labelStack.pop_front();	
 		}
-
 M5:		/*empty*/ {
 		}
 
-M7:		/*empty*/ {
+do:		DO {
 			string l0 = newLabel();
 			string l1 = newLabel();
 			milCode.push_back(": " + l0);
@@ -327,7 +325,7 @@ M7:		/*empty*/ {
 			loopStack.push_back(l0);	
 		}
 
-M8:		{
+M8:		/*empty*/{ /* for continue */
 			milCode.push_back(": " + loopStack.front());
 			loopStack.pop_front();
 		}

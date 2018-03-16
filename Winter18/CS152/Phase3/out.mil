@@ -53,11 +53,11 @@ func main
 	?:=  L2, p1
 	:= L3
 : L2
-	:= L1
+	:= CONTINUE AT L1
 : L3
 	- t2, _k, 1
 	.[]> _t, t2
-: L1
+: CONTINUE HERE L1
 	< p2, _k, _n
 	== p3, p2, 0
 	?:= L0, p3
@@ -79,7 +79,6 @@ func main
 	= t6, _t, _j
 	[]= _t, _j, t6
 	[]= _t, _j, _k
-	:= L6
 : L5
 : L7
 	>= p10, _i, _j
@@ -100,7 +99,7 @@ func main
 	?:=  L10, p15
 	:= L11
 : L10
-	:= L7
+	:= CONTINUE AT L7
 : L6
 	.> _k
 	:= L7
