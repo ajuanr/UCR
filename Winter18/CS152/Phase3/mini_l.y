@@ -106,7 +106,10 @@ function: 	funcName SEMICOLON begin_params declarations end_params BEGIN_LOCALS 
 
 				for (auto symbol : symTable) {
 					if (symbol.type == "INTEGER" || symbol.type == "BOOLEAN") 
-						if (symbol.param) cout << "PARAMETERRR!!!\n";
+						if (symbol.param) {
+							cout << "\t. " + string(symbol.name, 1) << endl;
+							cout << "\t= " + string(symbol.name, 1) + ", $0" << endl;
+						}
 				 		else cout << "\t. " << symbol.name << endl;
 					else cout << "\t.[] " << symbol.name << ", " << symbol.size << endl;	
 
@@ -141,7 +144,7 @@ declaration:    identifiers COLON INTEGER {
 					Symbol s(ident, "INTEGER");
 					if (addParams) {s.param = true;
 					}
-					else symTable.push_back(s);
+					symTable.push_back(s);
 				}
 				else {
 					errorFound = true;
@@ -528,6 +531,7 @@ var:		ident {
 			string ident = *($1);
 			$$.name = new string(ident);
 			$$.type = new string("INTEGER");
+				cout << "var searching for " << ident << endl;
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) {
 					errorFound = true;
