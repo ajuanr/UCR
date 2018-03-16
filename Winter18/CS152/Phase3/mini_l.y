@@ -49,7 +49,7 @@ int currentTemp = 0; 	// the current number of temporary variables
 int currentLabel = 0; 	// the current number of labels
 int currentPred = 0;    // the current predicate
 bool addParams = false;
-bool error = false;
+bool errorFound = false;
 lstStr milCode;		// holds the code generated
 stackStr identStack;   	// holds list of identifiers seen
 
@@ -61,6 +61,7 @@ typedef struct Attributes{
    string* name;
    string* code;
    string* type;
+   bool param;
    int size; // for arrays
    int value;
 }Attributes;
@@ -101,7 +102,7 @@ functions:	function functions
                 ;
 function: 	funcName SEMICOLON begin_params declarations end_params BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
 			milCode.push_back("endfunc");
-			if (!error) {
+			if (!errorFound) {
 				for (auto symbol : symTable) {
 					if (symbol.type == "INTEGER" || symbol.type == "BOOLEAN")
 				 		cout << "\t. " << symbol.name << endl;
@@ -139,12 +140,12 @@ declaration:    identifiers COLON INTEGER {
 			while (!identStack.empty()) {
 				string ident = identStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
-				string errorString = string(ident,1) + " has already been declared\n";
 				if (iter == symTable.end()) {
 					symTable.push_back(Symbol(ident, "INTEGER"));
 				}
 				else {
-					error = true;
+					errorFound = true;
+					string errorString = string(ident,1) + " has already been declared\n";
 					yyerror(errorString.c_str());
 				}
 				identStack.pop();
@@ -154,12 +155,15 @@ declaration:    identifiers COLON INTEGER {
 			if ($5 <= 0) yyerror("negative size for array\n");
 			while (!identStack.empty()) {
 				string ident = identStack.top();
-				string errorString = string(ident,1) + " has already been declared\n";
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) {
 					symTable.push_back(Symbol(ident, "ARRAY", $5));
 				}
-				else yyerror(errorString.c_str());
+				else {
+					errorFound = true;
+					string errorString = string(ident,1) + " has already been declared\n";
+					yyerror(errorString.c_str());
+				}
 				identStack.pop();
 			}
 		}
@@ -221,7 +225,7 @@ statement:        var ASSIGN expression {
 				}
 			}
 			else {
-				error = true;
+				errorFound = true;
 				cout << "assigning to constant\n";
 			}
 		}
@@ -233,7 +237,6 @@ statement:        var ASSIGN expression {
 			milCode.push_back(": " + loopStack.front());
 			loopStack.pop_front();	
 		}
-			
 		| do BEGINLOOP statements ENDLOOP M8 WHILE bool_exp {
 			milCode.push_back(genQuad("?:=", loopStack.front(), *($7.name)));
 			loopStack.pop_front();
@@ -276,7 +279,7 @@ statement:        var ASSIGN expression {
 				milCode.push_back("\t:= " + loopStack.front());
 			}
 			else {
-				error = true;
+				errorFound = true;
 				 yyerror("Using continue outside of loop\n");
 			}
   		}
@@ -347,10 +350,10 @@ bool_exp:	  relation_and_exp {
 			string pred = newPred();
 			string lhs = *($1.name);
 			string rhs = *($3.name);
+			$$.name = new string(pred);
 			milCode.push_back(genQuad("||", pred, lhs, rhs));
-			string pred2 = newPred();
-			milCode.push_back(genQuad("==", pred2, pred, "0"));
-			$$.name = new string(pred2);
+			//string pred2 = newPred();
+			//milCode.push_back(genQuad("==", pred2, pred, "0"));
 		}
 		; 
 
@@ -470,9 +473,9 @@ term:		terms {
 		| IDENT parenExpression  {
 			string temp = *($1);
 			lstStr::iterator iter = find(funcTable.begin(), funcTable.end(), *($1));
-			string errorString = *($1) + " not a function\n";
 			if (iter == funcTable.end()) { 
-				error = true;
+				string errorString = *($1) + " not a function\n";
+				errorFound = true;
 				yyerror(errorString.c_str());
 			}
 			else milCode.push_back(genQuad("call", *($1), newTemp()));
@@ -526,13 +529,17 @@ var:		ident {
 			$$.name = new string(ident);
 			$$.type = new string("INTEGER");
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
-				string errorString = string(ident,1) +" not previously declared\n";
 				if (iter == symTable.end()) {
-					error = true;
+					errorFound = true;
+					string errorString = string(ident,1) +" not previously declared\n";
 					yyerror(errorString.c_str());
 				}
 				else {
-					if (iter->type != "INTEGER") yyerror(errorString.c_str());
+					if (iter->type != "INTEGER") {
+						errorFound = true;
+						string errorString = string(ident,1) +" is an integer, not an array\n"; 
+						yyerror(errorString.c_str());
+					}
 					else {
 						identStack.push(ident);
 						varStack.push(ident);
@@ -547,11 +554,15 @@ var:		ident {
 			string errorString = string(ident,1) +" not previously declared\n";
 			Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 			if (iter == symTable.end()) {
-				error = true;
+				errorFound = true;
 				 yyerror(errorString.c_str());
 			}
 			else {
-				if (iter->type != "ARRAY") yyerror(errorString.c_str());
+				if (iter->type != "ARRAY") {
+					 errorFound = true;
+				 	 string errorString = string(ident,1) +" is an integer, not an array\n"; 
+					 yyerror(errorString.c_str());
+					}
 				else {
 					varStack.push(ident);
 				}

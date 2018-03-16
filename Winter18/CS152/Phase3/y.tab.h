@@ -112,12 +112,13 @@ typedef struct Attributes{
    string* name;
    string* code;
    string* type;
+   bool param;
    int size; // for arrays
    int value;
 }Attributes;
    Attributes attribute;
 
-#line 121 "y.tab.h" /* yacc.c:1909  */
+#line 122 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
