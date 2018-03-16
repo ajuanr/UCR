@@ -20,6 +20,7 @@ struct Symbol{
    Symbol(string n, string t, int l):name(n), type(t),size(l) {}
    string name;
    string type;
+   bool param=false;
    int size;  // for arrays
    int value;
    bool operator==(const string &rhs) { return !(this->name.compare(rhs));}
@@ -37,7 +38,6 @@ string newLabel();
 string newTemp();
 string newPred();
 Table symTable;
-DeckStr paramTable; 	// keep track of parameters
 DeckStr funcParams;		// keep track of parameters in functions
 stackStr indexStack;
 lstStr funcTable;	// keep track of functions;
@@ -61,7 +61,6 @@ typedef struct Attributes{
    string* name;
    string* code;
    string* type;
-   bool param;
    int size; // for arrays
    int value;
 }Attributes;
@@ -103,15 +102,14 @@ functions:	function functions
 function: 	funcName SEMICOLON begin_params declarations end_params BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
 			milCode.push_back("endfunc");
 			if (!errorFound) {
+				cout << "func " << *(funcTable.begin()) << endl;
+
 				for (auto symbol : symTable) {
-					if (symbol.type == "INTEGER" || symbol.type == "BOOLEAN")
-				 		cout << "\t. " << symbol.name << endl;
+					if (symbol.type == "INTEGER" || symbol.type == "BOOLEAN") 
+						if (symbol.param) cout << "PARAMETERRR!!!\n";
+				 		else cout << "\t. " << symbol.name << endl;
 					else cout << "\t.[] " << symbol.name << ", " << symbol.size << endl;	
 
-				}
-				while (!paramTable.empty()) {
-					cout <<  "\t" + paramTable.front() << ", $" << 0 << endl;
-					paramTable.pop_front();
 				}
 				for (auto code : milCode) {
 					cout << code << endl;
@@ -125,7 +123,6 @@ function: 	funcName SEMICOLON begin_params declarations end_params BEGIN_LOCALS 
 
 funcName:	FUNCTION IDENT {
 			funcTable.push_back(*($2));
-			cout << "func " << *($2) << endl;
 		}
 
 begin_params:	BEGIN_PARAMS { addParams = true; }
@@ -141,7 +138,10 @@ declaration:    identifiers COLON INTEGER {
 				string ident = identStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) {
-					symTable.push_back(Symbol(ident, "INTEGER"));
+					Symbol s(ident, "INTEGER");
+					if (addParams) {s.param = true;
+					}
+					else symTable.push_back(s);
 				}
 				else {
 					errorFound = true;
@@ -580,7 +580,6 @@ ident:		IDENT {
 			 string ident = "_" + *($1);
 			$$ = new string(ident);
 			identStack.push(ident);
-			if (addParams) paramTable.push_back(ident);
 		}
 		
 number:		NUMBER {

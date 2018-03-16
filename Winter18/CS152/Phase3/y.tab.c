@@ -82,6 +82,7 @@ struct Symbol{
    Symbol(string n, string t, int l):name(n), type(t),size(l) {}
    string name;
    string type;
+   bool param=false;
    int size;  // for arrays
    int value;
    bool operator==(const string &rhs) { return !(this->name.compare(rhs));}
@@ -99,7 +100,6 @@ string newLabel();
 string newTemp();
 string newPred();
 Table symTable;
-DeckStr paramTable; 	// keep track of parameters
 DeckStr funcParams;		// keep track of parameters in functions
 stackStr indexStack;
 lstStr funcTable;	// keep track of functions;
@@ -218,13 +218,12 @@ typedef struct Attributes{
    string* name;
    string* code;
    string* type;
-   bool param;
    int size; // for arrays
    int value;
 }Attributes;
    Attributes attribute;
 
-#line 228 "y.tab.c" /* yacc.c:355  */
+#line 227 "y.tab.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -241,7 +240,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 245 "y.tab.c" /* yacc.c:358  */
+#line 244 "y.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -543,14 +542,14 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,    96,    96,   100,   101,   103,   126,   131,   132,   135,
-     136,   139,   154,   170,   171,   174,   175,   178,   232,   233,
+       0,    95,    95,    99,   100,   102,   124,   128,   129,   132,
+     133,   136,   154,   170,   171,   174,   175,   178,   232,   233,
      234,   240,   244,   245,   261,   277,   286,   287,   292,   296,
      308,   317,   324,   328,   331,   339,   344,   349,   360,   363,
      372,   377,   384,   389,   394,   401,   402,   403,   404,   405,
      406,   409,   414,   422,   432,   436,   444,   452,   462,   467,
      473,   485,   488,   493,   497,   503,   510,   513,   518,   521,
-     527,   549,   571,   572,   575,   576,   579,   586
+     527,   549,   571,   572,   575,   576,   579,   585
 };
 #endif
 
@@ -1452,27 +1451,26 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 96 "mini_l.y" /* yacc.c:1646  */
+#line 95 "mini_l.y" /* yacc.c:1646  */
     {
 //		for (auto symbol : symTable) cout << symbol.name << endl;
 		}
-#line 1460 "y.tab.c" /* yacc.c:1646  */
+#line 1459 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 103 "mini_l.y" /* yacc.c:1646  */
+#line 102 "mini_l.y" /* yacc.c:1646  */
     {
 			milCode.push_back("endfunc");
 			if (!errorFound) {
+				cout << "func " << *(funcTable.begin()) << endl;
+
 				for (auto symbol : symTable) {
-					if (symbol.type == "INTEGER" || symbol.type == "BOOLEAN")
-				 		cout << "\t. " << symbol.name << endl;
+					if (symbol.type == "INTEGER" || symbol.type == "BOOLEAN") 
+						if (symbol.param) cout << "PARAMETERRR!!!\n";
+				 		else cout << "\t. " << symbol.name << endl;
 					else cout << "\t.[] " << symbol.name << ", " << symbol.size << endl;	
 
-				}
-				while (!paramTable.empty()) {
-					cout <<  "\t" + paramTable.front() << ", $" << 0 << endl;
-					paramTable.pop_front();
 				}
 				for (auto code : milCode) {
 					cout << code << endl;
@@ -1483,51 +1481,53 @@ yyreduce:
 			currentLabel = 0;
 			symTable.clear();
                 }
-#line 1487 "y.tab.c" /* yacc.c:1646  */
+#line 1485 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 126 "mini_l.y" /* yacc.c:1646  */
+#line 124 "mini_l.y" /* yacc.c:1646  */
     {
 			funcTable.push_back(*((yyvsp[0].strVal)));
-			cout << "func " << *((yyvsp[0].strVal)) << endl;
 		}
-#line 1496 "y.tab.c" /* yacc.c:1646  */
+#line 1493 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 131 "mini_l.y" /* yacc.c:1646  */
+#line 128 "mini_l.y" /* yacc.c:1646  */
     { addParams = true; }
-#line 1502 "y.tab.c" /* yacc.c:1646  */
+#line 1499 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 132 "mini_l.y" /* yacc.c:1646  */
+#line 129 "mini_l.y" /* yacc.c:1646  */
     { addParams = false; 
 		}
-#line 1509 "y.tab.c" /* yacc.c:1646  */
+#line 1506 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 135 "mini_l.y" /* yacc.c:1646  */
+#line 132 "mini_l.y" /* yacc.c:1646  */
     {}
-#line 1515 "y.tab.c" /* yacc.c:1646  */
+#line 1512 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 10:
-#line 136 "mini_l.y" /* yacc.c:1646  */
+#line 133 "mini_l.y" /* yacc.c:1646  */
     {}
-#line 1521 "y.tab.c" /* yacc.c:1646  */
+#line 1518 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 139 "mini_l.y" /* yacc.c:1646  */
+#line 136 "mini_l.y" /* yacc.c:1646  */
     {
 			while (!identStack.empty()) {
 				string ident = identStack.top();
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) {
-					symTable.push_back(Symbol(ident, "INTEGER"));
+					Symbol s(ident, "INTEGER");
+					if (addParams) {s.param = true;
+					}
+					else symTable.push_back(s);
 				}
 				else {
 					errorFound = true;
@@ -2251,21 +2251,20 @@ yyreduce:
 			 string ident = "_" + *((yyvsp[0].strVal));
 			(yyval.strVal) = new string(ident);
 			identStack.push(ident);
-			if (addParams) paramTable.push_back(ident);
 		}
-#line 2257 "y.tab.c" /* yacc.c:1646  */
+#line 2256 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 77:
-#line 586 "mini_l.y" /* yacc.c:1646  */
+#line 585 "mini_l.y" /* yacc.c:1646  */
     {
 			(yyval.iVal) = (yyvsp[0].iVal);
 		}
-#line 2265 "y.tab.c" /* yacc.c:1646  */
+#line 2264 "y.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 2269 "y.tab.c" /* yacc.c:1646  */
+#line 2268 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2493,7 +2492,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 590 "mini_l.y" /* yacc.c:1906  */
+#line 589 "mini_l.y" /* yacc.c:1906  */
 
 
 int main() {
