@@ -1,180 +1,108 @@
 func main
-DECLARATION IS _n
-DECLARATION IS _k
-DECLARATION IS _j
-DECLARATION IS _i
-var is searching for _i
-var is searching for _j
-var is searching for _k
-var is searching for _n
-var is searching for _k
-var is searching for _k
-var is searching for _k
-var is searching for _k
-var is searching for _k
-var is searching for _k
-var is searching for _k
-var is searching for _n
-var is searching for _i
-var is searching for _j
-var is searching for _j
-var is searching for _n
-var is searching for _i
-var is searching for _i
-var is searching for _i
-var is searching for _j
-var is searching for _j
-var is searching for _k
-var is searching for _i
-var is searching for _i
-var is searching for _j
-var is searching for _j
-var is searching for _k
-var is searching for _i
-var is searching for _j
-var is searching for _k
-var is searching for _i
-var is searching for _j
-var is searching for _i
-var is searching for _i
-var is searching for _k
-var is searching for _k
-var is searching for _i
-var is searching for _j
-var is searching for _k
-var is searching for _i
-var is searching for _n
-var is searching for _i
-var is searching for _i
-var is searching for _j
-var is searching for _n
-var is searching for _j
-var is searching for _j
 	. _n
-	. _k
+	.[] _a, 1000
 	. _j
 	. _i
-	.[] _t, 20
+	. _sqrt_n
+	. _x
 	. t0
-	. t1
 	. p0
 	. p1
+	. t1
 	. t2
+	. t3
 	. p2
 	. p3
+	. t4
 	. p4
 	. p5
 	. p6
 	. p7
+	. t5
 	. p8
 	. p9
-	. t3
-	. t4
-	. t5
 	. t6
+	. t7
 	. p10
 	. p11
 	. p12
 	. p13
-	. t7
 	. t8
-	. t9
-	. t10
-	. p14
-	. p15
-	. p16
-	. p17
-	. p18
-	. p19
-	. p20
-	. p21
-	. p22
-	. p23
-	.< _i
-	.< _j
-	= _k, 0
-	= _n, 20
-: L0
-	[]= _t, _k, _k
-	+ t0, _k, 1
-	= _k, t0
-	% t1, _k, 2
-	== p0, t1, 0
+	.< _n
+	= _x, _n
+	/ t0, _n, _x
+	> p0, _x, t0
 	== p1, p0, 0
-	?:=  L2, p1
-	:= L3
-: L2
-	:= L1
-: L3
-	- t2, _k, 1
-	.[]> _t, t2
+: L0
+	?:= L1, p1
+	:= L2
 : L1
-	< p2, _k, _n
+	/ t1, _n, _x
+	+ t2, _x, t1
+	/ t3, t2, 2
+	= _x, t3
+	:= L0
+: L2
+	= _sqrt_n, _x
+	= _i, 2
+	<= p2, _i, _n
 	== p3, p2, 0
-	?:= L0, p3
-	< p4, _i, _j
-	< p5, _j, _n
-	>= p6, _i, 0
-	&& p7, p5, p6
-	&& p8, p4, p7
-	== p9, p8, 0
-	?:=  L4, p9
+: L3
+	?:= L4, p3
 	:= L5
 : L4
-	* t3, _i, 2
-	[]= _t, _i, t3
-	* t4, _j, 2
-	[]= _t, _j, t4
-	=[] t5, _t, _i
-	= _k, t5
-	= t6, _t, _j
-	[]= _t, _j, t6
-	[]= _t, _j, _k
+	[]= _a, _i, 0
+	+ t4, _i, 1
+	= _i, t4
+	:= L3
 : L5
-	>= p10, _i, _j
-	= p11, 0
-	|| p12, p10, p11
-	== p13, p12, 0
-: L7
-	?:= L8, p13
-	:= L9
-: L8
-	+ t7, 1, _i
-	- t8, t7, _j
-	% t9, t8, 3
-	= _k, t9
-	- t10, _i, 1
-	= _i, t10
-	> p14, _k, 1
-	== p15, p14, 0
-	?:=  L10, p15
-	:= L11
-: L10
-	:= L7
+	= _i, 2
+	<= p4, _i, _sqrt_n
+	== p5, p4, 0
 : L6
-	.> _k
-	:= L7
+	?:= L7, p5
+	:= L8
+: L7
+	== p6, _a, 0
+	== p7, p6, 0
+	?:=  L9, p7
+	:= L10
 : L9
+	+ t5, _i, _i
+	= _j, t5
+	.[]> _a, _i
+	<= p8, _j, _n
+	== p9, p8, 0
 : L11
-	.> _i
-	.> _j
-	.> _k
-	< p16, _i, _n
-	>= p17, _i, 0
-	&& p18, p16, p17
-	== p19, p18, 0
-	?:=  L12, p19
+	?:= L12, p9
 	:= L13
 : L12
-	.[]> _t, _i
+	[]= _a, _j, 1
+	+ t6, _j, _i
+	= _j, t6
+	:= L6
+: L8
+: L10
+	+ t7, _i, 1
+	= _i, t7
+	:= L11
 : L13
-	< p20, _j, _n
-	>= p21, _j, 0
-	&& p22, p20, p21
-	== p23, p22, 0
-	?:=  L14, p23
-	:= L15
+	= _i, 2
+	<= p10, _i, _n
+	== p11, p10, 0
 : L14
-	.[]> _t, _j
+	?:= L15, p11
+	:= L16
 : L15
+	== p12, _a, 0
+	== p13, p12, 0
+	?:=  L17, p13
+	:= L18
+: L17
+	.> _i
+: L18
+	+ t8, _i, 1
+	= _i, t8
+	:= L14
+: L16
 endfunc

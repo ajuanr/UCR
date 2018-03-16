@@ -102,19 +102,19 @@ functions:	function functions
 function: 	funcName SEMICOLON begin_params declarations end_params BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
 			milCode.push_back("endfunc");
 			if (!error) {
-			for (auto symbol : symTable) {
-				if (symbol.type == "INTEGER" || symbol.type == "BOOLEAN")
-				 	cout << "\t. " << symbol.name << endl;
-				else cout << "\t.[] " << symbol.name << ", " << symbol.size << endl;	
+				for (auto symbol : symTable) {
+					if (symbol.type == "INTEGER" || symbol.type == "BOOLEAN")
+				 		cout << "\t. " << symbol.name << endl;
+					else cout << "\t.[] " << symbol.name << ", " << symbol.size << endl;	
 
-			}
-			while (!paramTable.empty()) {
-				cout <<  "\t" + paramTable.front() << ", $" << 0 << endl;
-				paramTable.pop_front();
-			}
-			for (auto code : milCode) {
-				cout << code << endl;
-			}
+				}
+				while (!paramTable.empty()) {
+					cout <<  "\t" + paramTable.front() << ", $" << 0 << endl;
+					paramTable.pop_front();
+				}
+				for (auto code : milCode) {
+					cout << code << endl;
+				}
 			}
 			currentTemp = 0;
 			currentPred = 0;
@@ -138,7 +138,6 @@ declarations:	declaration SEMICOLON declarations {}
 declaration:    identifiers COLON INTEGER {
 			while (!identStack.empty()) {
 				string ident = identStack.top();
-				cout << "DECLARATION IS " << ident << endl;
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				string errorString = string(ident,1) + " has already been declared\n";
 				if (iter == symTable.end()) {
@@ -165,6 +164,7 @@ declaration:    identifiers COLON INTEGER {
 			}
 		}
 		| identifiers COLON ARRAY L_SQUARE_BRACKET error R_SQUARE_BRACKET OF INTEGER {yyerrok;}
+		| identifiers COLON error {yyerrok;}
                 ;
 
 statements:       statement SEMICOLON statements {}
@@ -523,7 +523,6 @@ vars:		  var {
 
 var:		ident {
 			string ident = *($1);
-			cout << "var is searching for "  << ident << endl;
 			$$.name = new string(ident);
 			$$.type = new string("INTEGER");
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
@@ -558,6 +557,7 @@ var:		ident {
 				}
 			}
 		}
+		| error {yyerrok;}
 		| error L_SQUARE_BRACKET expression R_SQUARE_BRACKET {yyerrok;}	
 		;
 
