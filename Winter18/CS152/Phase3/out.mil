@@ -1,37 +1,116 @@
-var searching for _k
-var searching for _k
-var searching for _k
-func fibonacci
-. k
-= k, $0
+func main
+	. _n
+	. _k
+	. _j
+	. _i
+	.[] _t, 20
+	. t0
+	. t1
 	. p0
+	. t2
 	. p1
 	. p2
 	. p3
-	. t0
-	. t1
-	. t2
+	. p4
+	. p5
+	. p6
 	. t3
 	. t4
-	<= p0, _k, 1
-	== p1, p0, 0
-	= p2, p1
-	== p3, p2, 0
-	?:=  L0, p3
-	:= L1
+	. t5
+	. t6
+	. p7
+	. p8
+	. p9
+	. t7
+	. t8
+	. t9
+	. t10
+	. p10
+	. p11
+	. p12
+	. p13
+	. p14
+	. p15
+	. p16
+	.< _i
+	.< _j
+	= _k, 0
+	= _n, 20
 : L0
-	ret 1
+	[]= _t, _k, _k
+	+ t0, _k, 1
+	= _k, t0
+	% t1, _k, 2
+	== p0, t1, 0
+	?:=  L2, p0
+	:= L3
+: L2
+	:= L1
+: L3
+	- t2, _k, 1
+	.[]> _t, t2
 : L1
-	- t0, _k, 1
-	param t0
-	call fibonacci, t1
-	- t2, _k, 2
-	param t2
-	call fibonacci, t3
-	+ t4, fibonacci, fibonacci
-	ret t4
+	< p1, _k, _n
+	?:= L0, p1
+	< p2, _i, _j
+	< p3, _j, _n
+	>= p4, _i, 0
+	&& p5, p3, p4
+	&& p6, p2, p5
+	?:=  L4, p6
+	:= L5
+: L4
+	* t3, _i, 2
+	[]= _t, _i, t3
+	* t4, _j, 2
+	[]= _t, _j, t4
+	=[] t5, _t, _i
+	= _k, t5
+	= t6, _t, _j
+	[]= _t, _j, t6
+	[]= _t, _j, _k
+	:= L6
+: L5
+	>= p7, _i, _j
+	= p8, 0
+	|| p9, p7, p8
+: L7
+	?:= L8, p9
+	:= L9
+: L8
+	+ t7, 1, _i
+	- t8, t7, _j
+	% t9, t8, 3
+	= _k, t9
+	- t10, _i, 1
+	= _i, t10
+	> p10, _k, 1
+	?:=  L10, p10
+	:= L11
+: L10
+	:= L7
+: L6
+	.> _k
+	:= L7
+: L9
+: L11
+	.> _i
+	.> _j
+	.> _k
+	< p11, _i, _n
+	>= p12, _i, 0
+	&& p13, p11, p12
+	?:=  L12, p13
+	:= L13
+: L12
+	.[]> _t, _i
+: L13
+	< p14, _j, _n
+	>= p15, _j, 0
+	&& p16, p14, p15
+	?:=  L14, p16
+	:= L15
+: L14
+	.[]> _t, _j
+: L15
 endfunc
-var searching for _n
-var searching for _fib_n
-var searching for _n
-var searching for _fib_n

@@ -318,8 +318,9 @@ ifCond:		IF bool_exp THEN  {
 		}
 
 else:		ELSE {
-			milCode.push_back(": " + labelStack.front());
 			string l2 = newLabel();
+			milCode.push_back("\t:= " + l2); 
+			milCode.push_back(": " + labelStack.front());
 			labelStack.pop_front();
 			labelStack.push_back(l2);
 		}
@@ -345,9 +346,10 @@ M8:		/*empty*/{ /* for continue */
 		}
 
 bool_exp:	  relation_and_exp {
-			string pred = newPred();
-			$$.name = new string(pred);
-			milCode.push_back(genQuad("==", pred, *($1.name), "0"));
+			//string pred = newPred();
+			$$.name = new string(*($1.name));
+			//milCode.push_back(genQuad("=", pred, *($1.name)));
+			//milCode.push_back(genQuad("==", pred, *($1.name), "0"));
 		}
                 | relation_and_exp OR relation_and_exp {
 			string pred = newPred();
@@ -531,7 +533,6 @@ var:		ident {
 			string ident = *($1);
 			$$.name = new string(ident);
 			$$.type = new string("INTEGER");
-				cout << "var searching for " << ident << endl;
 				Table::iterator iter = find(symTable.begin(), symTable.end(), ident);
 				if (iter == symTable.end()) {
 					errorFound = true;
