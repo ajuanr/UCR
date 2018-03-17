@@ -96,7 +96,8 @@ prog_start:	functions {
 //		for (auto symbol : symTable) cout << symbol.name << endl;
 		}
                 ;
-functions:	function functions
+functions:	function functions {
+		}
                 | /*empty*/
                 ;
 function: 	funcName SEMICOLON begin_params declarations end_params BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
@@ -122,7 +123,8 @@ function: 	funcName SEMICOLON begin_params declarations end_params BEGIN_LOCALS 
 			currentPred = 0;
 			currentLabel = 0;
 			symTable.clear();
-                }
+
+		}
 
 funcName:	FUNCTION IDENT {
 			funcTable.push_back(*($2));
@@ -546,7 +548,7 @@ var:		ident {
 						yyerror(errorString.c_str());
 					}
 					else {
-						identStack.push(ident);
+			//			identStack.push(ident);
 						varStack.push(ident);
 					}
 				}
@@ -577,14 +579,17 @@ var:		ident {
 		| error L_SQUARE_BRACKET expression R_SQUARE_BRACKET {yyerrok;}	
 		;
 
-identifiers:      ident {}
-		| ident COMMA identifiers{}
+identifiers:      ident {
+			identStack.push(*($1));
+		}
+		| ident COMMA identifiers{
+			identStack.push(*($1));
+		}
 		;
 
 ident:		IDENT {
 			 string ident = "_" + *($1);
 			$$ = new string(ident);
-			identStack.push(ident);
 		}
 		
 number:		NUMBER {
