@@ -1,0 +1,332 @@
+/* Juan's Grammar for CS152 */
+/* mini_l.y */
+
+%{
+#define YY_NO_UNPUT
+
+#include "headers.h"
+
+extern int currLine;	
+extern int currPos;
+extern char *yytext;
+
+void yyerror(char const*);
+int yylex(void);
+
+struct Symbol{
+   Symbol():value(0){}
+   Symbol(string n):name(n) {}
+   Symbol(string n, string t): name(n), type(t){}
+   Symbol(string n, string t, int l):name(n), type(t),size(l) {}
+   string name;
+   string type;
+   bool param=false;
+   int size;  // for arrays
+   int value;
+   bool operator==(const string &rhs) { return !(this->name.compare(rhs));}
+};
+
+typedef list<string> lstStr;
+typedef vector<string> vecStr;
+typedef list<Symbol> Table;
+typedef stack<string> stackStr;
+typedef deque<string> DeckStr;
+
+string genQuad(string op, string dest, string srcl, string src2);
+string genQuad(string op, string dest , string src2);
+string newLabel();
+string newTemp();
+string newPred();
+Table symTable;
+DeckStr funcParams;		// keep track of parameters in functions
+stackStr indexStack;
+lstStr funcTable;	// keep track of functions;
+stackStr varStack;	// keep track of vars
+DeckStr labelStack;	// keep track of labels
+DeckStr loopStack;	// keep track of which loop you're in
+stackStr rwStack;
+int currentTemp = 0; 	// the current number of temporary variables
+int currentLabel = 0; 	// the current number of labels
+int currentPred = 0;    // the current predicate
+bool addParams = false;
+bool errorFound = false;
+lstStr milCode;		// holds the code generated
+stackStr identStack;   	// holds list of identifiers seen
+
+%}
+%union{
+   int		iVal;
+   string* 	strVal;
+typedef struct Attributes{
+   string* name;
+   string* code;
+   string* type;
+   int size; // for arrays
+   int value;
+}Attributes;
+   Attributes attribute;
+};
+
+
+%error-verbose
+%token		FUNCTION INTEGER OF ARRAY READ IF THEN ENDIF ELSE WHILE DO 
+%token		BEGIN_PARAMS BEGIN_LOCALS BEGIN_BODY IN BEGINLOOP ENDLOOP RETURN
+%token		END_PARAMS END_LOCALS END_BODY CONTINUE WRITE TRUE FALSE FOREACH 
+%token 		SEMICOLON COLON COMMA L_PAREN R_PAREN L_SQUARE_BRACKET R_SQUARE_BRACKET 
+%token <iVal> 	NUMBER
+%token <strVal>	IDENT
+
+%right		UMINUS
+%left		MULT DIV MOD
+%left   	ADD SUB 
+%left		LT LTE GT GTE EQ NEQ
+%right		NOT 
+%left		AND
+%left		OR
+%right  	ASSIGN
+
+%type<iVal> number
+%type<strVal> ident comp
+%type<attribute> identifiers var vars statement statements term terms expression multiplicative_expression expressions
+%type<attribute> bool_exp relation_exp relation_and_exp 
+
+
+%%
+prog_start:	functions {
+		}
+                ;
+functions:	function functions {
+		}
+                | /*empty*/
+                ;
+function: 	funcName SEMICOLON begin_params declarations end_params BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {
+			milCode.push_back("endfunc");
+			if (!errorFound) {
+				cout << "func " << *(funcTable.begin()) << endl;
+
+				for (auto symbol : symTable) {
+					if (symbol.type == "INTEGER" || symbol.type == "BOOLEAN") 
+						if (symbol.param) {
+							cout << "\t. " + string(symbol.name, 1) << endl;
+							cout << "\t= " + string(symbol.name, 1) + ", $0" << endl;
+						}
+				 		else cout << "\t. " << symbol.name << endl;
+					else cout << "\t.[] " << symbol.name << ", " << symbol.size << endl;	
+
+				}
+				for (auto code : milCode) {
+					cout << code << endl;
+				}
+			}
+			currentTemp = 0;
+			currentPred = 0;
+			currentLabel = 0;
+			symTable.clear();
+
+		}
+
+funcName:	FUNCTION IDENT {
+			funcTable.push_back(*($2));
+		}
+
+begin_params:	BEGIN_PARAMS { addParams = true; }
+end_params:	END_PARAMS{ addParams = false; 
+		}
+                ;
+declarations:	declaration SEMICOLON declarations {}
+                | /*empty*/ {}
+                ;
+
+declaration:    identifiers COLON INTEGER {
+                }
+		| identifiers COLON ARRAY L_SQUARE_BRACKET number R_SQUARE_BRACKET OF INTEGER {
+		}
+		| identifiers COLON ARRAY L_SQUARE_BRACKET error R_SQUARE_BRACKET OF INTEGER {yyerrok;}
+		| identifiers COLON error {yyerrok;}
+                ;
+
+statements:       statement SEMICOLON statements {}
+                | /*empty*/ {}
+                ;
+
+statement:        var ASSIGN expression {
+		}
+                | ifCond statements endif {}
+                | ifCond statements else statements endif{ }
+       		|  while BEGINLOOP statements ENDLOOP{
+		}
+		| do BEGINLOOP statements ENDLOOP WHILE bool_exp {
+		}
+  		| foreach IN ident BEGINLOOP statements ENDLOOP{}
+		| READ vars {
+		}
+                | WRITE vars {
+		}
+                | CONTINUE  {
+  		}
+		| error { yyerrok;}	
+                | RETURN expression {
+		}
+                ;
+
+foreach:	FOREACH ident {
+		}
+
+while:		WHILE bool_exp {
+		}
+
+ifCond:		IF bool_exp THEN  {
+		}
+
+else:		ELSE {
+		}
+endif:		ENDIF {
+		}
+
+do:		DO {
+		}
+
+bool_exp:	  relation_and_exp {
+		}
+                | relation_and_exp OR relation_and_exp {
+		}
+		; 
+
+relation_and_exp: relation_exp {
+		}
+                | relation_exp AND relation_and_exp {
+		}
+                ;
+
+relation_exp:	  NOT relation_exp {
+		}
+		| expression comp expression {
+		}
+                | TRUE {
+		}
+                | FALSE {
+		}
+                | L_PAREN bool_exp R_PAREN {
+		} 
+                ;
+
+comp:	   	  EQ  { $$ = new string("==");}
+		| NEQ { $$ = new string("<>");}
+		| LT  { $$ = new string("<");}
+		| GT  { $$ = new string(">");}
+		| LTE { $$ = new string("<=");}
+		| GTE { $$ = new string(">=");}
+                ;
+
+expression:	  multiplicative_expression {
+
+		}
+                | expression ADD multiplicative_expression {
+		}
+                | expression SUB multiplicative_expression {
+		}
+		;
+
+multiplicative_expression:	term {
+				}
+				|multiplicative_expression MULT term {
+				}
+				|multiplicative_expression DIV term {
+				}
+				|multiplicative_expression MOD term {
+				}
+                		;
+
+term:		terms {
+		}
+		|	
+		SUB terms %prec UMINUS {
+		}	
+		| IDENT parenExpression  {
+		}
+		;
+
+terms:		number {
+		}		 
+		| var {
+		}
+		| L_PAREN expression R_PAREN {
+		} 
+		; 
+		  
+parenExpression: L_PAREN expressions R_PAREN {
+		}
+
+expressions:	  expression {
+		 }
+		| expression COMMA expressions {
+		}
+		;
+
+vars:		  var {
+		}
+                | var COMMA vars {
+		}
+
+                ;
+
+var:		ident {
+                  }
+                | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
+		}
+		;
+
+identifiers:      ident {
+		}
+		| ident COMMA identifiers{
+		}
+		;
+
+ident:		IDENT {
+			string ident = "_" + *($1);
+			$$ = new string(ident);
+			cout << "ident " << *($$) << endl;
+		}
+		
+number:		NUMBER {
+			$$ = $1;
+		}
+                ;
+%%
+
+int main() {
+   yyparse();
+
+   return 0;
+}
+
+void yyerror (char const *s)
+{
+  fprintf (stderr, "error at line %d:  \"%s\"\n", currLine, s);
+}
+
+string newTemp() {
+    string temp = "t" + to_string(currentTemp++);
+    symTable.push_back(Symbol(temp, "INTEGER"));
+    return temp;
+}
+
+string newLabel() {
+    return "L" + to_string(currentLabel++);
+}
+
+string newPred() {
+    string pred = "p" + to_string(currentPred++);
+    symTable.push_back(Symbol(pred, "BOOLEAN"));
+    return pred;
+}
+
+
+string genQuad(string op, string dest, string src1, string src2) {
+    return "\t" + op + " " + dest + ", " + src1 + ", " + src2; 
+}
+
+string genQuad(string op, string dest , string src) {
+    return "\t" + op + " " + dest + ", " + src;
+}
+	
